@@ -20,7 +20,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 ### Active (v1.1 — complete)
 
 - [x] **Local media capture** — Access this Mac’s microphone and camera (browser-first) with clear permission UX. *(Validated in Phase 5: 2026-04-15.)*
-- [x] **Media → events** — Audio/video signal pipeline posts throttled `media.audio` / `media.video` events through `POST /events`. *(Phase 6 implementation complete; manual runtime checks pending in `06-HUMAN-UAT.md`.)*
+- [x] **Media → events** — Audio/video signal pipeline posts throttled `media.audio` / `media.video` events through `POST /events`. *(Phase 6 implementation and runtime verification complete.)*
 - [x] **End-to-end trace** — Media-originated events are visible in the React Events list with parity behavior and E2E validation evidence.
 - [x] **Operator UX upgrades** — Events screen now supports live tail vs timeframe filters, virtualized pagination, and a dedicated Media settings page with snapshot-based label learning.
 - [ ] **Optional hardening** — Production-oriented auth, CORS policy, deployment story (only if you move beyond lab).
@@ -50,7 +50,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 
 ## Next milestone goals
 
-- Execute **v1.1** phases after `/gsd-plan-phase`.
+- Define and scope **v1.2** goals and requirements.
 - Optionally close **manual UAT** (e.g. `.planning/milestone-v1-UAT.md`) if you want a recorded end-to-end smoke.
 
 ## Context
@@ -68,7 +68,7 @@ This repo is a **dumbed-down** version of a **central node + webhook orchestrato
 |----------|-----------|---------|
 | SQLite first for the lab | Simple local install; Bun’s built-in module | ✓ Shipped v1.0 |
 | Simulate the “physical node” (v1.0) | Avoid hardware before the mental model is clear | ✓ `bun run simulate` |
-| Add real mic/camera path (v1.1) | Prove end-to-end with actual media on the dev machine | Phase 5 shipped (capture UX); Phase 6 shipped in code (signals → events), manual runtime verification pending |
+| Add real mic/camera path (v1.1) | Prove end-to-end with actual media on the dev machine | Phase 5 shipped (capture UX), Phase 6 shipped (signals → events), Phase 7 validated E2E visibility |
 | Single Bun HTTP orchestrator | One place to log, route, and debug | ✓ `src/server.ts` |
 | Bun HTML bundler for React (no Vite) | Matches stack conventions | ✓ `bun run client` |
 | Dev CORS on `GET /events` | Split ports for client + API in lab | ✓ Documented in code |

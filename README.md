@@ -7,7 +7,7 @@ Entry: `bun run dev` serves the orchestrator from `index.ts` (not a console-only
 ## Current state (as of 2026-04-15)
 
 - **Shipped:** **v1.0** learning prototype (git tag **`v1.0`**) — SQLite homes/users, `Bun.serve` webhook routes, simulated node, React Events list with polling.
-- **Current milestone:** **v1.1 Local media events (complete)**.
+- **Current milestone:** **v1.1 Local media events (shipped)**.
 - **Completed in v1.1:** **Phase 5** local media capture UX, **Phase 6** media signals → events (including human runtime verification), and **Phase 7** E2E media trace.
 - **Next milestone work:** define and plan **v1.2** scope.
 - **Current client UX:** dedicated **Media settings** page, live audio/video detection overlays, snapshot-based custom label learning, and an Events list with **live tail vs timeframe filtering**, **virtualized rendering**, and **pagination**.

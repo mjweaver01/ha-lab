@@ -22,7 +22,7 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 
 ## Phase Details
 
-### 🚧 v1.1 Local media events
+### ✅ v1.1 Local media events
 
 **Milestone goal:** Real audio/video on the dev machine produce orchestrator events users can see in the same pipeline as v1.0 (no simulated node required for that path).
 
@@ -68,7 +68,7 @@ Plans:
 **Execution note (2026-04-15):**
 - Media settings page, live detection overlays, and snapshot-based custom label learning are implemented.
 - Events UI now supports live tail/timeframe filtering with virtualized pagination.
-- Remaining gate for full phase close is human runtime verification (`06-HUMAN-UAT.md`).
+- Human runtime verification completed (`06-HUMAN-UAT.md`), and Phase 6 is closed.
 
 ### Phase 7: E2E media trace
 
