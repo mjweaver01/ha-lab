@@ -3,6 +3,26 @@ import { openDatabase } from "./db/database.ts";
 import { handleGetEvents, handlePostEvent } from "./routes/events.ts";
 import { handlePostSubscriber } from "./routes/subscribers.ts";
 
+/** Dev-only CORS for `bun ./src/client/index.html` talking to orchestrator on another port. */
+function corsDevHeaders(req: Request): Headers {
+  const h = new Headers();
+  h.set("Access-Control-Allow-Origin", "*");
+  h.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  h.set(
+    "Access-Control-Allow-Headers",
+    req.headers.get("Access-Control-Request-Headers") ?? "Content-Type",
+  );
+  return h;
+}
+
+function withCorsDev(res: Response, req: Request): Response {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of corsDevHeaders(req)) {
+    headers.set(k, v);
+  }
+  return new Response(res.body, { status: res.status, headers });
+}
+
 export type OrchestratorServer = {
   server: { stop: () => void; url: URL };
   url: URL;
@@ -30,8 +50,17 @@ export function createServer(options?: {
     async fetch(req) {
       const u = new URL(req.url);
       const path = u.pathname;
+
+      if (path === "/events" && req.method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: corsDevHeaders(req),
+        });
+      }
+
       if (path === "/events" && req.method === "GET") {
-        return handleGetEvents(req, db);
+        const res = await handleGetEvents(req, db);
+        return withCorsDev(res, req);
       }
       if (path === "/events" && req.method === "POST") {
         return handlePostEvent(req, db);
