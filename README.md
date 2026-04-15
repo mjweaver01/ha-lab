@@ -7,7 +7,9 @@ Entry: `bun run dev` serves the orchestrator from `index.ts` (not a console-only
 ## Current state (as of 2026-04-15)
 
 - **Shipped:** **v1.0** learning prototype (git tag **`v1.0`**) — SQLite homes/users, `Bun.serve` webhook routes, simulated node, React Events list with polling.
-- **In progress:** **v1.1** — **Phase 5** capture UX is complete, and **Phase 6** implementation is complete (media signals post throttled `media.audio` / `media.video` events to `/events`) with remaining manual runtime verification steps tracked in `.planning/phases/06-media-signals-events/06-HUMAN-UAT.md`.
+- **Current milestone:** **v1.1 Local media events**.
+- **Completed in v1.1:** **Phase 5** local media capture UX and **Phase 6** media signals → events (including human runtime verification).
+- **Next milestone work:** **Phase 7** E2E media trace.
 - **Current client UX:** dedicated **Media settings** page, live audio/video detection overlays, snapshot-based custom label learning, and an Events list with **live tail vs timeframe filtering**, **virtualized rendering**, and **pagination**.
 - **Canonical detail:** requirements, roadmap alignment, and milestone notes live in **`.planning/PROJECT.md`**.
 - **Stack:** Bun, TypeScript, `bun:sqlite`, React via Bun’s HTML bundler (no Vite).
