@@ -4,112 +4,134 @@
 
 ## Tech Debt
 
-**Stub entrypoint vs documented Bun app pattern:**
-- Issue: `index.ts` only logs to the console and does not implement `Bun.serve()`, HTML route imports, or any of the architecture described in `CLAUDE.md`.
-- Why: Typical `bun init` / README bootstrap state before feature work.
-- Impact: Planning and execution docs that assume routes, APIs, or frontend bundles have no corresponding implementation to validate against; risk of duplicating bootstrap work or diverging from agreed stack.
-- Fix approach: Replace or extend `index.ts` with `Bun.serve()` and an `index.html` entry (or equivalent) per `CLAUDE.md`, then grow features from that skeleton.
+**Media capture hook complexity (`useMediaCapture`):**
+- Issue: A single hook owns device lifecycle, signal extraction, event emission, error UX, and learned-label capture, creating high coupling and difficult edits.
+- Files: `src/client/hooks/use-media-capture.ts`, `src/client/media-capture-section.tsx`, `src/client/media-settings-page.tsx`
+- Impact: Small changes to one behavior (for example, camera sampling) can regress unrelated behavior (for example, mic teardown or pipeline error states).
+- Fix approach: Split into focused hooks/modules (`useMicCapture`, `useCameraCapture`, `useMediaSignalEmitter`) with contract-level tests per module.
 
-**Floating dev dependency version:**
-- Issue: `package.json` pins `@types/bun` to `"latest"`, so CI and different machines can resolve different `bun-types` revisions over time.
-- Why: Convenience during early setup.
-- Impact: Spurious type errors or green CI on one machine and red on another after lockfile refresh; harder bisection when types change.
-- Fix approach: Pin `@types/bun` to a specific semver range aligned with the team’s Bun version (e.g. match `bun-types` to installed Bun), and rely on `bun.lock` updates as intentional.
+**UI screen does filtering, pagination, and virtualization inline:**
+- Issue: Event list state orchestration lives in one component with multiple synchronized effects and duplicated virtual-window calculations.
+- Files: `src/client/events-screen.tsx`, `src/client/lib/events-view.ts`
+- Impact: Pagination/scroll bugs are hard to reason about, and rendering logic is expensive to safely refactor.
+- Fix approach: Extract a dedicated list-state hook and a presentational list component; move virtualization state machine into `src/client/lib/`.
 
-**TypeScript strictness gaps:**
-- Issue: `tsconfig.json` enables `strict` but leaves `noUnusedLocals` and `noUnusedParameters` disabled (`false`).
-- Why: Common default to reduce friction during rapid iteration.
-- Impact: Dead code and unused parameters can accumulate unnoticed until refactors or copy-paste errors surface at runtime.
-- Fix approach: Enable `noUnusedLocals` / `noUnusedParameters` (or use ESLint `@typescript-eslint/no-unused-vars`) once the codebase grows beyond a stub.
+**Bun runtime lock-in across core paths:**
+- Issue: Server, DB, scripts, and test runner are Bun-specific (`Bun.serve`, `bun:sqlite`, Bun test APIs), reducing portability.
+- Files: `src/server.ts`, `src/db/database.ts`, `src/db/migrate.ts`, `scripts/simulated-node.ts`, `package.json`
+- Impact: Migration to another runtime or common CI environments requires broad rewrites rather than targeted adapters.
+- Fix approach: Introduce thin adapters for HTTP server and DB interfaces, then isolate Bun-specific implementations behind those boundaries.
 
 ## Known Bugs
 
-**Not applicable (application behavior):**
-- The only executable application file is `index.ts`, which performs a single `console.log`. No user-facing flows, APIs, or stateful behavior exist to classify as product bugs. Re-evaluate this section after `Bun.serve()` and features land.
+**Unreadable event rows can crash GET events path:**
+- Symptoms: A malformed JSON `body` value in `events.body` can throw during response shaping.
+- Files: `src/routes/events.ts`
+- Trigger: `JSON.parse(r.body)` in `handleGetEvents` receives non-JSON text from existing rows.
+- Workaround: Sanitize malformed DB rows manually; long term, parse in a guarded try/catch per row and emit `null` or raw text fallback.
+
+**Media settings persistence accepts out-of-range values:**
+- Symptoms: Invalid persisted numeric settings can degrade capture behavior (extreme thresholds/cadence values).
+- Files: `src/client/lib/media-settings.ts`, `src/client/media-settings-page.tsx`
+- Trigger: `loadMediaDetectionSettings()` only checks type `number`, not allowed ranges.
+- Workaround: Clear local storage key and restart UI; add clamping/validation in load path.
 
 ## Security Considerations
 
-**No network or auth surface in application code:**
-- Risk: None in the current `index.ts` (no sockets, no HTTP). Future additions (HTTP server, WebSockets, file uploads, subprocesses) introduce new classes of risk.
-- Current mitigation: No attackable surface in shipped app logic.
-- Recommendations: When adding `Bun.serve()` or routes, add explicit threat modeling: TLS termination, authn/z on protected routes, input validation, rate limiting for public endpoints, and safe defaults for CORS. Store secrets only in ignored `.env` files (see `.gitignore`) and never commit values.
+**No authentication/authorization on ingestion and subscriptions:**
+- Risk: Any network-reachable caller can post events or register callbacks for any `home_id`.
+- Files: `src/server.ts`, `src/routes/events.ts`, `src/routes/subscribers.ts`
+- Current mitigation: Input-shape validation only.
+- Recommendations: Require API key or signed token on all write/read endpoints and enforce home-level authorization checks.
 
-**Environment files:**
-- Risk: Accidental commit of secrets if `.env` patterns change or files are forced into git.
-- Current mitigation: `.gitignore` excludes `.env`, `.env.local`, and environment-specific variants.
-- Recommendations: Add a committed `.env.example` with placeholder names only when the first real env vars are introduced; document required variables in `README.md` without values.
+**SSRF risk in callback fan-out:**
+- Risk: Subscriber callback URLs are accepted with broad URL validation and then fetched by server-side code.
+- Files: `src/routes/subscribers.ts`, `src/webhooks/fan-out.ts`
+- Current mitigation: URL parse validation only (`new URL(...)`).
+- Recommendations: Restrict allowed protocols/hosts, block private/reserved IP ranges, and add outbound allowlists.
+
+**Permissive CORS on events endpoint:**
+- Risk: Wildcard CORS headers on `/events` enable cross-origin browser access without auth boundaries.
+- Files: `src/server.ts`
+- Current mitigation: Comment indicates "dev-only" intent.
+- Recommendations: Gate CORS by environment, allowed origins, and authenticated requests.
 
 ## Performance Bottlenecks
 
-**Not measurable in current codebase:**
-- Problem: There are no HTTP handlers, database queries, or bundled assets to profile.
-- Measurement: Not applicable.
-- Cause: Application is a one-line script.
-- Improvement path: After `Bun.serve()` and data paths exist, establish baselines (latency, bundle size, DB query counts) before optimizing.
+**Unbounded event list queries and payload size:**
+- Problem: `GET /events` fetches all rows for a home with descending sort and no limit/pagination.
+- Files: `src/routes/events.ts`
+- Cause: Query omits `LIMIT/OFFSET` and does full response materialization.
+- Improvement path: Add cursor/offset pagination with indexed sort keys and return bounded page sizes.
+
+**Synchronous webhook delivery in request path:**
+- Problem: Event ingestion waits for all subscriber fan-out attempts before completing response.
+- Files: `src/routes/events.ts`, `src/webhooks/fan-out.ts`
+- Cause: `await deliverEventToSubscribers(...)` in `handlePostEvent`.
+- Improvement path: Queue deliveries asynchronously (job table/worker), return early after event insert, and process retries out-of-band.
+
+**Continuous frame/audio processing loop cost:**
+- Problem: Media capture loops run via `requestAnimationFrame` with per-frame analysis and candidate scoring.
+- Files: `src/client/hooks/use-media-capture.ts`, `src/client/lib/media-learning.ts`
+- Cause: Frequent signal computation plus canvas extraction/classification work.
+- Improvement path: Shift heavy steps to lower-frequency intervals or worker paths and add CPU profiling budgets.
 
 ## Fragile Areas
 
-**Single-file application entry:**
-- Why fragile: All future behavior will likely accrete in or around `index.ts` until structure is introduced; easy to create a monolith entry without tests.
-- Common failures: Unclear separation of routing, domain logic, and infrastructure; difficult refactors once imports fan out.
-- Safe modification: Introduce directories early (`src/` or feature folders), keep `index.ts` as a thin bootstrap that imports a `createServer()` or similar from a dedicated module.
-- Test coverage: No tests cover `index.ts` (see Test Coverage Gaps).
+**Polling new-event marker assumes monotonic ID semantics:**
+- Files: `src/client/lib/new-events.ts`, `src/client/hooks/use-events-poll.ts`
+- Why fragile: Newness is inferred by `id > previousMax`; any non-monotonic merge/import behavior breaks highlighting.
+- Safe modification: Move to timestamp-plus-id comparator with server-provided cursor semantics.
+- Test coverage: Basic helper tests exist in `src/client/lib/new-events.test.ts`; cross-session and backfill edge cases are not covered.
 
-**Documentation–implementation drift (`CLAUDE.md` vs `index.ts`):**
-- Why fragile: Contributors may follow `CLAUDE.md` examples that do not exist in the repo, or extend `index.ts` in ways that conflict with stated conventions (e.g. adding Express despite “Don’t use express”).
-- Common failures: Inconsistent patterns across new files; review friction.
-- Safe modification: Treat `CLAUDE.md` as the target architecture; update `index.ts` and `README.md` together when the stack choice changes.
-- Test coverage: Not applicable as documentation.
+**Migration runner assumes serialized execution:**
+- Files: `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`
+- Why fragile: No inter-process migration lock; concurrent startup/migration can race.
+- Safe modification: Add lock table or file lock, and retry on SQLITE_BUSY during migration transaction.
+- Test coverage: `src/db/migrate.test.ts` validates happy path but not concurrent runners.
 
 ## Scaling Limits
 
-**Not applicable yet:**
-- Current capacity: N/A — no multi-user service or persistent store.
-- Limit: N/A.
-- Symptoms at limit: N/A.
-- Scaling path: Define when HTTP and storage are added; then address connection pools, horizontal scaling, and stateless server design.
+**Event retention and delivery logs grow unbounded:**
+- Current capacity: Bounded only by SQLite file growth.
+- Limit: Query latency and storage pressure increase as `events` and `event_deliveries` grow.
+- Scaling path: Introduce retention policies, archival jobs, and indexed pagination patterns.
+- Files: `src/db/migrations/002_events_subscribers.sql`, `src/routes/events.ts`, `src/webhooks/fan-out.ts`
 
 ## Dependencies at Risk
 
-**`@types/bun` resolution via `"latest"`:**
-- Risk: Implicit upgrades to type definitions can break builds without a corresponding runtime Bun upgrade.
-- Impact: CI failures or editor-only noise; rare runtime impact (types only).
-- Migration plan: Pin version in `package.json`; document supported Bun version in `README.md`.
-
-**TypeScript as peer dependency:**
-- Risk: `peerDependencies` for `typescript` rely on the environment to provide TS; some tooling may not install peers unless explicitly added.
-- Impact: Editor or `tsc` may be missing in minimal environments.
-- Migration plan: Add `typescript` as a direct `devDependency` if the team wants guaranteed installs in all contexts.
+**Floating type dependency can introduce non-deterministic breakage:**
+- Risk: `@types/bun` is pinned to `latest`, which can change behavior/type checks unexpectedly.
+- Impact: CI/editor type behavior may drift without source changes.
+- Migration plan: Pin explicit `@types/bun` version and upgrade intentionally.
+- Files: `package.json`
 
 ## Missing Critical Features
 
-**Entire product surface (HTTP app, domain logic, persistence):**
-- Problem: No server, routes, UI, or data layer exists beyond the stub.
-- Current workaround: None — project is pre-feature.
-- Blocks: End-user value, integration testing, deployment narratives.
-- Implementation complexity: High overall; first milestone is bounded by product scope (start with `Bun.serve()` + one route + tests).
+**Missing delivery controls (timeouts/retries/dead-letter):**
+- Problem: Fan-out lacks explicit timeout, retry backoff, and dead-letter handling for persistent subscriber failures.
+- Blocks: Reliable webhook delivery under partial outages and predictable latency under slow subscribers.
+- Files: `src/webhooks/fan-out.ts`, `src/routes/events.ts`
 
-**Automated quality gates:**
-- Problem: No `bun test` files, no CI workflow files detected in the project root for running tests or typechecks on push.
-- Current workaround: Manual runs (`bun run index.ts`, local `tsc` if used).
-- Blocks: Regression safety as code grows.
-- Implementation complexity: Low for a minimal GitHub Action or equivalent that runs `bun test` and optional `tsc --noEmit`.
+**Missing endpoint-level abuse protection:**
+- Problem: No visible request-size limits, rate limiting, or per-home quotas on write endpoints.
+- Blocks: Safe operation under noisy or malicious clients.
+- Files: `src/server.ts`, `src/routes/events.ts`, `src/routes/subscribers.ts`
 
 ## Test Coverage Gaps
 
-**Application entrypoint (`index.ts`):**
-- What's not tested: Any behavior (including that the process runs without throw — trivial today, important once logic exists).
-- Risk: Future edits to `index.ts` have no safety net.
-- Priority: Medium until non-trivial logic exists; High once `Bun.serve()` and routes are added.
-- Difficulty to test: Low for current script; rises for HTTP handlers (need request/response assertions or integration tests).
+**Route-level negative and hardening paths are under-tested:**
+- What's not tested: Rejection of unsafe callback targets, malformed stored event JSON recovery, and large payload behavior.
+- Files: `src/routes/events.ts`, `src/routes/subscribers.ts`, `src/webhooks/fan-out.ts`
+- Risk: Security and reliability regressions can ship unnoticed.
+- Priority: High
 
-**End-to-end and integration:**
-- What's not tested: Nothing exists to exercise; no `*.test.ts` / `*.spec.ts` files in the repository.
-- Risk: First real features ship without established patterns (fixtures, mocks, test layout per `CLAUDE.md` / `.planning/codebase/TESTING.md`).
-- Priority: High before production traffic.
-- Difficulty to test: Low for unit tests; medium for full E2E once a browser or HTTP client is involved.
+**UI behavior under long event lists is not stress-tested:**
+- What's not tested: Virtualized rendering behavior with large datasets and rapid polling updates.
+- Files: `src/client/events-screen.tsx`, `src/client/events-screen.test.tsx`
+- Risk: UI jank, incorrect row windows, and pagination inconsistencies under production-like volumes.
+- Priority: Medium
 
 ---
 
 *Concerns audit: 2026-04-15*
-*Update as issues are fixed or new ones discovered*

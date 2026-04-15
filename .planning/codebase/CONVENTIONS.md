@@ -5,89 +5,92 @@
 ## Naming Patterns
 
 **Files:**
-- TypeScript source uses `.ts` at project root today (`index.ts`). For future modules, prefer **kebab-case** file names (e.g. `user-service.ts`, `api-routes.ts`) unless adding React components, which conventionally use **PascalCase** `.tsx` per `CLAUDE.md` examples.
-- Entry module is referenced as `index.ts` in `package.json` (`"module": "index.ts"`).
+- Use kebab-case for source and test files (examples: `src/client/lib/media-learning.ts`, `src/client/media-capture-section.test.tsx`).
+- Co-locate tests next to implementation and append `.test` before extension (examples: `src/client/lib/events-view.ts` + `src/client/lib/events-view.test.ts`).
+- Use domain folder grouping rather than type-only folders (examples: `src/client/api/`, `src/client/hooks/`, `src/client/lib/`, `src/routes/`, `src/webhooks/`, `src/db/`).
 
 **Functions:**
-- **camelCase** for functions and methods (no observed exceptions in application code).
+- Use camelCase for functions and hooks (examples: `createServer()` in `src/server.ts`, `useEventsPoll()` in `src/client/hooks/use-events-poll.ts`).
+- Prefix React hooks with `use` and return structured object APIs (example: `useMediaCapture()` in `src/client/hooks/use-media-capture.ts`).
+- Use verb-first names for side-effect operations (examples: `deliverEventToSubscribers()` in `src/webhooks/fan-out.ts`, `saveMediaDetectionSettings()` in `src/client/lib/media-settings.ts`).
 
 **Variables:**
-- **camelCase** for locals and parameters.
-- **UPPER_SNAKE_CASE** for module-level constants when introduced.
+- Use camelCase locals/state, with concise semantic names (`baseUrl`, `homeId`, `pollMs`) in `src/client/hooks/use-events-poll.ts`.
+- Use UPPER_SNAKE_CASE for module constants (`AUDIO_THROTTLE_MS`, `VIDEO_IDLE_LABEL`) in `src/client/hooks/use-media-capture.ts`.
+- Use suffixes that encode type/units (`nowMs`, `startMs`, `dbPath`) in `src/client/lib/events-view.ts` and `src/db/migrate.test.ts`.
 
 **Types:**
-- **PascalCase** for interfaces, type aliases, and classes.
-- Use `interface` vs `type` consistently with TypeScript defaults; no `I` prefix on interfaces.
+- Export explicit `type` aliases for payload contracts and component props (`PostEventBody` in `src/types/events-api.ts`, `EventsScreenProps` in `src/client/events-screen.tsx`).
+- Use union literals for closed sets (`EventsFilterMode`, `TimeRangePreset`) in `src/client/lib/events-view.ts`.
 
 ## Code Style
 
 **Formatting:**
-- Not detected: no `.prettierrc`, `prettier` in `package.json`, `biome.json`, or `eslint.config.*` in the project root.
-- Match **2-space indentation** and style of existing files when editing.
+- No dedicated Prettier config detected (`.prettierrc*` not present); style is enforced by repository consistency.
+- Keep trailing commas in multiline literals/calls (pattern visible in `src/server.ts` and `src/client/events-screen.tsx`).
+- Prefer double quotes for strings and explicit semicolons across all modules (examples in `src/routes/events.ts`, `src/client/api/events-client.ts`).
 
 **Linting:**
-- Not detected: no ESLint or Biome configuration in the application tree.
-- **TypeScript compiler** enforces correctness via `tsconfig.json` (see below).
-
-**TypeScript compiler (`tsconfig.json`):**
-- Use **`strict`: true** — no implicit `any`, strict null checks, etc.
-- **`verbatimModuleSyntax`: true** — use `import type { X }` for type-only imports; use `type` keyword where required for isolated type imports.
-- **`noUncheckedIndexedAccess`: true** — index signatures return `T | undefined`; narrow before use.
-- **`noImplicitOverride`: true** — use `override` when overriding base members.
-- **`moduleResolution`: "bundler"** with **`module`: "Preserve"`** — align imports with Bun’s bundler.
-- **`allowImportingTsExtensions`: true** — imports may include `.ts` extensions where used.
+- No ESLint/Biome config detected (`eslint.config.*`, `.eslintrc*`, `biome.json` not present).
+- Use TypeScript strictness as primary static quality gate (`"strict": true`, `"noUncheckedIndexedAccess": true`, `"noImplicitOverride": true` in `tsconfig.json`).
+- Keep runtime guards even with TypeScript types (examples: `parsePostEventBody()` in `src/routes/events.ts`, `parseEventRow()` in `src/client/api/events-client.ts`).
 
 ## Import Organization
 
-**Order (recommended when the codebase grows):**
-1. External packages (including `bun:*` modules such as `bun:sqlite` when used).
-2. Type-only imports (`import type`) may be grouped with their runtime counterparts or separated; stay consistent within a file.
-3. Relative imports (`./foo`, `../bar`).
+**Order:**
+1. External runtime/platform imports first (`bun:test`, `react`, `node:*`) as in `src/client/hooks/use-media-capture.test.ts` and `src/db/migrate.ts`.
+2. Internal value imports second (examples: `fetchEvents` in `src/client/hooks/use-events-poll.ts`, `openDatabase` in `src/server.ts`).
+3. Type imports grouped with `import type` either standalone or mixed in a nearby block (examples: `src/server.ts`, `src/client/events-screen.tsx`).
 
-**Path aliases:**
-- Not configured in `tsconfig.json` — use relative paths unless `compilerOptions.paths` is added later.
+**Path Aliases:**
+- Path aliases are not used; prefer explicit relative imports with `.ts`/`.tsx` extensions (examples: `./events-screen.tsx` in `src/client/main.tsx`, `../db/migrate.ts` in `src/webhooks/fan-out.test.ts`).
 
 ## Error Handling
 
-**Current application code:**
-- `index.ts` does not demonstrate error handling.
-
-**Patterns to adopt (aligned with project rules in `CLAUDE.md`):**
-- Prefer **`throw`** for unexpected states; catch at **HTTP route handlers**, **`Bun.serve` handlers**, or top-level `main` boundaries when those layers exist.
-- For async handlers, use **`try` / `catch`** rather than floating promises.
-- Return **`Response`** with appropriate status codes from route handlers rather than throwing through to the runtime when the failure is an expected HTTP error.
+**Patterns:**
+- Wrap untrusted parsing/I/O in `try/catch` and return stable fallback behavior (examples: JSON parse guards in `src/routes/events.ts` and `src/client/lib/media-settings.ts`).
+- Convert unknown errors into user-facing messages with consistent fallback text (examples: `formatMediaError()` in `src/client/lib/media-errors.ts`, network error wrapping in `src/client/api/events-client.ts`).
+- Validate request and query inputs early; return typed HTTP errors (`400`, `404`) from route handlers in `src/routes/events.ts` and `src/routes/subscribers.ts`.
 
 ## Logging
 
-**Current state:**
-- `index.ts` uses **`console.log`** for a one-line hello message.
+**Framework:** `console` (`console.log` / `console.error`)
 
-**Project guidance (`CLAUDE.md`):**
-- Prefer structured or leveled logging when the app grows; until a logger is introduced, **`console`** usage is acceptable for development. Avoid logging secrets or full request bodies containing credentials.
+**Patterns:**
+- Use structured operational logs at server boundaries (request method/path/status/latency in `src/server.ts`).
+- Use CLI stderr + non-zero exit for script failures (`scripts/simulated-node.ts`), and stdout for success summaries.
 
 ## Comments
 
-**When to comment:**
-- Explain non-obvious **why** (business rules, protocol quirks), not restate the code.
-- Document public HTTP or library APIs with short comments or TSDoc when modules are shared.
+**When to Comment:**
+- Add short rationale comments for non-obvious behavior, especially cadence/contract constraints (examples in `src/client/hooks/use-media-capture.ts` and `src/client/lib/media-signals.ts`).
+- Use module-level JSDoc blocks for contract ownership and coupling notes (examples in `src/client/api/events-client.ts`, `src/types/events-api.ts`, `src/server.ts`).
 
 **JSDoc/TSDoc:**
-- Not required for the current single-line entry file; use **`@param` / `@returns`** when exporting functions intended as reusable APIs.
+- Use lightweight JSDoc for exported APIs and behavioral notes; avoid heavy per-line comments when code is clear.
 
 ## Function Design
 
-**Size:** Keep handlers small; extract helpers into named functions in the same file or under a `lib/` or `src/` tree when the project grows.
+**Size:** 
+- Keep utility functions small and single-purpose in `src/client/lib/` (for example `computeVirtualWindow()` and `paginateEvents()` in `src/client/lib/events-view.ts`).
+- Complex side-effect hooks can be large but partition logic into named callbacks and cleanup sections (pattern in `src/client/hooks/use-media-capture.ts`).
 
-**Parameters:** Prefer explicit object parameters for three or more related arguments.
+**Parameters:** 
+- Prefer object parameters for multi-option APIs (`createServer(options?)` in `src/server.ts`, `createMediaSignalPipeline(options)` in `src/client/lib/media-signals.ts`).
+- Use explicit scalar parameters for pure helpers where ordering is clear (`paginateEvents(events, page, pageSize)` in `src/client/lib/events-view.ts`).
 
-**Return values:** Prefer explicit return types on exported functions for public APIs.
+**Return Values:** 
+- Return explicit typed objects for hook/component contracts (`useEventsPoll()` and `useMediaCapture()`).
+- Use boolean/nullable returns to communicate acceptance/failure in processing pipelines (`handleAudioClassification()` returns `Promise<boolean>` in `src/client/lib/media-signals.ts`).
 
 ## Module Design
 
 **Exports:**
-- `index.ts` is a script-style entry (side effect only). Future modules should use **named exports** for libraries; **default export** is acceptable for React root components per common Bun + HTML import patterns in `CLAUDE.md`.
+- Prefer named exports; default exports are not used in examined source files (`src/client/lib/*`, `src/routes/*`, `src/db/*`, `src/webhooks/*`).
+- Keep side effects behind function calls except explicit entrypoints (`index.ts` and `src/db/migrate.ts` via `import.meta.main`).
 
-**Barrel files:** Not used yet; add `index.ts` barrel re-exports only when a directory has a clear public API.
+**Barrel Files:**
+- Barrel files are not used; import from concrete module paths directly.
 
 ---
 

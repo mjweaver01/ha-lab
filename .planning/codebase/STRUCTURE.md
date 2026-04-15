@@ -4,152 +4,133 @@
 
 ## Directory Layout
 
-```
+```text
 home-assist/
-├── index.ts              # Bun application entry (minimal script)
-├── package.json          # Bun package manifest; `"module": "index.ts"`
-├── bun.lock              # Bun lockfile
-├── tsconfig.json         # TypeScript / JSX settings for Bun
-├── README.md             # Install and run instructions
-├── CLAUDE.md             # Bun-first stack and patterns for AI assistants
-├── node_modules/         # Dependencies (gitignored)
-├── .gitignore            # Ignores node_modules, .env, build outputs, etc.
-├── .planning/            # GSD planning artifacts
-│   └── codebase/         # Codebase map outputs (STACK, ARCHITECTURE, …)
-├── .cursor/              # Cursor: GSD install, agents, skills, rules
-│   ├── agents/           # GSD subagent prompt definitions (gsd-*.md)
-│   ├── skills/           # Per-skill directories (gsd-*/SKILL.md)
-│   ├── rules/            # Cursor rules (e.g. Bun vs Node)
-│   ├── get-shit-done/    # GSD workflows, bin, templates, references
-│   │   ├── bin/          # gsd-tools.cjs + lib/*.cjs
-│   │   ├── workflows/    # Orchestration markdown per GSD command
-│   │   ├── templates/    # Doc templates (codebase/, research-project/, …)
-│   │   ├── references/   # Shared GSD reference docs
-│   │   └── contexts/     # Prompt context snippets (dev, research, review)
-│   └── gsd-file-manifest.json
+├── index.ts                 # Server process entrypoint
+├── package.json             # Scripts and dependency manifest
+├── bunfig.toml              # Bun static bundler env exposure
+├── scripts/                 # Utility CLI flows (event simulation, seeding)
+├── src/
+│   ├── server.ts            # Bun HTTP server/router composition
+│   ├── routes/              # HTTP route handlers
+│   ├── db/                  # SQLite connection, migrations, DB helpers
+│   ├── webhooks/            # Subscriber fan-out delivery logic
+│   ├── types/               # Shared API contracts
+│   └── client/              # Browser UI (React + TSX + client libs)
+├── .planning/               # GSD planning artifacts and generated maps
+└── .cursor/skills/          # Project workflow skills for agent automation
 ```
 
 ## Directory Purposes
 
-**Repository root:**
-- Purpose: Bun/TypeScript project root and single application file.
-- Contains: `index.ts`, manifests, lockfile, top-level docs.
-- Key files: `index.ts`, `package.json`, `tsconfig.json`, `CLAUDE.md`, `README.md`, `bun.lock`
-- Subdirectories: `.planning/`, `.cursor/`, `node_modules/` (generated)
+**`src/routes/`:**
+- Purpose: API endpoint behavior for event ingest/read and subscriber registration.
+- Contains: Boundary parsing/validation and DB transaction orchestration.
+- Key files: `src/routes/events.ts`, `src/routes/subscribers.ts`
 
-**`.planning/`:**
-- Purpose: Store GSD-generated and hand-maintained planning documents.
-- Contains: Currently `codebase/` only; future phases may add `ROADMAP.md`, `STATE.md`, phase directories, etc.
-- Key files: `.planning/codebase/STACK.md`, `.planning/codebase/CONVENTIONS.md`, `.planning/codebase/INTEGRATIONS.md`, `.planning/codebase/TESTING.md`, `.planning/codebase/ARCHITECTURE.md`, `.planning/codebase/STRUCTURE.md`
-- Subdirectories: `codebase/` — reference docs for planners/executors
+**`src/db/`:**
+- Purpose: Schema lifecycle + DB connectivity + minimal helper writes.
+- Contains: Migration runner, SQL migration files, DB open/config helpers, seed helpers.
+- Key files: `src/db/database.ts`, `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`, `src/db/homes.ts`
 
-**`.cursor/agents/`:**
-- Purpose: One markdown file per GSD agent type (mapper, planner, executor, verifier, …).
-- Contains: `gsd-*.md` prompt specifications.
-- Key files: Examples include `gsd-codebase-mapper.md`, `gsd-planner.md`, `gsd-executor.md`
-- Subdirectories: None (flat)
+**`src/webhooks/`:**
+- Purpose: Asynchronous downstream callback fan-out with delivery auditing.
+- Contains: Delivery implementation and targeted tests.
+- Key files: `src/webhooks/fan-out.ts`, `src/webhooks/fan-out.test.ts`
 
-**`.cursor/skills/`:**
-- Purpose: Executable skill playbooks for GSD commands and utilities.
-- Contains: Directories named `gsd-<feature>/` each with `SKILL.md`.
-- Key files: `gsd-map-codebase/SKILL.md`, `gsd-plan-phase/SKILL.md`, `gsd-execute-phase/SKILL.md` (among many others)
-- Subdirectories: One directory per skill
+**`src/client/`:**
+- Purpose: React events UI plus media capture/settings experience.
+- Contains: TSX screens/components, hooks, API client, client-only domain libs, styles, HTML mount shell.
+- Key files: `src/client/main.tsx`, `src/client/events-screen.tsx`, `src/client/media-capture-section.tsx`, `src/client/media-settings-page.tsx`, `src/client/hooks/use-media-capture.ts`, `src/client/api/events-client.ts`
 
-**`.cursor/rules/`:**
-- Purpose: Cursor rule files (e.g. when to apply Bun conventions).
-- Contains: `.mdc` rules such as `use-bun-instead-of-node-vite-npm-pnpm.mdc`
-- Key files: Match `CLAUDE.md` stack guidance for applicable globs
+**`src/types/`:**
+- Purpose: Shared request contract types reused across server and client.
+- Contains: API payload shape declarations.
+- Key files: `src/types/events-api.ts`
 
-**`.cursor/get-shit-done/`:**
-- Purpose: Core GSD package: workflows, CLI, templates, references.
-- Contains: Large `workflows/` tree; `bin/` for Node CLI; `templates/` for generated doc shapes; `references/` for methodology; `contexts/` for reusable prompt blocks.
-- Key files: `bin/gsd-tools.cjs`, `workflows/map-codebase.md`, `templates/codebase/architecture.md`, `templates/codebase/structure.md`
-- Subdirectories: `bin/`, `bin/lib/`, `workflows/`, `templates/`, `templates/codebase/`, `references/`, `contexts/`
+**`scripts/`:**
+- Purpose: Dev and demo workflows that exercise the running orchestrator.
+- Contains: Simulated producer and seed scripts.
+- Key files: `scripts/simulated-node.ts`, `scripts/seed-lab.ts`
 
 ## Key File Locations
 
 **Entry Points:**
-- `index.ts` — Bun application entry (`bun run index.ts`).
-- `.cursor/get-shit-done/bin/gsd-tools.cjs` — GSD CLI entry for planning and validation commands.
+- `index.ts`: Primary server bootstrap for normal app runtime.
+- `src/client/index.html`: Browser document entry that loads `src/client/main.tsx`.
+- `src/db/migrate.ts`: Migration CLI entrypoint via `import.meta.main`.
+- `scripts/simulated-node.ts`: CLI producer for posting sample events.
 
 **Configuration:**
-- `package.json` — Package name `home-assist`, `type: module`, devDependency `@types/bun`, peer `typescript`.
-- `tsconfig.json` — Strict TypeScript, bundler resolution, `jsx: react-jsx`, `noEmit: true`.
-- `bun.lock` — Locked dependency versions for Bun installs.
-- `.gitignore` — Excludes `node_modules/`, `.env*`, `dist`, `out`, coverage, caches.
-- `CLAUDE.md` — Workspace rule file for Bun stack (not a runtime config file).
+- `package.json`: Runtime/test/client scripts (`dev`, `client`, `migrate`, `simulate`).
+- `tsconfig.json`: Strict TS + bundler module resolution + TS extension imports.
+- `bunfig.toml`: Exposes `PUBLIC_*` vars to the Bun HTML bundle.
 
 **Core Logic:**
-- `index.ts` — Only application logic file at repository root (minimal).
-- `.cursor/get-shit-done/bin/lib/*.cjs` — GSD implementation modules (phase, roadmap, state, audit, etc.).
-
-**Planning / documentation outputs:**
-- `.planning/codebase/*.md` — Codebase reference set produced or maintained by mapping workflows.
+- `src/server.ts`: Request routing and CORS handling.
+- `src/routes/events.ts`: Event ingestion/listing lifecycle.
+- `src/webhooks/fan-out.ts`: Subscriber delivery write-audit loop.
+- `src/client/hooks/use-media-capture.ts`: Browser media stream + event emit orchestration.
+- `src/client/lib/media-signals.ts`: Throttled classifier-to-event bridge.
 
 **Testing:**
-- No `*.test.ts` or `*.spec.ts` at repository root as of this analysis; `CLAUDE.md` documents `bun:test` patterns for future tests.
-
-**User-facing docs:**
-- `README.md` — Install (`bun install`) and run (`bun run index.ts`).
+- `src/orchestrator.integration.test.ts`: End-to-end orchestrator behavior.
+- `src/db/migrate.test.ts`: Migration and DB integrity tests.
+- `src/webhooks/fan-out.test.ts`: Delivery behavior and DB audit tests.
+- `src/client/**/*.test.ts*`: UI hook/component/lib tests colocated with implementation.
 
 ## Naming Conventions
 
 **Files:**
-- `index.ts` — Lowercase entry script at root (Bun default init style).
-- `gsd-*.md` — GSD agent definitions under `.cursor/agents/`.
-- `SKILL.md` — Fixed name inside each `.cursor/skills/<name>/` directory.
-- `*.mdc` — Cursor rules under `.cursor/rules/`.
-- `*.cjs` — CommonJS modules for Node (`gsd-tools.cjs`, `bin/lib/*.cjs`).
-- UPPERCASE.md — Prominent project or generated maps: `CLAUDE.md`, `README.md`, `.planning/codebase/STACK.md`, etc.
+- Use kebab-case for modules (`media-settings-page.tsx`, `use-events-poll.ts`).
+- Keep test files colocated with source and suffix `.test.ts` or `.test.tsx`.
+- Use explicit `.ts`/`.tsx` extensions in imports across all source files.
 
 **Directories:**
-- `gsd-*` — Skill and agent-related folders use kebab-case with `gsd-` prefix under `.cursor/skills/`.
-- `get-shit-done/` — GSD product directory name (fixed).
-- `codebase/` — Lowercase subdirectory for codebase map templates and outputs.
-
-**Special Patterns:**
-- Workflow files: kebab-case matching command names (e.g. `map-codebase.md`, `plan-phase.md`) under `.cursor/get-shit-done/workflows/`.
-- Template mirrors: `.cursor/get-shit-done/templates/codebase/` defines shapes for `.planning/codebase/` outputs.
+- Organize by technical boundary first (`routes`, `db`, `webhooks`, `client`, `types`).
+- Inside client, split by role: `api/`, `hooks/`, `lib/`, plus top-level page/component files.
 
 ## Where to Add New Code
 
-**New application features (HTTP API, UI, domain logic):**
-- Primary code: Prefer new modules under a dedicated directory (e.g. `src/`) or sibling files next to `index.ts`; `index.ts` should remain thin and delegate to modules as the app grows. `CLAUDE.md` prescribes `Bun.serve()` with HTML imports for full-stack patterns.
-- Configuration: Add env vars in local `.env` (gitignored per `.gitignore`); do not commit secrets.
-- Tests: Co-located `*.test.ts` or a `test/` tree; run with `bun test` per `CLAUDE.md`.
+**New API Endpoint:**
+- Route implementation: `src/routes/`
+- Server route wiring: `src/server.ts`
+- Shared contracts: `src/types/`
+- Endpoint tests: `src/orchestrator.integration.test.ts` or a colocated `src/routes/*.test.ts`
 
-**New GSD workflow or command behavior:**
-- Workflow steps: `.cursor/get-shit-done/workflows/<command>.md`
-- Shared CLI logic: extend or add modules under `.cursor/get-shit-done/bin/lib/` and wire through `gsd-tools.cjs` if new subcommands are needed.
-- Agent behavior: new or updated `.cursor/agents/gsd-<role>.md`
-- User-facing skill: new `.cursor/skills/gsd-<name>/SKILL.md`
+**New Database-backed Capability:**
+- Schema changes: new SQL file in `src/db/migrations/` (next numeric prefix).
+- DB access helpers: `src/db/`
+- Route/service usage: `src/routes/` or `src/webhooks/` depending on caller.
 
-**New planning artifacts:**
-- Generated maps and references: `.planning/codebase/` or phase-specific dirs under `.planning/` once roadmap workflows create them.
-- Templates for new artifact types: `.cursor/get-shit-done/templates/`
+**New Client Feature:**
+- Screen/component shell: `src/client/`
+- Side-effect logic: `src/client/hooks/`
+- Reusable pure logic: `src/client/lib/`
+- HTTP calls: `src/client/api/`
+- Tests: colocated `*.test.ts` / `*.test.tsx` beside changed module.
 
-**Utilities:**
-- Application shared helpers: a future `src/lib/` or `lib/` at repo root (convention not fixed yet — only `index.ts` exists).
-- GSD shared helpers: `.cursor/get-shit-done/bin/lib/*.cjs` for Node-side reuse.
+**New Utility/Simulation Flow:**
+- CLI script: `scripts/`
+- Keep API payload compatibility by reusing types from `src/types/events-api.ts` when possible.
 
 ## Special Directories
 
-**`node_modules/`:**
-- Purpose: Bun-installed packages.
-- Generated: Yes (`bun install`).
-- Committed: No (listed in `.gitignore`).
-
-**`.planning/codebase/`:**
-- Purpose: Long-lived codebase reference for GSD plan/execute phases.
-- Generated: Partially — refreshed by `/gsd-map-codebase` and related mappers; may be hand-edited for small fixes.
-- Committed: Yes (typical for team visibility; confirm team policy).
-
-**`.cursor/get-shit-done/bin/lib/`:**
-- Purpose: Implementation detail of `gsd-tools.cjs`; not imported by the Bun app.
-- Generated: No — maintained as part of GSD.
+**`.planning/`:**
+- Purpose: Project planning state, phase artifacts, and generated codebase maps.
+- Generated: Yes (workflow-managed documents are generated and updated repeatedly).
 - Committed: Yes.
+
+**`.cursor/skills/`:**
+- Purpose: Local command/automation skills used by GSD workflows.
+- Generated: No (maintained skill definitions and instructions).
+- Committed: Yes.
+
+**`data/` (runtime output path):**
+- Purpose: Default location for SQLite file (`data/home-assist.sqlite`) resolved by `src/db/database.ts`.
+- Generated: Yes (created at runtime or during migration).
+- Committed: No (runtime artifact directory).
 
 ---
 
 *Structure analysis: 2026-04-15*
-*Update when directory structure changes*

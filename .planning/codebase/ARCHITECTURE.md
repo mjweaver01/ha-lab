@@ -4,150 +4,151 @@
 
 ## Pattern Overview
 
-**Overall:** Hybrid repository — minimal Bun TypeScript application scaffold at the repository root, plus an embedded **GSD (Get Shit Done)** planning system under `.cursor/get-shit-done/` that orchestrates AI workflows, and **Cursor-native** assets (agent prompts, skills, rules). Application code is not yet layered; planning artifacts live under `.planning/`.
+**Overall:** Layered monolith (Bun HTTP + SQLite) with a colocated React client and shared TypeScript contracts.
 
 **Key Characteristics:**
-- Single-file application entry (`index.ts`) with no internal modules, HTTP server, or data layer.
-- GSD uses **markdown workflow specifications** (`.cursor/get-shit-done/workflows/*.md`) consumed by the IDE/agent layer, plus a **Node.js CLI** (`gsd-tools.cjs`) for state, roadmap, validation, and filesystem operations on planning docs.
-- **Declarative agent and skill definitions** in `.cursor/agents/` and `.cursor/skills/` guide automation; behavior is documentation-driven rather than compiled into the Bun app.
+- Single runtime process handles HTTP orchestration and DB access in `index.ts` and `src/server.ts`.
+- Route handlers own request validation and response shaping in `src/routes/events.ts` and `src/routes/subscribers.ts`.
+- Domain-specific client behavior is split into hooks and pure helper modules under `src/client/hooks/` and `src/client/lib/`.
 
 ## Layers
 
-**Application runtime (Bun):**
-- Purpose: Execute the project’s TypeScript entry point.
-- Location: `index.ts` (repository root).
-- Contains: Standalone script logic only (`console.log` as of this analysis).
-- Depends on: Bun runtime, `tsconfig.json` compiler options, `@types/bun` for editor/types.
-- Used by: `bun run index.ts` (see `README.md`).
+**Runtime + Composition Layer:**
+- Purpose: Bootstrap process-level dependencies and expose executable entry points.
+- Location: `index.ts`, `src/server.ts`, `scripts/simulated-node.ts`, `src/db/migrate.ts`
+- Contains: Bun server startup, CLI argument parsing, migration invocation.
+- Depends on: DB access layer and route modules.
+- Used by: Local dev (`bun run dev`), tests, and maintenance scripts.
 
-**Project conventions and editor guidance:**
-- Purpose: Encode stack choices and patterns for humans and AI assistants.
-- Location: `CLAUDE.md`, `README.md`, `.cursor/rules/use-bun-instead-of-node-vite-npm-pnpm.mdc`.
-- Contains: Bun-first rules (e.g. `Bun.serve()`, `bun:test`, no Vite/Express per `CLAUDE.md`).
-- Depends on: Not applicable (documentation).
-- Used by: Developers and Cursor when editing `*.ts`, `*.tsx`, `*.html`, `*.css`, `package.json`.
+**HTTP API Layer:**
+- Purpose: Translate HTTP requests into validated command/query operations.
+- Location: `src/routes/events.ts`, `src/routes/subscribers.ts`
+- Contains: JSON parsing, input guards, status code mapping, orchestration to downstream delivery.
+- Depends on: `bun:sqlite` database handle and webhook fan-out module.
+- Used by: Simulated node (`scripts/simulated-node.ts`) and browser client (`src/client/api/events-client.ts`).
 
-**GSD workflow orchestration (markdown + Node tooling):**
-- Purpose: Define multi-step GSD commands (discuss, plan, execute, map-codebase, etc.) and centralize repetitive operations.
-- Location: Workflows in `.cursor/get-shit-done/workflows/`; CLI at `.cursor/get-shit-done/bin/gsd-tools.cjs`; libraries in `.cursor/get-shit-done/bin/lib/*.cjs`; supporting references in `.cursor/get-shit-done/references/`; prompt contexts in `.cursor/get-shit-done/contexts/`.
-- Contains: Orchestration steps (XML-tagged sections such as `<purpose>`, `<process>`), shared principles, and CommonJS modules for state, roadmap, phase, validation, intel, and related operations (see `gsd-tools.cjs` header comments).
-- Depends on: Node.js for `gsd-tools.cjs`; filesystem layout under `.planning/` when workflows create or update artifacts; optional git for commit-related subcommands.
-- Used by: Cursor agents and users following slash-command or workflow-driven flows.
+**Persistence Layer:**
+- Purpose: Centralize SQLite connection behavior, schema evolution, and low-level data writes/reads.
+- Location: `src/db/database.ts`, `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`, `src/db/homes.ts`
+- Contains: DB file resolution, `PRAGMA foreign_keys`, migration execution, seed-style helpers.
+- Depends on: `bun:sqlite` and filesystem APIs.
+- Used by: `src/server.ts`, route handlers, tests, and migration CLI.
 
-**Cursor agent specifications:**
-- Purpose: Specialized system prompts for subagent types (planner, executor, codebase mapper, etc.).
-- Location: `.cursor/agents/*.md` (e.g. `gsd-codebase-mapper.md`, `gsd-planner.md`).
-- Contains: Role descriptions, constraints, and process instructions per agent type.
-- Depends on: GSD workflows and skills for full behavior.
-- Used by: Orchestrators that spawn named agent types matching workflow definitions.
+**Webhook Delivery Layer:**
+- Purpose: Fan-out event payloads to subscribers and persist delivery audit results.
+- Location: `src/webhooks/fan-out.ts`
+- Contains: Subscriber lookup, `fetch` delivery loop, `Promise.allSettled` isolation, delivery status persistence.
+- Depends on: Events/subscribers schema and runtime `fetch`.
+- Used by: `src/routes/events.ts` after successful event insert.
 
-**Skills (reusable task playbooks):**
-- Purpose: Packaged instructions for common GSD operations (plan phase, ship, health check, etc.).
-- Location: `.cursor/skills/<skill-name>/SKILL.md` (dozens of `gsd-*` skills).
-- Contains: When to use the skill, steps, and references to workflows or templates.
-- Depends on: `.cursor/get-shit-done/` templates and workflows where cross-linked.
-- Used by: Agents and users invoking skills by name.
+**Client App Layer:**
+- Purpose: Render events UI, capture media activity, and call orchestrator APIs.
+- Location: `src/client/main.tsx`, `src/client/events-screen.tsx`, `src/client/media-capture-section.tsx`, `src/client/media-settings-page.tsx`
+- Contains: Page switching, polling UI, virtualization/pagination controls, media-capture controls.
+- Depends on: Hook layer and API client.
+- Used by: Browser entry document `src/client/index.html`.
 
-**Templates:**
-- Purpose: Starting points for generated markdown and config under `.planning/` and for codebase documentation.
-- Location: `.cursor/get-shit-done/templates/` (including `codebase/` for STACK, ARCHITECTURE, STRUCTURE, etc., and `research-project/`).
-- Contains: Template bodies and guidelines consumed by planning and mapping workflows.
-- Depends on: Target paths under `.planning/` as defined by each workflow.
-- Used by: GSD workflows and mappers when creating or refreshing artifacts.
+**Client Domain/Hook Layer:**
+- Purpose: Hold reusable client-side business logic and side-effect orchestration.
+- Location: `src/client/hooks/use-events-poll.ts`, `src/client/hooks/use-media-capture.ts`, `src/client/lib/media-signals.ts`, `src/client/lib/events-view.ts`, `src/client/lib/media-learning.ts`
+- Contains: Polling lifecycle, media stream handling, classifier throttling, timeframe filtering, local learning sample storage.
+- Depends on: Browser APIs, shared event types, API client.
+- Used by: React screen/page components.
 
-**Planning artifact store:**
-- Purpose: Hold project planning outputs (roadmaps, phase dirs, codebase maps) separate from application source.
-- Location: `.planning/` (currently only `.planning/codebase/*.md` is present; no `ROADMAP.md` or phase directories yet).
-- Contains: Generated reference docs such as `STACK.md`, `CONVENTIONS.md`, `INTEGRATIONS.md`, `TESTING.md`, and this file’s companions.
-- Depends on: Workflow/mapper runs; optional `gsd-tools.cjs` when full GSD state is initialized later.
-- Used by: `/gsd-plan-phase`, `/gsd-execute-phase`, and humans browsing planning context.
+**Shared Contract Layer:**
+- Purpose: Keep request payload contracts consistent between server and client.
+- Location: `src/types/events-api.ts`, consumed by `src/routes/events.ts` and `src/client/api/events-client.ts`
+- Contains: `PostEventBody` and `PostSubscriberBody` contract types.
+- Depends on: TypeScript type system only.
+- Used by: API boundary code on both sides.
 
 ## Data Flow
 
-**Bun application execution:**
+**Event Ingestion + Fan-out Flow:**
 
-1. Developer runs `bun run index.ts` (see `README.md`).
-2. Bun loads `index.ts` as ESM (`package.json` `"type": "module"`).
-3. Script runs top-level statements (currently logging to the console).
-4. Process exits; no persistent server or shared in-memory state.
+1. Producer sends `POST /events` from `scripts/simulated-node.ts` or `src/client/hooks/use-media-capture.ts` via `src/client/api/events-client.ts`.
+2. `src/server.ts` routes to `handlePostEvent()` in `src/routes/events.ts`.
+3. Route validates payload, checks `homes` existence, inserts into `events`, then calls `deliverEventToSubscribers()` in `src/webhooks/fan-out.ts`.
+4. Fan-out POSTs JSON to each subscriber URL and records status rows into `event_deliveries`.
+5. Server returns `201` JSON to caller.
 
-**GSD workflow execution (conceptual, e.g. codebase mapping or phase execution):**
+**Events Read + UI Rendering Flow:**
 
-1. A workflow document in `.cursor/get-shit-done/workflows/<name>.md` defines steps (init, spawn agents, file operations).
-2. Init steps often invoke `node .cursor/get-shit-done/bin/gsd-tools.cjs <subcommand> ...` to load config, resolve paths, or validate `.planning/` state.
-3. The IDE or orchestrator runs subagents whose definitions live in `.cursor/agents/`, optionally guided by `.cursor/skills/*/SKILL.md`.
-4. Outputs are written under `.planning/` (for example `.planning/codebase/` for codebase maps) or updated via `gsd-tools.cjs` commit/phase helpers when the full GSD lifecycle is in use.
+1. `src/client/hooks/use-events-poll.ts` reads public env config from `src/client/lib/public-env.ts`.
+2. Hook calls `fetchEvents()` in `src/client/api/events-client.ts` on interval and manual refresh.
+3. `GET /events` in `src/routes/events.ts` returns newest-first rows for `home_id`.
+4. `src/client/events-screen.tsx` applies filter/pagination/virtual window from `src/client/lib/events-view.ts`.
+5. UI marks new IDs using helpers in `src/client/lib/new-events.ts`.
 
-**State management:**
-- **Application:** Stateless — no database or in-process session in `index.ts`.
-- **GSD:** File-based when expanded — `gsd-tools.cjs` documents commands for `STATE.md`, roadmap, phase directories, todos, and validation; those files are not all present in a fresh repo but the tooling expects them once workflows create them.
+**State Management:**
+- Server state is DB-backed in SQLite tables (`events`, `subscribers`, `event_deliveries` in `src/db/migrations/002_events_subscribers.sql`).
+- Client state is local React state/refs in `src/client/main.tsx`, `src/client/events-screen.tsx`, and `src/client/hooks/use-media-capture.ts`.
+- User-tuned media settings and learned labels persist in browser localStorage via `src/client/lib/media-settings.ts` and `src/client/lib/media-learning.ts`.
 
 ## Key Abstractions
 
-**`gsd-tools.cjs` CLI:**
-- Purpose: Single entry for GSD filesystem and planning operations (state, roadmap, phase, validate, commit, intel, etc.).
-- Examples: `.cursor/get-shit-done/bin/gsd-tools.cjs`, with implementation split across `.cursor/get-shit-done/bin/lib/*.cjs` (`core.cjs`, `phase.cjs`, `roadmap.cjs`, `state.cjs`, and others).
-- Pattern: Node CommonJS CLI invoked by workflows and scripts; reduces duplicated bash patterns across GSD commands.
+**Orchestrator Server Factory:**
+- Purpose: Encapsulate Bun server creation and DB wiring.
+- Examples: `src/server.ts`
+- Pattern: Constructor-style `createServer()` returning `{ server, url, db }` for easy test lifecycle control.
 
-**Workflow document:**
-- Purpose: Executable specification for a GSD command flow (purpose, process steps, agent types, expected artifacts).
-- Examples: `.cursor/get-shit-done/workflows/map-codebase.md`, `.cursor/get-shit-done/workflows/execute-phase.md`, `.cursor/get-shit-done/workflows/plan-phase.md`.
-- Pattern: Markdown with structured tags; references absolute or project-relative paths to `gsd-tools.cjs` and `.planning/`.
+**Route Handler Modules:**
+- Purpose: Keep endpoint-specific logic independent from router switch.
+- Examples: `src/routes/events.ts`, `src/routes/subscribers.ts`
+- Pattern: `handleX(req, db): Promise<Response>` functions with explicit input validation and consistent JSON error bodies.
 
-**Agent definition:**
-- Purpose: Constrain a subagent’s role, tools, and success criteria for one GSD concern.
-- Examples: `.cursor/agents/gsd-codebase-mapper.md`, `.cursor/agents/gsd-planner.md`, `.cursor/agents/gsd-executor.md`.
-- Pattern: Standalone markdown prompt consumed by the orchestrator when spawning typed agents.
+**Media Signal Pipeline:**
+- Purpose: Normalize classifier outputs into throttled event emissions.
+- Examples: `src/client/lib/media-signals.ts`, `src/client/lib/media-throttle.ts`, `src/client/lib/media-event-types.ts`
+- Pattern: Small pure pipeline object with `handleAudioClassification`/`handleVideoClassification`.
 
-**Skill:**
-- Purpose: Reusable, discoverable procedure for a named task (often maps 1:1 to a user-facing GSD capability).
-- Examples: `.cursor/skills/gsd-map-codebase/SKILL.md`, `.cursor/skills/gsd-plan-phase/SKILL.md`.
-- Pattern: Directory per skill with `SKILL.md` front matter and instructions.
-
-**Codebase map document:**
-- Purpose: Durable reference for planners and executors (stack, structure, conventions, concerns).
-- Examples: `.planning/codebase/STACK.md`, `.planning/codebase/STRUCTURE.md` (this document’s companion), `.planning/codebase/CONVENTIONS.md`.
-- Pattern: Human- and AI-oriented markdown generated or refreshed by mapper workflows.
+**Environment Reader Boundary:**
+- Purpose: Isolate environment defaulting/parsing from UI/business code.
+- Examples: `src/client/lib/public-env.ts`, `src/db/database.ts`
+- Pattern: Dedicated read functions with defaults and validation guards.
 
 ## Entry Points
 
-**Bun application:**
+**Server Entry Point:**
 - Location: `index.ts`
-- Triggers: `bun run index.ts` or `bun index.ts`
-- Responsibilities: Entire current application behavior (minimal stub).
+- Triggers: `bun run dev` / `bun run start`
+- Responsibilities: Invoke `createServer()` from `src/server.ts`.
 
-**GSD tools CLI:**
-- Location: `.cursor/get-shit-done/bin/gsd-tools.cjs`
-- Triggers: `node .../gsd-tools.cjs <command>` from workflows, scripts, or terminal
-- Responsibilities: Planning state, roadmap/phase operations, validation, commits, intel, and related utilities per inline help in the file header.
+**HTTP Runtime Entry Point:**
+- Location: `src/server.ts`
+- Triggers: Imported by `index.ts` and tests (`src/orchestrator.integration.test.ts`)
+- Responsibilities: Open DB, run route dispatch, log request status, expose running URL.
 
-**Workflow documents:**
-- Location: `.cursor/get-shit-done/workflows/*.md`
-- Triggers: Slash commands / orchestrator loading a named workflow
-- Responsibilities: Step-by-step GSD procedures and agent spawn configuration.
+**Client Entry Point:**
+- Location: `src/client/index.html` + `src/client/main.tsx`
+- Triggers: `bun run client`
+- Responsibilities: Mount React app, switch between events screen and media settings page.
+
+**Migration Entry Point:**
+- Location: `src/db/migrate.ts`
+- Triggers: `bun run migrate` and direct execution (`import.meta.main`)
+- Responsibilities: Apply sorted SQL files and update `schema_migrations`.
+
+**Simulation Entry Point:**
+- Location: `scripts/simulated-node.ts`
+- Triggers: `bun run simulate`
+- Responsibilities: Generate sample payloads and post to orchestrator `/events`.
 
 ## Error Handling
 
-**Strategy:** Split by layer. The Bun entry does not implement a global error handler; uncaught exceptions propagate to Bun’s default behavior. GSD tooling uses Node CLI patterns (exit codes and thrown errors in `gsd-tools.cjs` / `lib/*.cjs`); workflows typically instruct verification steps after destructive or write operations.
+**Strategy:** Fail fast at boundaries, return explicit HTTP error JSON, and isolate fan-out failures per subscriber.
 
 **Patterns:**
-- **Application:** No custom `try/catch` in `index.ts` as of this analysis.
-- **GSD:** Validate via `gsd-tools.cjs validate ...` subcommands where workflows require consistency checks before proceeding.
+- JSON/body validation with early `400`/`404` returns in `src/routes/events.ts` and `src/routes/subscribers.ts`.
+- Delivery failures captured as persisted audit rows instead of hard-failing ingest in `src/webhooks/fan-out.ts`.
+- Client hook surfaces user-readable errors through component state in `src/client/hooks/use-events-poll.ts` and `src/client/hooks/use-media-capture.ts`.
 
 ## Cross-Cutting Concerns
 
-**Logging:**
-- **Application:** `console.log` / standard console APIs in `index.ts`.
-- **GSD:** Workflow-driven; no unified app logger — reliance on agent/IDE output and optional `gsd-tools` feedback.
-
-**Validation:**
-- **Application:** Not applicable at current scope.
-- **GSD:** `gsd-tools.cjs` exposes `validate consistency`, `validate health`, and related checks for `.planning/` integrity when those workflows run.
-
-**Authentication:**
-- Not implemented in application code. GSD may reference external APIs (e.g. web search) via `gsd-tools.cjs` when configured; no auth flow in `index.ts`.
+**Logging:** Request-level console logging in `src/server.ts` (`[orchestrator] METHOD path -> status ms`).
+**Validation:** Manual runtime validation and normalization in route handlers and API client (`src/routes/events.ts`, `src/client/api/events-client.ts`).
+**Authentication:** Not implemented for API endpoints; current behavior is open local-lab access.
 
 ---
 
 *Architecture analysis: 2026-04-15*
-*Update when major patterns change*

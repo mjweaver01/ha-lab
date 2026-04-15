@@ -4,59 +4,79 @@
 
 ## APIs & External Services
 
-**Application code:**
-- Not detected — `index.ts` contains no `fetch`, HTTP clients, or third-party SDK imports. No Stripe, Supabase, OpenAI, or similar usage in tracked source.
+**Orchestrator HTTP API (internal service boundary):**
+- `GET /events?home_id=...`, `POST /events`, and `POST /subscribers` exposed by `src/server.ts` with handlers in `src/routes/events.ts` and `src/routes/subscribers.ts`.
+  - SDK/Client: custom fetch client in `src/client/api/events-client.ts` and simulator client in `scripts/simulated-node.ts`.
+  - Auth: Not implemented (`src/server.ts` has no auth middleware or token checks).
 
-**Planned / conventional (not implemented in code):**
-- `CLAUDE.md` documents intended Bun APIs (`Bun.serve`, `bun:sqlite`, `Bun.sql`, `Bun.redis`, `Bun.file`) as alternatives to common npm stacks; these are guidance only until implemented.
+**Subscriber callback endpoints (external consumer services):**
+- User-provided subscriber URLs are registered through `POST /subscribers` in `src/routes/subscribers.ts`.
+  - SDK/Client: outbound webhook delivery via platform `fetch` in `src/webhooks/fan-out.ts`.
+  - Auth: none (no signature, token, mTLS, or HMAC headers set in `src/webhooks/fan-out.ts`).
+
+**Browser platform APIs (client-side integrations):**
+- Device/media APIs: microphone and camera capture through `navigator.mediaDevices.getUserMedia` in `src/client/hooks/use-media-capture.ts`.
+  - SDK/Client: Web Media APIs + `AudioContext` analyzer in `src/client/hooks/use-media-capture.ts`.
+  - Auth: browser permission prompts only (no app-level identity system).
 
 ## Data Storage
 
 **Databases:**
-- Not detected — No `Bun.sql`, Prisma, or other DB client usage in source; no migration or schema directories.
+- SQLite (embedded/local), accessed through Bun's `bun:sqlite` driver in `src/db/database.ts`.
+  - Connection: `SQLITE_PATH` env var (fallback `data/home-assist.sqlite`) from `src/db/database.ts`.
+  - Client: direct SQL via `Database` in `src/db/*`, `src/routes/*`, and `src/webhooks/fan-out.ts`.
 
 **File Storage:**
-- Local filesystem only if/when code uses `Bun.file` or standard FS APIs — not used in current `index.ts`.
+- Local filesystem only (`data/home-assist.sqlite` and migration SQL under `src/db/migrations/`).
 
 **Caching:**
-- Not detected — No Redis or other cache clients in `package.json` or source.
+- None detected (no Redis/memcache layer; request data is fetched directly each poll in `src/client/hooks/use-events-poll.ts`).
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Not detected — No auth libraries, JWT handling, or OAuth code in the repository.
+- Custom/none - no identity provider configured.
+  - Implementation: no authentication or authorization checks in `src/server.ts`, `src/routes/events.ts`, or `src/routes/subscribers.ts`.
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- Not detected — No Sentry or similar SDKs.
+- None detected (no Sentry/Datadog/New Relic SDK imports in `src/`).
 
 **Logs:**
-- Standard output — Current entrypoint only uses `console.log` in `index.ts`.
+- Console logging from server request lifecycle in `src/server.ts`.
+- Delivery outcomes persisted in DB table `event_deliveries` by `src/webhooks/fan-out.ts` and schema in `src/db/migrations/002_events_subscribers.sql`.
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- Not specified — No deployment manifests or platform-specific config in the repo.
+- Bun-hosted application process initiated from `index.ts` and `package.json` scripts.
 
 **CI Pipeline:**
-- Not detected — No `.github/workflows` or other CI configuration under the project root.
+- None detected (no workflow files under `.github/workflows/`).
 
 ## Environment Configuration
 
 **Required env vars:**
-- None documented in committed files. When integrations are added, document required names in a template such as `.env.example` (not present as of this analysis).
+- `PORT` - orchestrator listen port (`src/server.ts`).
+- `SQLITE_PATH` - SQLite DB location (`src/db/database.ts`).
+- `ORCHESTRATOR_URL` - simulator destination (`scripts/simulated-node.ts`).
+- `PUBLIC_ORCHESTRATOR_URL` - browser API base URL (`src/client/lib/public-env.ts`).
+- `PUBLIC_HOME_ID` - browser home context (`src/client/lib/public-env.ts`).
+- `PUBLIC_POLL_MS` - browser polling interval (`src/client/lib/public-env.ts`).
 
 **Secrets location:**
-- If `.env` is used locally, it should remain gitignored; do not commit secrets. No committed secret files were analyzed.
+- Not detected; repo uses non-secret runtime config env vars and local defaults only.
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- Not detected — No `Bun.serve` routes or webhook handlers in `index.ts` or elsewhere.
+- `POST /events` ingests node/media events (`src/routes/events.ts`).
+- `POST /subscribers` registers callback destinations (`src/routes/subscribers.ts`).
 
 **Outgoing:**
-- Not detected — No outbound webhook or callback logic in source.
+- Fan-out `POST` requests to each stored `subscribers.callback_url` from `src/webhooks/fan-out.ts`.
+- Payload schema includes `event_id`, `home_id`, `event_type`, and `body`, assembled in `src/webhooks/fan-out.ts`.
 
 ---
 

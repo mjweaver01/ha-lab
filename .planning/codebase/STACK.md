@@ -5,58 +5,73 @@
 ## Languages
 
 **Primary:**
-- TypeScript (ESNext) — Application code in `index.ts`; `tsconfig.json` enables JSX (`react-jsx`) for future UI even though no `.tsx` files exist yet.
+- TypeScript (TS 5 peer range) - application/runtime code in `index.ts`, `src/server.ts`, `src/routes/events.ts`, `src/client/main.tsx`, and scripts under `scripts/*.ts`.
 
 **Secondary:**
-- Markdown — `README.md`, workspace guidance in `CLAUDE.md`.
+- SQL (SQLite dialect) - schema and migration logic in `src/db/migrations/001_initial.sql` and `src/db/migrations/002_events_subscribers.sql`.
+- HTML/CSS - Bun-served client shell in `src/client/index.html` and styling in `src/client/styles.css`.
 
 ## Runtime
 
 **Environment:**
-- [Bun](https://bun.com) — JavaScript/TypeScript runtime and package manager. `README.md` notes the project was created with Bun v1.3.8; `bun.lock` resolves `bun-types@1.3.12` (via `@types/bun`).
+- Bun runtime (project notes pin Bun v1.3.8) used for server, client bundling, scripts, and tests via commands in `package.json` and runtime APIs in `src/server.ts`.
+- Node-compatible standard modules (`node:fs`, `node:path`, `node:url`, `node:util`) used inside Bun, e.g. `src/db/migrate.ts` and `scripts/simulated-node.ts`.
 
 **Package Manager:**
-- Bun — Use `bun install`, `bun run`, `bun test` per `README.md` and `CLAUDE.md`.
-- Lockfile: `bun.lock` present.
+- Bun (`bun install`, `bun run ...`) defined by scripts in `package.json`.
+- Lockfile: present (`bun.lock`).
 
 ## Frameworks
 
 **Core:**
-- No application framework in use. `index.ts` is a minimal script (`console.log` only). Project conventions in `CLAUDE.md` prescribe `Bun.serve()` with HTML route imports (not Vite/Express) when a server is added.
+- Bun HTTP server (`Bun.serve`) - orchestrator API entrypoint in `src/server.ts`.
+- React `19.2.5` + React DOM `19.2.5` - client rendering flow in `src/client/main.tsx`, `src/client/events-screen.tsx`, and `src/client/media-settings-page.tsx`.
 
 **Testing:**
-- `bun:test` — Documented in `CLAUDE.md` as the test runner. No `*.test.ts` / `*.spec.ts` files detected in the repository root.
+- Bun test runner (`bun:test`) - unit and integration suites across `src/**/*.test.ts` and `src/**/*.test.tsx`.
+- `@testing-library/react` `16.3.2` + `happy-dom` `20.9.0` - UI and hook tests in `src/client/media-capture-section.test.tsx` and `src/client/hooks/use-media-capture.test.ts`.
 
 **Build/Dev:**
-- Bun — Bundler and transpiler for TypeScript (implicit when running or building with Bun).
-- TypeScript `^5` — Declared as `peerDependencies` in `package.json`; `bun.lock` resolves `typescript@5.9.3`.
+- Bun HTML bundler (`bun ./src/client/index.html`) for frontend development from `package.json` script `client`.
+- TypeScript compiler config in `tsconfig.json` (`strict`, `moduleResolution: bundler`, `jsx: react-jsx`) with `noEmit` mode.
+- Bun static env inlining config in `bunfig.toml` (`PUBLIC_*` exposure for client bundle).
 
 ## Key Dependencies
 
 **Critical:**
-- `@types/bun` (dev) — Type definitions; pulls in `bun-types` for Bun APIs (`package.json`, `bun.lock`).
-- `typescript` (^5, peer) — Type-checking and editor support; version pinned in lockfile (`bun.lock`).
+- `react` `19.2.5` - component/runtime base for all UI modules in `src/client/`.
+- `react-dom` `19.2.5` - DOM mounting in `src/client/main.tsx`.
+- Built-in `bun:sqlite` - persistence layer used by `src/db/database.ts`, `src/routes/events.ts`, and `src/webhooks/fan-out.ts`.
 
 **Infrastructure:**
-- Not applicable — No HTTP server, database client, or other infrastructure libraries are listed in `package.json` yet.
+- `@mediapipe/tasks-audio` `^0.10.34` - declared for browser audio signal pipeline capabilities, referenced in stack decisions from `package.json` and planning artifacts in `.planning/phases/06-media-signals-events/`.
+- `@mediapipe/tasks-vision` `^0.10.34` - declared for browser vision signal pipeline capabilities, tracked in `package.json`.
+- `@types/bun` `latest` and React type packages - TypeScript support for Bun/React APIs used across `src/` and `scripts/`.
 
 ## Configuration
 
 **Environment:**
-- Bun loads `.env` automatically per `CLAUDE.md`; no `.env` or `.env.example` is committed in the repository (verify locally if present and gitignored).
+- Server port: `PORT` (fallback `3000`) in `src/server.ts`.
+- SQLite file path: `SQLITE_PATH` (fallback `data/home-assist.sqlite`) in `src/db/database.ts`.
+- Simulator target URL: `ORCHESTRATOR_URL` in `scripts/simulated-node.ts`.
+- Browser/public client config: `PUBLIC_ORCHESTRATOR_URL`, `PUBLIC_HOME_ID`, `PUBLIC_POLL_MS` read in `src/client/lib/public-env.ts` and exposed through `bunfig.toml`.
 
 **Build:**
-- `tsconfig.json` — `moduleResolution: bundler`, `strict: true`, `jsx: react-jsx`, `noEmit: true` (typecheck/edit only; execution is via Bun).
-- `package.json` — `"type": "module"`, entry implied as `index.ts` via `"module": "index.ts"` and `README.md` run command.
+- `package.json` scripts define canonical workflows (`dev`, `start`, `client`, `migrate`, `seed`, `simulate`, `test`).
+- `tsconfig.json` controls compile-time strictness and module behavior.
+- `bunfig.toml` controls static env injection for browser bundles.
 
 ## Platform Requirements
 
 **Development:**
-- Bun installed (version compatible with lockfile’s `bun-types` / team Bun version).
-- Any OS supported by Bun; no Docker or other dev containers are defined (no `Dockerfile` in repo).
+- Bun installed locally (setup/run steps in `README.md`).
+- Writable local filesystem for SQLite DB and migrations under `data/` via `src/db/database.ts` and `src/db/migrate.ts`.
+- Browser with Media APIs (`navigator.mediaDevices`, `AudioContext`) for full client feature set in `src/client/hooks/use-media-capture.ts`.
 
 **Production:**
-- Not specified — No deployment config (e.g. no `.github/workflows`, no container or platform manifests in repo).
+- Deployment target is a Bun process hosting orchestrator HTTP routes from `index.ts` and `src/server.ts`.
+- Persistent local or mounted storage for SQLite DB file configured by `SQLITE_PATH`.
+- Reachable network path to subscriber callback endpoints used by outbound fan-out in `src/webhooks/fan-out.ts`.
 
 ---
 

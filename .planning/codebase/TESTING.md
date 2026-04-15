@@ -5,129 +5,145 @@
 ## Test Framework
 
 **Runner:**
-- **Bun** built-in test runner (`bun:test`). The project does not use Jest or Vitest (`package.json` has no `jest`/`vitest` dependencies).
+- Bun test runner via `bun:test` imports.
+- Config: No dedicated `vitest.config.*` or `jest.config.*` detected; test behavior is driven by defaults plus runtime setup in individual tests (for example `src/client/hooks/use-media-capture.test.ts`).
 
-**Assertion library:**
-- **`expect`** from `bun:test` (Jest-compatible API surface for common matchers).
+**Assertion Library:**
+- Built-in Bun assertions/mocks (`describe`, `test`, `expect`, `mock`) from `bun:test`.
+- React rendering/assertions via `@testing-library/react` in `src/client/events-screen.test.tsx` and `src/client/media-capture-section.test.tsx`.
 
-**Config:**
-- Not detected: no `bunfig.toml` test section and no separate test config file in the project root.
-
-**Run commands:**
+**Run Commands:**
 ```bash
-bun test                    # Run all tests discovered by Bun
-bun test --watch            # Watch mode (if supported by installed Bun)
-bun test path/to/file.test.ts   # Single file
-bun test --coverage         # Coverage report (Bun coverage flag; verify with `bun test --help`)
+bun test                     # Run all tests
+bun test --watch             # Watch mode
+bun test --coverage          # Coverage report (manual; not scripted in package.json)
 ```
-
-**Documentation reference:**
-- Example pattern is documented in `CLAUDE.md` (same repository).
 
 ## Test File Organization
 
 **Location:**
-- **No `*.test.ts` / `*.spec.ts` files** are present under the application project root as of this analysis. The only TypeScript application file is `index.ts`.
+- Tests are co-located with implementation files under `src/` and `scripts/` (examples: `src/webhooks/fan-out.test.ts`, `scripts/simulated-node.test.ts`).
 
-**Naming (prescriptive for new tests):**
-- Co-locate tests as **`{module}.test.ts`** next to the module under test, or use a parallel `__tests__/` directory if a feature folder grows large—prefer co-location for small projects.
+**Naming:**
+- Use `<module>.test.ts` and `<component>.test.tsx` naming directly beside source (`src/client/lib/new-events.ts` + `src/client/lib/new-events.test.ts`).
 
-**Structure today:**
+**Structure:**
 ```
-/Users/michaelweaver/Websites/home-assist/
-├── index.ts              # Application entry (no test file yet)
-├── package.json
-├── tsconfig.json
-└── README.md
+src/
+  client/
+    api/*.test.ts
+    hooks/*.test.ts
+    lib/*.test.ts
+    *.test.tsx
+  db/*.test.ts
+  webhooks/*.test.ts
+  orchestrator.integration.test.ts
+scripts/*.test.ts
 ```
 
 ## Test Structure
 
-**Recommended suite shape (from `CLAUDE.md`, not yet present in repo):**
+**Suite Organization:**
 ```typescript
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
+describe("fetchEvents", () => {
+  test("GET /events?home_id= with encoded id", async () => {
+    // arrange
+    // act
+    // assert
+  });
 });
 ```
 
 **Patterns:**
-- Use **`test("descriptive name", () => { ... })`** for single cases; use **`describe`** blocks when grouping multiple tests for the same unit (optional, supported by `bun:test`).
-- Prefer **arrange / act / assert** structure inside each test for readability.
+- Prefer behavior-driven test names that include scenario and expected outcome (`src/client/lib/media-throttle.test.ts`, `src/client/lib/media-signals-video.test.ts`).
+- Keep one focused behavior per test and assert concrete side effects (status codes, payloads, DB row counts) in `src/orchestrator.integration.test.ts`.
+- Use `beforeAll`/`beforeEach`/`afterEach` for deterministic runtime setup/teardown (`src/client/hooks/use-media-capture.test.ts`, `src/webhooks/fan-out.test.ts`).
 
 ## Mocking
 
-**Framework:**
-- Use **Bun’s test APIs** (`mock`, spies) as documented for your Bun version—no separate Sinon or `vi` from Vitest in this project.
+**Framework:** Bun `mock()` with direct `globalThis` overrides and dependency injection.
 
 **Patterns:**
-- Mock **network**, **filesystem**, and **environment** boundaries when testing HTTP handlers or integrations.
-- Avoid mocking **pure helpers** and **internal business logic** unless necessary to isolate a failure.
-
-**Example placeholder (verify API against current Bun docs when writing):**
 ```typescript
-import { test, expect, mock } from "bun:test";
-
-// Prefer mocking at module boundaries when testing modules that call fetch or Bun.serve clients
+const fetchImpl: typeof fetch = async () => new Response("bad event", { status: 400 });
+await expect(postEvent("http://127.0.0.1:3000", payload, fetchImpl)).rejects.toThrow();
 ```
+
+```typescript
+globalThis.fetch = mock(() => Promise.resolve(new Response(null, { status: 202 }))) as typeof fetch;
+Object.defineProperty(globalThis.navigator, "mediaDevices", {
+  value: { getUserMedia: mock(() => Promise.resolve(stream)) },
+  configurable: true,
+});
+```
+
+**What to Mock:**
+- Network I/O (`fetch`) in client and fan-out tests (`src/client/api/events-client.post.test.ts`, `src/webhooks/fan-out.test.ts`).
+- Browser APIs (`navigator.mediaDevices`, `AudioContext`, RAF) for hook/component tests in `src/client/hooks/use-media-capture.test.ts`.
+- Time progression (`Date.now`) where cadence or throttling is under test (`src/client/hooks/use-media-capture.test.ts`, `src/client/lib/media-signals-audio.test.ts`).
+
+**What NOT to Mock:**
+- SQL behavior for persistence constraints; use real temporary SQLite files (`src/db/migrate.test.ts`).
+- Route/server wiring when validating full orchestrator behavior (`src/orchestrator.integration.test.ts`).
 
 ## Fixtures and Factories
 
-**Test data:**
-- No shared fixtures directory exists yet.
+**Test Data:**
+```typescript
+function makeEvent(id: number, createdAt: string): EventListItem {
+  return { id, home_id: 7, event_type: "test.event", created_at: createdAt, body: null };
+}
+```
 
-**Recommendation:**
-- Add small **factory functions** inline in test files or under `test/fixtures/` / `tests/fixtures/` when the same payload is reused across tests.
+**Location:**
+- Fixture helpers are inline in each test file (`makeEvent` in `src/client/lib/events-view.test.ts`, `makeTrack`/`makeStream` in `src/client/hooks/use-media-capture.test.ts`), not centralized.
 
 ## Coverage
 
-**Requirements:**
-- No coverage threshold or CI gate is defined in `package.json` or detected config files.
+**Requirements:** No enforced coverage threshold detected in repo config.
 
-**View coverage:**
+**View Coverage:**
 ```bash
 bun test --coverage
 ```
 
-- Open generated coverage output if your Bun version writes HTML/lcov; path depends on Bun version (check `bun test --help`).
-
 ## Test Types
 
-**Unit tests:**
-- Primary expected style: fast tests for **pure functions** and **isolated modules** with dependencies mocked.
+**Unit Tests:**
+- Pure utility behavior and guards (`src/client/lib/events-view.test.ts`, `src/client/lib/media-throttle.test.ts`, `src/client/lib/new-events.test.ts`, `src/client/lib/media-errors.test.ts`).
 
-**Integration tests:**
-- Not present yet. When adding `Bun.serve` or database code, add tests that hit real wiring with **test-only ports** or **in-memory** SQLite via `bun:sqlite` as appropriate.
+**Integration Tests:**
+- Server/database/webhook integrations with temporary SQLite and real route handlers (`src/orchestrator.integration.test.ts`, `src/db/migrate.test.ts`, `src/webhooks/fan-out.test.ts`).
 
-**E2E tests:**
-- Not detected (no Playwright/Cypress dependencies in `package.json`).
+**E2E Tests:**
+- No browser automation framework (Playwright/Cypress) detected.
+- `.tsx` tests are component integration tests in `happy-dom`, not full end-to-end across a real browser/runtime.
 
 ## Common Patterns
 
-**Async testing:**
+**Async Testing:**
 ```typescript
-import { test, expect } from "bun:test";
-
-test("resolves data", async () => {
-  const result = await Promise.resolve(42);
-  expect(result).toBe(42);
+await act(async () => {
+  await result.current.startMic();
+});
+await waitFor(() => {
+  expect(result.current.micError).not.toBeNull();
 });
 ```
 
-**Error testing:**
+**Error Testing:**
 ```typescript
-import { test, expect } from "bun:test";
-
-test("throws on invalid input", () => {
-  expect(() => {
-    throw new Error("bad");
-  }).toThrow("bad");
-});
+await expect(fetchEvents("http://x", Number.NaN, mock())).rejects.toThrow();
+expect(() => addUserToHome(db, { homeId: 99_999, userId })).toThrow();
 ```
 
-**GSD workflow note:**
-- Project automation under `.cursor/get-shit-done/` references **RED** commits and test-oriented git messages for phased work; align test file creation with that workflow when using GSD execute/plan flows.
+## Coverage Gaps To Prioritize
+
+- Add route-level negative-path tests for malformed `GET /events` payload bodies and parse failures in `src/routes/events.ts`.
+- Add tests for environment parsing defaults and invalid values in `src/client/lib/public-env.ts`.
+- Add lifecycle cleanup assertions for camera teardown edge-cases in `src/client/hooks/use-media-capture.ts` (for example repeated start/stop cycles).
+- Add resilience tests around non-JSON `body` payload handling and callback HTTP failures in `src/webhooks/fan-out.ts`.
+- Add smoke coverage for `scripts/simulated-node.ts` CLI arg parsing and exit codes beyond happy path.
 
 ---
 
