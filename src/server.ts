@@ -30,12 +30,27 @@ export type OrchestratorServer = {
 };
 
 /**
- * HTTP orchestrator: POST/GET `/events`, POST `/subscribers`.
+ * HTTP orchestrator: `GET /` (human hint), POST/GET `/events`, POST `/subscribers`.
  * `port: 0` assigns an ephemeral port (tests); default env **PORT** is **3000**.
  */
 async function routeRequest(req: Request, db: Database): Promise<Response> {
   const u = new URL(req.url);
   const path = u.pathname;
+
+  /** Browsers (and some tools) hit `GET /` on startup — answer instead of 404 noise. */
+  if (path === "/" && req.method === "GET") {
+    const body =
+      "home-assist orchestrator\n\n" +
+      "Routes:\n" +
+      "  GET  /events?home_id=<id>  — list events for a home\n" +
+      "  POST /events               — ingest event (JSON body)\n" +
+      "  POST /subscribers          — register callback URL for a home\n\n" +
+      "UI: run `bun run client` (separate dev server).\n";
+    return new Response(body, {
+      status: 200,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
 
   if (path === "/events" && req.method === "OPTIONS") {
     return new Response(null, {
