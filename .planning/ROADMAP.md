@@ -60,7 +60,12 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 3. **Video-derived** activity triggers `POST /events` with the same contract (e.g. periodic canvas sample, lightweight diff, or documented “video activity” pattern in code comments).
 4. Naming for `event_type` / `body` for audio vs video paths is **documented in code** so the pipeline stays inspectable.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] `06-01-PLAN.md` — Add shared media event contract constants/body helpers and typed client `postEvent` transport.
+- [ ] `06-02-PLAN.md` — Build classifier-driven media signal pipeline with independent audio/video throttles and tests.
+- [ ] `06-03-PLAN.md` — Wire signal pipeline into capture hook and enable verified `/events` CORS POST/preflight behavior.
 
 ### Phase 7: E2E media trace
 
