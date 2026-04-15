@@ -1,5 +1,5 @@
 import type { Database } from "bun:sqlite";
-import { openDatabase } from "./db/database.ts";
+import { openDatabase, resolveSqlitePath } from "./db/database.ts";
 import { handleGetEvents, handlePostEvent } from "./routes/events.ts";
 import { handlePostSubscriber } from "./routes/subscribers.ts";
 
@@ -33,14 +33,36 @@ export type OrchestratorServer = {
  * HTTP orchestrator: POST/GET `/events`, POST `/subscribers`.
  * `port: 0` assigns an ephemeral port (tests); default env **PORT** is **3000**.
  */
+async function routeRequest(req: Request, db: Database): Promise<Response> {
+  const u = new URL(req.url);
+  const path = u.pathname;
+
+  if (path === "/events" && req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsDevHeaders(req),
+    });
+  }
+
+  if (path === "/events" && req.method === "GET") {
+    const res = await handleGetEvents(req, db);
+    return withCorsDev(res, req);
+  }
+  if (path === "/events" && req.method === "POST") {
+    return handlePostEvent(req, db);
+  }
+  if (path === "/subscribers" && req.method === "POST") {
+    return handlePostSubscriber(req, db);
+  }
+  return new Response("Not Found", { status: 404 });
+}
+
 export function createServer(options?: {
   port?: number;
   sqlitePath?: string;
 }): OrchestratorServer {
-  const db =
-    options?.sqlitePath != null
-      ? openDatabase(options.sqlitePath)
-      : openDatabase();
+  const sqlitePath = options?.sqlitePath ?? resolveSqlitePath();
+  const db = openDatabase(options?.sqlitePath);
 
   const port =
     options?.port ?? Number(Bun.env.PORT ?? process.env.PORT ?? 3000);
@@ -50,27 +72,18 @@ export function createServer(options?: {
     async fetch(req) {
       const u = new URL(req.url);
       const path = u.pathname;
-
-      if (path === "/events" && req.method === "OPTIONS") {
-        return new Response(null, {
-          status: 204,
-          headers: corsDevHeaders(req),
-        });
-      }
-
-      if (path === "/events" && req.method === "GET") {
-        const res = await handleGetEvents(req, db);
-        return withCorsDev(res, req);
-      }
-      if (path === "/events" && req.method === "POST") {
-        return handlePostEvent(req, db);
-      }
-      if (path === "/subscribers" && req.method === "POST") {
-        return handlePostSubscriber(req, db);
-      }
-      return new Response("Not Found", { status: 404 });
+      const t0 = performance.now();
+      const res = await routeRequest(req, db);
+      const ms = Math.round(performance.now() - t0);
+      console.log(
+        `[orchestrator] ${req.method} ${path} → ${res.status} ${ms}ms`,
+      );
+      return res;
     },
   });
+
+  console.log(`[orchestrator] SQLite: ${sqlitePath}`);
+  console.log(`[orchestrator] Listening: ${server.url.href}`);
 
   return { server, url: server.url, db };
 }
