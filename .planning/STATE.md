@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Local media events
 status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-04-15T19:32:59.106Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-04-15T19:38:14.927Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 ## Current Position
 
 Phase: 06 (media-signals-events) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-15
 
@@ -47,6 +47,8 @@ See PROJECT.md Key Decisions. v1.0 decisions archived in MILESTONES.md and phase
 
 - [Phase 06]: Use a shared media-event-types module as the single source of truth for media.audio/media.video and normalized body fields.
 - [Phase 06]: Keep postEvent error wrapping aligned with fetchEvents so client transport failures stay consistent across GET and POST paths.
+- [Phase 06]: Throttle clocks update only after accepted emits to preserve accepted-post semantics.
+- [Phase 06]: Media signal pipeline emits modality intents from top classifier candidates via shared body builders.
 
 ### Pending Todos
 
@@ -62,6 +64,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260415-kz8 | update README with current app state and prepare/push a new version | 2026-04-15 | cd01e68 | [260415-kz8-update-readme-with-current-app-state-and](./quick/260415-kz8-update-readme-with-current-app-state-and/) |
 | Phase 06 P01 | 2 min | 2 tasks | 5 files |
+| Phase 06 P02 | 3 min | 2 tasks | 5 files |
 
 ## Deferred Items
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T19:32:59.103Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-04-15T19:38:10.236Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
