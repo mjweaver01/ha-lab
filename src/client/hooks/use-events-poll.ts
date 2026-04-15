@@ -1,32 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchEvents, type EventListItem } from "../api/events-client.ts";
 import { markNewEventIds, maxEventId } from "../lib/new-events.ts";
-
-/** Default poll interval — within UI-SPEC 3–5s; override with `PUBLIC_POLL_MS` (milliseconds). */
-const DEFAULT_POLL_MS = 4000;
-
-function readOrchestratorBase(): string {
-  const v = process.env.PUBLIC_ORCHESTRATOR_URL;
-  return typeof v === "string" && v.trim() !== "" ? v.trim() : "http://127.0.0.1:3000";
-}
-
-function readHomeId(): number {
-  const raw = process.env.PUBLIC_HOME_ID;
-  if (raw === undefined || raw === "") return 1;
-  const n = Number.parseInt(String(raw), 10);
-  if (!Number.isFinite(n) || !Number.isInteger(n)) {
-    return 1;
-  }
-  return n;
-}
-
-function readPollMs(): number {
-  const raw = process.env.PUBLIC_POLL_MS;
-  if (raw === undefined || raw === "") return DEFAULT_POLL_MS;
-  const n = Number.parseInt(String(raw), 10);
-  if (!Number.isFinite(n) || n < 1000) return DEFAULT_POLL_MS;
-  return n;
-}
+import {
+  readPublicHomeId,
+  readPublicOrchestratorUrl,
+  readPublicPollMs,
+} from "../lib/public-env.ts";
 
 export function useEventsPoll(): {
   events: EventListItem[];
@@ -37,9 +16,9 @@ export function useEventsPoll(): {
   homeId: number;
   pollMs: number;
 } {
-  const baseUrl = readOrchestratorBase();
-  const homeId = readHomeId();
-  const pollMs = readPollMs();
+  const baseUrl = readPublicOrchestratorUrl();
+  const homeId = readPublicHomeId();
+  const pollMs = readPublicPollMs();
 
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
