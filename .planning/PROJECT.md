@@ -17,11 +17,11 @@ You can **end-to-end trace one event** from “something happened on the node”
 - ✓ **Simulated node** — `bun run simulate` posts sample `PostEventBody` events (`NODE-01`).
 - ✓ **React client** — `bun run client` Events screen, polling, new-row accent (`UI-01`, `UI-02`).
 
-### Active (v1.1 — in progress)
+### Active (v1.1 — complete)
 
 - [x] **Local media capture** — Access this Mac’s microphone and camera (browser-first) with clear permission UX. *(Validated in Phase 5: 2026-04-15.)*
 - [x] **Media → events** — Audio/video signal pipeline posts throttled `media.audio` / `media.video` events through `POST /events`. *(Phase 6 implementation complete; manual runtime checks pending in `06-HUMAN-UAT.md`.)*
-- [~] **End-to-end trace** — Media-originated events are visible in the React Events list; remaining work is human runtime verification and milestone UAT closure.
+- [x] **End-to-end trace** — Media-originated events are visible in the React Events list with parity behavior and E2E validation evidence.
 - [x] **Operator UX upgrades** — Events screen now supports live tail vs timeframe filters, virtualized pagination, and a dedicated Media settings page with snapshot-based label learning.
 - [ ] **Optional hardening** — Production-oriented auth, CORS policy, deployment story (only if you move beyond lab).
 
@@ -44,7 +44,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 ## Current state (after v1.0)
 
 - **Shipped:** v1.0 **learning prototype** (tag **`v1.0`**). See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
-- **In progress:** v1.1 — Phase **5** complete; Phase **6** code complete with human verification pending; Events UX includes filters, virtualization, pagination, and dedicated media settings.
+- **Completed:** v1.1 — Phase **5** capture UX, Phase **6** media signal posting path, and Phase **7** E2E media trace validation.
 - **Stack:** Bun, TypeScript, `bun:sqlite`, React (Bun HTML bundler), no Vite.
 - **Tests:** `bun test` covers DB, orchestrator integration, fan-out, simulated node, and client API helpers.
 
@@ -99,4 +99,4 @@ Previously listed as Active before v1.0 close:
 </details>
 
 ---
-*Last updated: 2026-04-15 — **v1.1** Phase 6 implementation complete in code, human verification pending; Events UX upgrades landed*
+*Last updated: 2026-04-15 — **v1.1** milestone complete (phases 5-7) with media E2E trace validated*

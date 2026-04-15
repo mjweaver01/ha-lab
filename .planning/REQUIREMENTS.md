@@ -20,7 +20,7 @@ Requirements for this milestone. Each maps to roadmap phases (starting at phase 
 
 ### End-to-end trace
 
-- [ ] **MEDIA-05**: Media-originated events are **listed** in the React Events view with the same visibility rules as other events (user can confirm a real mic/camera-driven event end-to-end).
+- [x] **MEDIA-05**: Media-originated events are **listed** in the React Events view with the same visibility rules as other events (user can confirm a real mic/camera-driven event end-to-end).
 
 ## Future requirements (deferred)
 
@@ -48,7 +48,7 @@ Not in v1.1 roadmap; tracked for later versions.
 | MEDIA-02 | Phase 5 | Complete |
 | MEDIA-03 | Phase 6 | Complete |
 | MEDIA-04 | Phase 6 | Complete |
-| MEDIA-05 | Phase 7 | Pending |
+| MEDIA-05 | Phase 7 | Complete |
 
 **Coverage:**
 

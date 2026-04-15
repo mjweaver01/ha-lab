@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Local media events
-status: verifying
-stopped_at: Events UX + media settings updates documented
-last_updated: "2026-04-15T22:40:00.000Z"
-last_activity: 2026-04-15 -- docs refreshed for latest media/events UX
+status: complete
+stopped_at: Phase 7 verified and v1.1 milestone complete
+last_updated: "2026-04-15T20:45:00.000Z"
+last_activity: 2026-04-15 -- phase 7 completed and milestone marked complete
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
   percent: 100
 ---
 
@@ -21,17 +21,17 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.  
-**Current focus:** Phase 06 — media-signals-events
+**Current focus:** Milestone complete — awaiting next milestone planning
 
 ## Current Position
 
-Phase: 06 (media-signals-events) — VERIFYING
-Plan: 3 of 3
-Status: Implementation complete — human verification pending
-Last activity: 2026-04-15 -- docs refreshed for latest media/events UX
+Phase: 07 (e2e-media-trace) — COMPLETE
+Plan: 1 of 1
+Status: Milestone v1.1 complete
+Last activity: 2026-04-15 -- phase 7 verification passed
 
-Progress: v1.0 (phases 1–4) and v1.1 Phase 5 shipped; v1.1 Phase **6** code complete with pending runtime verification  
-`[█████████████░░]` 5/7 phases complete (overall)
+Progress: v1.0 (phases 1–4) and v1.1 (phases 5–7) are complete  
+`[████████████████]` 7/7 phases complete (overall)
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ See PROJECT.md Key Decisions. v1.0 decisions archived in MILESTONES.md and phase
 - [Phase 06]: Apply withCorsDev to POST /events responses so browser clients receive matching CORS headers on success and error.
 - [Phase 06 follow-up]: Move tuning controls to dedicated Media settings page; keep Media capture panel focused on live controls and overlays.
 - [Phase 06 follow-up]: Add live tail/timeframe filtering with virtualization + pagination so event history inspection scales in the UI.
+- [Phase 07]: Validate media-originated event rows through the standard Events list path with explicit test evidence for audio/video + new-row behavior.
 
 ### Pending Todos
 
@@ -70,6 +71,7 @@ None yet.
 | Phase 06 P01 | 2 min | 2 tasks | 5 files |
 | Phase 06 P02 | 3 min | 2 tasks | 5 files |
 | Phase 06 P03 | 6 min | 2 tasks | 6 files |
+| Phase 07 P01 | 4 min | 1 task | 1 file |
 
 ## Deferred Items
 
@@ -79,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T22:40:00.000Z
-Stopped at: Events UX + media settings updates documented
+Last session: 2026-04-15T20:45:00.000Z
+Stopped at: Phase 7 verified and v1.1 milestone complete
 Resume file: None

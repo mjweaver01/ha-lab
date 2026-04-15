@@ -6,7 +6,7 @@
 ## Milestones
 
 - ✅ **[v1.0 learning prototype](milestones/v1.0-ROADMAP.md)** — Phases 1–4 (SQLite → orchestrator → simulator → React client). Shipped **2026-04-15**.
-- 🚧 **v1.1 Local media events** — Phases 5–7 (browser capture → signal → events → E2E in UI). *In progress.*
+- ✅ **v1.1 Local media events** — Phases 5–7 (browser capture → signal → events → E2E in UI). *Complete.*
 
 ## Overview
 
@@ -17,8 +17,8 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 **Phase numbering:** Integers 5–7 continue after v1.0 (1–4). Decimal phases (e.g. 5.1) are reserved for urgent insertions via `/gsd-insert-phase`.
 
 - [x] **Phase 5: Local media capture** — Mic and camera start/stop with explicit permission and error handling. (completed 2026-04-15)
-- [ ] **Phase 6: Media signals → events** — Audio- and video-derived activity posts throttled `POST /events` (`PostEventBody`). *(Implementation complete; manual verification pending.)*
-- [ ] **Phase 7: E2E media trace** — Media-driven events visible end-to-end in the React Events view.
+- [x] **Phase 6: Media signals → events** — Audio- and video-derived activity posts throttled `POST /events` (`PostEventBody`). *(Implementation + human verification complete.)*
+- [x] **Phase 7: E2E media trace** — Media-driven events visible end-to-end in the React Events view. (completed 2026-04-15)
 
 ## Phase Details
 
@@ -84,7 +84,8 @@ Plans:
 2. Events produced from **video** activity appear in the same Events list **consistently**.
 3. User can perform an **end-to-end check** without the simulated node: enable capture → produce activity → see a new row attributable to the media pipeline.
 
-**Plans**: TBD
+**Plans**:
+- [x] `07-01-PLAN.md` — Add explicit Events UI test evidence for media event row visibility and new-row behavior parity.
 
 **UI hint**: yes
 
@@ -102,5 +103,5 @@ Full phase goals and history: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROA
 |-------|-----------|----------------|--------|-----------|
 | 1–4 | v1.0 | 7/7 | Complete | 2026-04-15 |
 | 5. Local media capture | v1.1 | 2/2 | Complete    | 2026-04-15 |
-| 6. Media signals → events | v1.1 | 3/3 | Verifying (human checks pending) | - |
-| 7. E2E media trace | v1.1 | 0/TBD | Not started | - |
+| 6. Media signals → events | v1.1 | 3/3 | Complete | 2026-04-15 |
+| 7. E2E media trace | v1.1 | 1/1 | Complete | 2026-04-15 |

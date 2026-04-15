@@ -1,7 +1,7 @@
 ---
 phase: 06-media-signals-events
 verified: 2026-04-15T19:53:13Z
-status: human_needed
+status: passed
 score: 6/6 must-haves verified
 overrides_applied: 0
 human_verification:
@@ -17,7 +17,7 @@ human_verification:
 
 **Phase Goal:** Audio- and video-derived activity results in orchestrator events using the existing HTTP contract without flooding the server.
 **Verified:** 2026-04-15T19:53:13Z
-**Status:** human_needed
+**Status:** passed
 **Re-verification:** No - initial verification
 
 ## Goal Achievement
@@ -94,19 +94,19 @@ Orphaned requirements for Phase 6: none detected (all phase-mapped requirements 
 | --- | --- | --- | --- | --- |
 | None | - | No TODO/FIXME/placeholders or stub return patterns detected in phase artifacts | ℹ️ Info | No blocker anti-patterns found |
 
-### Human Verification Required
+### Human Verification (completed)
 
 ### 1. Live microphone event trace
 
 **Test:** Start microphone capture in the client, speak continuously for >5 seconds, then inspect orchestrator events for `media.audio`.
 **Expected:** At least one `media.audio` event is persisted with valid `home_id`/`event_type`/`body`, and event frequency reflects throttle behavior (not flood-rate).
-**Why human:** Browser permissions, physical audio input, and real runtime capture conditions cannot be fully verified via static/code-only checks.
+**Result:** Passed (recorded in `06-HUMAN-UAT.md`).
 
 ### 2. Live camera event trace
 
 **Test:** Start camera capture in the client with active scene changes and inspect generated `media.video` events.
 **Expected:** `media.video` events are posted with the shared contract and appear at throttled cadence with no silent error state.
-**Why human:** Requires device camera behavior and runtime visual activity patterns; static tests cannot confirm end-user runtime fidelity.
+**Result:** Passed (recorded in `06-HUMAN-UAT.md`).
 
 ### Gaps Summary
 
@@ -119,7 +119,7 @@ _Verifier: Claude (gsd-verifier)_
 ---
 phase: 06-media-signals-events
 verified: 2026-04-15T19:53:36Z
-status: human_needed
+status: passed
 score: 6/6 must-haves verified
 overrides_applied: 0
 human_verification:
@@ -135,7 +135,7 @@ human_verification:
 
 **Phase Goal:** Media signals are transformed into outbound events through a shared event contract and verified end-to-end in client + orchestrator behavior.
 **Verified:** 2026-04-15T19:53:36Z
-**Status:** human_needed
+**Status:** passed
 **Re-verification:** No - initial verification
 
 ## Goal Achievement
@@ -208,19 +208,19 @@ human_verification:
 | --- | --- | --- | --- | --- |
 | N/A | N/A | No blocker stubs (`TODO`, placeholder returns, hollow handlers) found in phase-06 implementation files | ℹ️ Info | No gap raised from anti-pattern scan |
 
-### Human Verification Required
+### Human Verification (completed)
 
 ### 1. Live microphone -> event trace
 
 **Test:** Start mic in UI, keep activity for >5s, then stop mic while monitoring orchestrator `/events` ingestion.
 **Expected:** `media.audio` payloads arrive with throttled cadence and stop after mic is stopped.
-**Why human:** Requires real microphone permission, ambient noise conditions, and browser runtime behavior.
+**Result:** Passed (recorded in `06-HUMAN-UAT.md`).
 
 ### 2. Live camera -> event trace
 
 **Test:** Start camera in UI, observe preview for >6s, then stop camera while monitoring `/events` ingestion.
 **Expected:** `media.video` payloads appear at throttled cadence via inspectable sampling path; no new events after stop.
-**Why human:** Requires real camera hardware stream and real-time browser loop behavior.
+**Result:** Passed (recorded in `06-HUMAN-UAT.md`).
 
 ### Gaps Summary
 
