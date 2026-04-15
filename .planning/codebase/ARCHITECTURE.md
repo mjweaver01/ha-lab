@@ -10,7 +10,6 @@
 - Single-file application entry (`index.ts`) with no internal modules, HTTP server, or data layer.
 - GSD uses **markdown workflow specifications** (`.cursor/get-shit-done/workflows/*.md`) consumed by the IDE/agent layer, plus a **Node.js CLI** (`gsd-tools.cjs`) for state, roadmap, validation, and filesystem operations on planning docs.
 - **Declarative agent and skill definitions** in `.cursor/agents/` and `.cursor/skills/` guide automation; behavior is documentation-driven rather than compiled into the Bun app.
-- A parallel **`.codex/`** tree mirrors `.cursor/` agents, `get-shit-done`, hooks, and skills for non-Cursor tooling.
 
 ## Layers
 

@@ -27,7 +27,6 @@ home-assist/
 │   │   ├── references/   # Shared GSD reference docs
 │   │   └── contexts/     # Prompt context snippets (dev, research, review)
 │   └── gsd-file-manifest.json
-└── .codex/               # Parallel tree for Codex (agents, get-shit-done, hooks, skills)
 ```
 
 ## Directory Purposes
@@ -36,7 +35,7 @@ home-assist/
 - Purpose: Bun/TypeScript project root and single application file.
 - Contains: `index.ts`, manifests, lockfile, top-level docs.
 - Key files: `index.ts`, `package.json`, `tsconfig.json`, `CLAUDE.md`, `README.md`, `bun.lock`
-- Subdirectories: `.planning/`, `.cursor/`, `.codex/`, `node_modules/` (generated)
+- Subdirectories: `.planning/`, `.cursor/`, `node_modules/` (generated)
 
 **`.planning/`:**
 - Purpose: Store GSD-generated and hand-maintained planning documents.
@@ -66,12 +65,6 @@ home-assist/
 - Contains: Large `workflows/` tree; `bin/` for Node CLI; `templates/` for generated doc shapes; `references/` for methodology; `contexts/` for reusable prompt blocks.
 - Key files: `bin/gsd-tools.cjs`, `workflows/map-codebase.md`, `templates/codebase/architecture.md`, `templates/codebase/structure.md`
 - Subdirectories: `bin/`, `bin/lib/`, `workflows/`, `templates/`, `templates/codebase/`, `references/`, `contexts/`
-
-**`.codex/`:**
-- Purpose: Mirror of Cursor-oriented GSD assets for Codex or other consumers.
-- Contains: `agents/`, `get-shit-done/`, `hooks/`, `skills/` — parallel roles to `.cursor/` where tooling expects them.
-- Key files: Align with `.cursor/` layout for cross-tool consistency
-- Subdirectories: Same high-level split as under `.cursor/`
 
 ## Key File Locations
 
@@ -155,11 +148,6 @@ home-assist/
 - Purpose: Implementation detail of `gsd-tools.cjs`; not imported by the Bun app.
 - Generated: No — maintained as part of GSD.
 - Committed: Yes.
-
-**`.codex/`:**
-- Purpose: Duplicate GSD-related tree for Codex integration.
-- Generated: Copy/mirror of relevant `.cursor/` content per install or sync.
-- Committed: Yes if the project tracks multi-IDE parity.
 
 ---
 
