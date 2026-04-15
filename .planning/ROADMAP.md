@@ -41,7 +41,7 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 3. User can start and stop **camera** capture from the client with the same clarity as mic.
 4. Camera permission failures behave like mic: **clear errors**, no silent failure.
 
-**Plans**: TBD
+**Plans**: [`05-01-PLAN.md`](phases/05-local-media-capture/05-01-PLAN.md) (hook + errors + tests), [`05-02-PLAN.md`](phases/05-local-media-capture/05-02-PLAN.md) (Media capture UI + EventsScreen)
 
 **UI hint**: yes
 
@@ -93,6 +93,6 @@ Full phase goals and history: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROA
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1–4 | v1.0 | 7/7 | Complete | 2026-04-15 |
-| 5. Local media capture | v1.1 | 0/TBD | Not started | - |
+| 5. Local media capture | v1.1 | 2/2 | Planned | - |
 | 6. Media signals → events | v1.1 | 0/TBD | Not started | - |
 | 7. E2E media trace | v1.1 | 0/TBD | Not started | - |
