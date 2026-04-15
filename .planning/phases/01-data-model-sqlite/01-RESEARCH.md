@@ -344,17 +344,11 @@ test("home and membership survive db reopen", () => {
 | A2 | `ON DELETE CASCADE` on junction is acceptable | Code Examples | Easy to change to `RESTRICT` in SQL |
 | A3 | `datetime('now')` and `TEXT` timestamps are “ISO-friendly” enough for D-04 | Table design | Switch to `INTEGER` unix ms later if needed |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact env var name (`SQLITE_PATH` vs `DATABASE_URL`)**  
-   - What we know: CONTEXT allows either pattern (D-10).  
-   - What’s unclear: Single canonical name for docs and tests.  
-   - Recommendation: Pick one in PLAN.md; support both if trivial.
+1. **Exact env var name (`SQLITE_PATH` vs `DATABASE_URL`)** — **RESOLVED:** Plans use **`SQLITE_PATH`** as the canonical env override for the DB file path (see `01-01-PLAN.md` Task 2). `DATABASE_URL` can be added later if needed; D-10 flexibility preserved without blocking planning.
 
-2. **Whether to enable WAL in v1**  
-   - What we know: Bun documents WAL and macOS sidecar behavior.  
-   - What’s unclear: Team preference for extra files vs throughput.  
-   - Recommendation: Claude’s discretion; default OFF until concurrency needs appear.
+2. **Whether to enable WAL in v1** — **RESOLVED:** **OFF by default** for Phase 1 (fewer sidecar files; sufficient for lab). WAL remains optional per RESEARCH “Pattern 3” if concurrency needs appear later.
 
 ## Environment Availability
 

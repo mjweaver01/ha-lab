@@ -35,12 +35,6 @@
 
 **Requirements:** HOOK-01, HOOK-02, HOOK-03, HOOK-04
 
-**Plans:** 2 plans
-
-Plans:
-- [ ] 02-01-PLAN.md — Schema migration `002_events_subscribers.sql`, API types (`PostEventBody`), extend migrate runner; blocking `bun test`
-- [ ] 02-02-PLAN.md — `Bun.serve` HTTP (`POST/GET /events`, `POST /subscribers`), fan-out + `event_deliveries`, integration tests (ephemeral port + mock `fetch`)
-
 **UI hint:** no
 
 **Success criteria:**
