@@ -95,4 +95,22 @@ describe("migrate + homes integration", () => {
     expect(row?.version).toBe("001_initial.sql");
     db.close();
   });
+
+  test("schema_migrations records 002_events_subscribers.sql", () => {
+    const dir = mkdtempSync(join(tmpdir(), "home-assist-test-"));
+    const dbPath = join(dir, "ver2.sqlite");
+    migrate(dbPath);
+    const db = openDatabase(dbPath);
+    const row = db
+      .query("SELECT version FROM schema_migrations WHERE version = $v")
+      .get({ $v: "002_events_subscribers.sql" }) as { version: string } | null;
+    expect(row?.version).toBe("002_events_subscribers.sql");
+    const tables = db
+      .query(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('events','subscribers','event_deliveries') ORDER BY name",
+      )
+      .all() as { name: string }[];
+    expect(tables.map((r) => r.name)).toEqual(["event_deliveries", "events", "subscribers"]);
+    db.close();
+  });
 });

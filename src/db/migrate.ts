@@ -9,6 +9,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const MIGRATIONS_DIR = join(__dirname, "migrations");
 
+/** Versioned SQL files in `migrations/` are applied in sorted order (e.g. `001_initial.sql`, `002_events_subscribers.sql`). */
+
 function hasMigrationsTable(db: Database): boolean {
   const row = db
     .query(
