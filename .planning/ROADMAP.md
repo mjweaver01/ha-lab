@@ -16,7 +16,7 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 
 **Phase numbering:** Integers 5–7 continue after v1.0 (1–4). Decimal phases (e.g. 5.1) are reserved for urgent insertions via `/gsd-insert-phase`.
 
-- [ ] **Phase 5: Local media capture** — Mic and camera start/stop with explicit permission and error handling.
+- [x] **Phase 5: Local media capture** — Mic and camera start/stop with explicit permission and error handling. (completed 2026-04-15)
 - [ ] **Phase 6: Media signals → events** — Audio- and video-derived activity posts throttled `POST /events` (`PostEventBody`).
 - [ ] **Phase 7: E2E media trace** — Media-driven events visible end-to-end in the React Events view.
 
@@ -93,6 +93,6 @@ Full phase goals and history: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROA
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1–4 | v1.0 | 7/7 | Complete | 2026-04-15 |
-| 5. Local media capture | v1.1 | 1/2 | In Progress|  |
+| 5. Local media capture | v1.1 | 2/2 | Complete   | 2026-04-15 |
 | 6. Media signals → events | v1.1 | 0/TBD | Not started | - |
 | 7. E2E media trace | v1.1 | 0/TBD | Not started | - |
