@@ -10,8 +10,8 @@ Requirements for this milestone. Each maps to roadmap phases (starting at phase 
 
 ### Media capture
 
-- [ ] **MEDIA-01**: User can start and stop **microphone** capture from the client, with clear handling when permission is denied, dismissed, or revoked.
-- [ ] **MEDIA-02**: User can start and stop **camera** capture from the client, with the same permission behavior as mic (clear errors, no silent failure).
+- [x] **MEDIA-01**: User can start and stop **microphone** capture from the client, with clear handling when permission is denied, dismissed, or revoked.
+- [x] **MEDIA-02**: User can start and stop **camera** capture from the client, with the same permission behavior as mic (clear errors, no silent failure).
 
 ### Media → orchestrator events
 
@@ -44,8 +44,8 @@ Not in v1.1 roadmap; tracked for later versions.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MEDIA-01 | Phase 5 | Pending |
-| MEDIA-02 | Phase 5 | Pending |
+| MEDIA-01 | Phase 5 | Complete |
+| MEDIA-02 | Phase 5 | Complete |
 | MEDIA-03 | Phase 6 | Pending |
 | MEDIA-04 | Phase 6 | Pending |
 | MEDIA-05 | Phase 7 | Pending |

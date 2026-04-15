@@ -93,6 +93,6 @@ Full phase goals and history: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROA
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1–4 | v1.0 | 7/7 | Complete | 2026-04-15 |
-| 5. Local media capture | v1.1 | 2/2 | Complete   | 2026-04-15 |
+| 5. Local media capture | v1.1 | 2/2 | Complete    | 2026-04-15 |
 | 6. Media signals → events | v1.1 | 0/TBD | Not started | - |
 | 7. E2E media trace | v1.1 | 0/TBD | Not started | - |

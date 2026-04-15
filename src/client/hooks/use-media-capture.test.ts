@@ -1,12 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { Window } from "happy-dom";
+import { GlobalWindow } from "happy-dom";
 import { useMediaCapture } from "./use-media-capture.ts";
 
-let happyWindow: Window;
+let happyWindow: GlobalWindow;
 
 beforeAll(() => {
-  happyWindow = new Window({ url: "http://localhost/" });
+  happyWindow = new GlobalWindow({ url: "http://localhost/" });
   globalThis.window = happyWindow as unknown as Window & typeof globalThis;
   globalThis.document = happyWindow.document;
   globalThis.HTMLElement = happyWindow.HTMLElement;

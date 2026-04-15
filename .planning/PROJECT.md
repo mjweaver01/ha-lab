@@ -19,7 +19,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 
 ### Active (v1.1 — in progress)
 
-- [ ] **Local media capture** — Access this Mac’s microphone and camera (browser-first) with clear permission UX.
+- [x] **Local media capture** — Access this Mac’s microphone and camera (browser-first) with clear permission UX. *(Validated in Phase 5: 2026-04-15.)*
 - [ ] **Media → events** — Map audio/video signals into orchestrator events (existing or minimally extended payloads).
 - [ ] **End-to-end trace** — Real media-originated events visible through fan-out and the React Events list.
 - [ ] **Optional hardening** — Production-oriented auth, CORS policy, deployment story (only if you move beyond lab).
@@ -43,7 +43,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 ## Current state (after v1.0)
 
 - **Shipped:** v1.0 **learning prototype** (tag **`v1.0`**). See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
-- **In progress:** v1.1 — local media → events (requirements and roadmap defined via `/gsd-new-milestone`).
+- **In progress:** v1.1 — Phase **5** (local media capture UI + hook) complete; next is **Phase 6** (media signals → `POST /events`).
 - **Stack:** Bun, TypeScript, `bun:sqlite`, React (Bun HTML bundler), no Vite.
 - **Tests:** `bun test` covers DB, orchestrator integration, fan-out, simulated node, and client API helpers.
 
@@ -67,7 +67,7 @@ This repo is a **dumbed-down** version of a **central node + webhook orchestrato
 |----------|-----------|---------|
 | SQLite first for the lab | Simple local install; Bun’s built-in module | ✓ Shipped v1.0 |
 | Simulate the “physical node” (v1.0) | Avoid hardware before the mental model is clear | ✓ `bun run simulate` |
-| Add real mic/camera path (v1.1) | Prove end-to-end with actual media on the dev machine | In progress |
+| Add real mic/camera path (v1.1) | Prove end-to-end with actual media on the dev machine | Phase 5 shipped (capture UX); signals → events in Phase 6+ |
 | Single Bun HTTP orchestrator | One place to log, route, and debug | ✓ `src/server.ts` |
 | Bun HTML bundler for React (no Vite) | Matches stack conventions | ✓ `bun run client` |
 | Dev CORS on `GET /events` | Split ports for client + API in lab | ✓ Documented in code |
@@ -96,4 +96,4 @@ Previously listed as Active before v1.0 close:
 </details>
 
 ---
-*Last updated: 2026-04-15 — **v1.1** milestone started (local media events)*
+*Last updated: 2026-04-15 — **v1.1** Phase 5 complete (local media capture); Phase 6 next*
