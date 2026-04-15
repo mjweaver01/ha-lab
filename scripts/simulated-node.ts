@@ -100,7 +100,8 @@ async function main(): Promise<void> {
   const base = values.url ?? process.env.ORCHESTRATOR_URL ?? "";
   void normalizeOrchestratorBaseUrl(base);
 
-  for (const payload of allSampleEvents(home_id)) {
+  const events = allSampleEvents(home_id);
+  for (const payload of events) {
     const response = await postEvent(base, payload);
     if (!response.ok) {
       let snippet = "";
@@ -116,6 +117,9 @@ async function main(): Promise<void> {
       process.exit(1);
     }
   }
+  console.log(
+    `OK: posted ${events.length} sample events for home_id=${home_id}`,
+  );
 }
 
 if (import.meta.main) {
