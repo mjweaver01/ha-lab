@@ -1,67 +1,42 @@
 # Requirements: Home Assist Lab
 
-**Defined:** 2026-04-15
+**Defined:** *(pending — run `/gsd-new-milestone`)*  
 **Core Value:** End-to-end trace one event from node → orchestrator → subscribed user alert.
 
-## v1 Requirements
+## Next milestone (v1.1+)
 
-### Data & homes
+Requirements for the **next** shipped version are not defined yet. They will replace this section when you run **`/gsd-new-milestone`**, which typically:
 
-- [ ] **HOME-01**: Developer can create a home (logical “site”) with a stable identifier.
-- [ ] **HOME-02**: Developer can associate users with a home (minimal membership model).
+- captures goals and constraints for the new version, and  
+- produces a fresh traceability table tied to new roadmap phases.
 
-### Webhook orchestrator
+## v1.0 reference (shipped)
 
-- [x] **HOOK-01**: Orchestrator exposes an HTTP API to accept POSTed events from a node (payload includes home id, event type, optional JSON body).
-- [x] **HOOK-02**: Persisted events are stored and queryable (for replay/debug).
-- [x] **HOOK-03**: Subscribers can register a target (e.g. HTTP callback URL or in-process list) for a home’s events.
-- [x] **HOOK-04**: On each new event, orchestrator forwards to all subscribers for that home (fan-out).
+All v1 requirements for the learning prototype are **archived** (complete) here:
 
-### Simulated node
+- [`milestones/v1.0-REQUIREMENTS.md`](milestones/v1.0-REQUIREMENTS.md)
 
-- [x] **NODE-01**: A small script or CLI can emit sample events to the orchestrator (motion, door, camera stub) without real hardware.
+That snapshot includes **HOME-01**, **HOME-02**, **HOOK-01–04**, **NODE-01**, **UI-01**, **UI-02** (all complete).
 
-### Client (React)
+## v2+ backlog (ideas)
 
-- [x] **UI-01**: User can view a list of recent events for a home.
-- [x] **UI-02**: User can see alerts when new events arrive (polling or SSE/WebSocket acceptable for v1).
-
-## v2 Requirements
-
-Deferred; not in current roadmap.
-
-### Integrations
-
-- **POSTGRES-01**: Optional swap from SQLite to Postgres for parity with employer stack.
-- **AUTH-01**: Real auth (OAuth, sessions) instead of dev tokens.
+See **Out of scope** and deferred items in **PROJECT.md** and archived requirements for longer-horizon ideas (e.g. Postgres, auth).
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| RPi / Buildroot images | Lab runs on dev machine |
-| Home Assistant / HomeKit / native mobile | Web-only learning scope |
-| Production security review | Explicitly a local/dev prototype |
+| *(carry forward from prior doc as needed)* | — |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOME-01 | Phase 1 | Pending |
-| HOME-02 | Phase 1 | Pending |
-| HOOK-01 | Phase 2 | Complete |
-| HOOK-02 | Phase 2 | Complete |
-| HOOK-03 | Phase 2 | Complete |
-| HOOK-04 | Phase 2 | Complete |
-| NODE-01 | Phase 3 | Complete |
-| UI-01 | Phase 4 | Complete |
-| UI-02 | Phase 4 | Complete |
+| *(populate during `/gsd-new-milestone`)* | — | — |
 
 **Coverage:**
-- v1 requirements: 9 total
-- Mapped to phases: 9
-- Unmapped: 0
+- Next milestone requirements: *TBD*
+- Mapped to phases: *TBD*
 
 ---
-*Requirements defined: 2026-04-15*
-*Last updated: 2026-04-15 after Phase 2 completion*
+*This file was reset after **v1.0** milestone close. Last milestone ship: 2026-04-15.*

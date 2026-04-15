@@ -2,67 +2,85 @@
 
 ## What This Is
 
-A **personal learning prototype** of a simplified “central home + webhook + alerts” model inspired by a commercial product: a Raspberry Pi–style “home” node (simulated on your Mac), a small **webhook orchestrator** that receives events from that node and fans them out to subscribers, and a **web client** so people in a home can see activity and get alerts. It is intentionally **not** HomeKit, iOS/Android apps, or production Buildroot—just enough Bun + TypeScript + storage + React to understand the flow.
+A **personal learning prototype** of a simplified “central home + webhook + alerts” model: a **simulated** node on your Mac, a **Bun** webhook **orchestrator** (SQLite) that receives events and fans them out to subscribers, and a **React** web client to list events and highlight new arrivals. It is intentionally **not** HomeKit, native mobile, or production Buildroot—enough **Bun + TypeScript + SQLite + React** to trace **node → orchestrator → subscribers → UI**.
 
 ## Core Value
 
-You can **end-to-end trace one event** from “something happened on the node” → “orchestrator received and routed it” → “a subscribed user sees an alert”.
+You can **end-to-end trace one event** from “something happened on the node” → “orchestrator received and routed it” → “a subscribed endpoint was notified” → “a browser user sees activity without a full reload.”
 
 ## Requirements
 
-### Validated
+### Validated (v1.0 — 2026-04-15)
 
-- ✓ **Bun + TypeScript scaffold** — Existing repo runs `index.ts` with Bun; `tsconfig` and `package.json` are in place (see `.planning/codebase/STACK.md`).
-- ✓ **GSD planning tooling** — `.cursor/get-shit-done/` and `.planning/codebase/` maps exist for workflows and AI-assisted planning.
-- ✓ **Webhook orchestrator (Phase 2)** — `Bun.serve` HTTP API: POST/GET `/events`, POST `/subscribers`, fan-out with delivery records (`HOOK-01`–`HOOK-04`).
-- ✓ **Simulated node (Phase 3)** — `bun run simulate` POSTs `PostEventBody` samples to the orchestrator (`NODE-01`).
-- ✓ **React client (Phase 4)** — `bun run client` loads an Events screen: polling list + highlight for new rows (`UI-01`, `UI-02`).
+- ✓ **SQLite home model** — Migrations, `homes` / `users` / `home_members`, FK enforcement (`HOME-01`, `HOME-02`).
+- ✓ **Webhook orchestrator** — `Bun.serve`: POST/GET `/events`, POST `/subscribers`, fan-out with delivery records (`HOOK-01`–`HOOK-04`).
+- ✓ **Simulated node** — `bun run simulate` posts sample `PostEventBody` events (`NODE-01`).
+- ✓ **React client** — `bun run client` Events screen, polling, new-row accent (`UI-01`, `UI-02`).
 
-### Active
+### Active (next milestone)
 
-- [ ] **A** home (logical “site”) can be created and named; users can be associated with that home.
-- [ ] **Clients** can register **subscription endpoints** (e.g. URLs) or in-app channels for events for a home.
+- [ ] **Define v1.1+ goals** — Run `/gsd-new-milestone` to capture new requirements and roadmap phases.
+- [ ] **Optional hardening** — Production-oriented auth, CORS policy, deployment story (only if you move beyond lab).
 
 ### Out of Scope
 
 - **Real Raspberry Pi / Buildroot images** — Use your dev machine as the “node” for simulation.
-- **Home Assistant, HomeKit, Matter, native iOS/Android** — Not in v1; web only.
-- **Production Postgres** — Prefer `bun:sqlite` for the lab; Postgres remains an optional later swap if you want parity with the employer stack.
-- **Multi-tenant SaaS hardening** — Auth can be minimal (e.g. dev tokens); no enterprise compliance story in v1.
+- **Home Assistant, HomeKit, Matter, native iOS/Android** — Not in v1 lab; web only.
+- **Production Postgres** — `bun:sqlite` for the lab; Postgres remains an optional later swap.
+- **Multi-tenant SaaS hardening** — Auth can be minimal; no enterprise compliance story in the lab.
+
+## Current state (after v1.0)
+
+- **Shipped:** v1.0 **learning prototype** (tag **`v1.0`**). See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
+- **Stack:** Bun, TypeScript, `bun:sqlite`, React (Bun HTML bundler), no Vite.
+- **Tests:** `bun test` covers DB, orchestrator integration, fan-out, simulated node, and client API helpers.
+
+## Next milestone goals
+
+- Refresh **REQUIREMENTS.md** and **ROADMAP.md** via `/gsd-new-milestone` (new version name, new phases, continued phase numbering).
+- Optionally close **manual UAT** (e.g. `.planning/milestone-v1-UAT.md`) if you want a recorded end-to-end smoke.
 
 ## Context
 
-You are joining a company whose product uses a **central node** (RPi, home instance, Buildroot), **off-the-shelf sensors/cameras**, and a **high-level webhook orchestrator** that turns home assistant–style events into webhook deliveries to whoever is subscribed; home members get alerts. This repo is your **dumbed-down** version to learn the architecture: **node → orchestrator → subscribers → UI**, using **Bun**, **TypeScript**, **SQLite** (via Bun), **webhooks**, and **React** for the client.
+This repo is a **dumbed-down** version of a **central node + webhook orchestrator + subscribers + UI** architecture to learn the flow using **Bun**, **TypeScript**, **SQLite**, **webhooks**, and **React**.
 
 ## Constraints
 
-- **Tech stack**: Bun (not Node/npm for scripts), TypeScript, React for UI; storage via Bun’s SQLite module for the lab.
-- **Scope**: Learning clarity over feature parity; prefer explicit, readable code paths over microservices.
+- **Tech stack:** Bun (not Node for app scripts), TypeScript, React for UI; SQLite via Bun for the lab.
+- **Scope:** Learning clarity over feature parity; explicit, readable code paths.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| SQLite first for the lab | Matches “simple local install” and Bun’s built-in module; easy to run locally | — Pending |
-| Simulate the “physical node” | Avoids hardware before the mental model is clear | — Pending |
-| Webhook orchestrator as single Bun HTTP service | One place to log, route, and replay events for debugging | Implemented (Phase 2) |
+| SQLite first for the lab | Simple local install; Bun’s built-in module | ✓ Shipped v1.0 |
+| Simulate the “physical node” | Avoid hardware before the mental model is clear | ✓ `bun run simulate` |
+| Single Bun HTTP orchestrator | One place to log, route, and debug | ✓ `src/server.ts` |
+| Bun HTML bundler for React (no Vite) | Matches stack conventions | ✓ `bun run client` |
+| Dev CORS on `GET /events` | Split ports for client + API in lab | ✓ Documented in code |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
 **After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+
+1. Move shipped requirements to **Validated** with version reference.
+2. Reset **Active** for the next milestone.
+3. Update **Current state** and **Next milestone goals**.
+4. Audit **Out of Scope** — reasons still valid?
 
 ---
-*Last updated: 2026-04-15 after Phase 4 (React client) completion*
+
+<details>
+<summary>Archived: pre–v1.0 milestone Active requirements (historical)</summary>
+
+Previously listed as Active before v1.0 close:
+
+- **A home** can be created and named; **users** associated with that home — **addressed in v1.0** via `src/db/homes.ts` and migrations.
+- **Clients** can register **subscription endpoints** — **addressed in v1.0** via `POST /subscribers` and fan-out.
+
+</details>
+
+---
+*Last updated: 2026-04-15 after **v1.0** milestone completion*
