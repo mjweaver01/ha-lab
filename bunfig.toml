@@ -1,0 +1,3 @@
+[serve.static]
+# Inline literal process.env.PUBLIC_* in bundled client (Bun HTML bundler)
+env = "PUBLIC_*"
