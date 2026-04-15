@@ -7,7 +7,7 @@
     "test": "bun test",
     "migrate": "bun run src/db/migrate.ts",
     "seed": "bun run scripts/seed-lab.ts",
-    "dev": "bun run index.ts",
+    "dev": "bun --hot index.ts",
     "start": "bun run index.ts",
     "simulate": "bun run scripts/simulated-node.ts",
     "client": "bun ./src/client/index.html"
