@@ -1,4 +1,5 @@
 import type { EventListItem } from "./api/events-client.ts";
+import { MediaCaptureSection } from "./media-capture-section.tsx";
 
 export type EventsScreenProps = {
   events: EventListItem[];
@@ -25,6 +26,8 @@ export function EventsScreen({
       <p className="events-page__meta">
         Home ID: {homeId} · Poll every {Math.round(pollMs / 1000)}s
       </p>
+
+      <MediaCaptureSection />
 
       <div className="events-toolbar">
         <button type="button" className="events-btn" onClick={onRefresh}>
