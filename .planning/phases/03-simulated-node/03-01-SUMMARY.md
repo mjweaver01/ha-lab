@@ -62,7 +62,7 @@ completed: 2026-04-15
 1. **Task 1: Payload contract, URL helpers, and unit tests** — `1b101ce` (feat)
 2. **Task 2: fetch POST, CLI entry, package.json script, exit codes** — `58fa3de` (feat)
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `5117bdf` (docs: complete plan)
 
 ## Files Created/Modified
 
