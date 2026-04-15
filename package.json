@@ -7,7 +7,8 @@
     "test": "bun test",
     "migrate": "bun run src/db/migrate.ts",
     "dev": "bun run index.ts",
-    "start": "bun run index.ts"
+    "start": "bun run index.ts",
+    "simulate": "bun run scripts/simulated-node.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

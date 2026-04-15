@@ -3,6 +3,7 @@ import {
   allSampleEvents,
   eventsPostUrl,
   normalizeOrchestratorBaseUrl,
+  postEvent,
 } from "./simulated-node.ts";
 
 test("eventsPostUrl strips trailing slash before /events", () => {
@@ -33,4 +34,32 @@ test("first sample event preserves home_id and serializes PostEventBody keys", (
 
 test("normalizeOrchestratorBaseUrl rejects non-http(s) schemes", () => {
   expect(() => normalizeOrchestratorBaseUrl("file:///etc/passwd")).toThrow();
+});
+
+test("postEvent uses POST JSON fetch to /events (mocked)", async () => {
+  const orig = globalThis.fetch;
+  let lastUrl = "";
+  let lastInit: RequestInit | undefined;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    lastUrl = typeof input === "string" ? input : input.toString();
+    lastInit = init;
+    return {
+      ok: true,
+      status: 201,
+      text: async () => "",
+    } as Response;
+  }) as typeof fetch;
+  try {
+    const r = await postEvent("http://127.0.0.1:3000/", {
+      home_id: 1,
+      event_type: "motion",
+    });
+    expect(r.ok).toBe(true);
+    expect(lastUrl.endsWith("/events")).toBe(true);
+    expect(lastInit?.method).toBe("POST");
+    const body = JSON.parse(String(lastInit?.body)) as { home_id?: number };
+    expect(body.home_id).toBeDefined();
+  } finally {
+    globalThis.fetch = orig;
+  }
 });

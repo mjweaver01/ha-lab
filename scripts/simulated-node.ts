@@ -1,7 +1,9 @@
 /**
  * Simulated hardware node — POSTs sample events to the Phase 2 orchestrator.
- * Reads `ORCHESTRATOR_URL` (or `--url`) for the base; posts to `/events`.
+ * Base URL: `process.env.ORCHESTRATOR_URL` or `--url` (see `main()`).
  */
+
+import { parseArgs } from "node:util";
 
 /** Phase 2 contract — field names must match orchestrator `PostEventBody`. */
 export interface PostEventBody {
@@ -64,4 +66,61 @@ export function sampleCameraStub(home_id: number): PostEventBody {
 
 export function allSampleEvents(home_id: number): PostEventBody[] {
   return [sampleMotion(home_id), sampleDoor(home_id), sampleCameraStub(home_id)];
+}
+
+/** POST one event to `{base}/events` using Web fetch. */
+export async function postEvent(
+  baseUrl: string,
+  payload: PostEventBody,
+): Promise<Response> {
+  return fetch(eventsPostUrl(baseUrl), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function main(): Promise<void> {
+  const { values } = parseArgs({
+    args: Bun.argv.slice(2),
+    options: {
+      url: { type: "string" },
+      home: { type: "string" },
+    },
+  });
+
+  const homeStr = values.home ?? "1";
+  const home_id = Number(homeStr);
+  if (!Number.isInteger(home_id)) {
+    console.error("Invalid --home: must be an integer");
+    process.exit(1);
+  }
+
+  /** Lab base URL: optional `--url` or `ORCHESTRATOR_URL` env. */
+  const base = values.url ?? process.env.ORCHESTRATOR_URL ?? "";
+  void normalizeOrchestratorBaseUrl(base);
+
+  for (const payload of allSampleEvents(home_id)) {
+    const response = await postEvent(base, payload);
+    if (!response.ok) {
+      let snippet = "";
+      try {
+        const text = await response.text();
+        snippet = text.slice(0, 200);
+      } catch {
+        /* ignore body read errors */
+      }
+      console.error(
+        `POST failed: HTTP ${response.status}${snippet ? ` ${snippet}` : ""}`,
+      );
+      process.exit(1);
+    }
+  }
+}
+
+if (import.meta.main) {
+  void main().catch((err: unknown) => {
+    console.error(err);
+    process.exit(1);
+  });
 }
