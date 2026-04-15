@@ -6,6 +6,7 @@
   "scripts": {
     "test": "bun test",
     "migrate": "bun run src/db/migrate.ts",
+    "seed": "bun run scripts/seed-lab.ts",
     "dev": "bun run index.ts",
     "start": "bun run index.ts",
     "simulate": "bun run scripts/simulated-node.ts",
