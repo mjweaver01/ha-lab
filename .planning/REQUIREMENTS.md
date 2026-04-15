@@ -1,42 +1,60 @@
 # Requirements: Home Assist Lab
 
-**Defined:** *(pending — run `/gsd-new-milestone`)*  
-**Core Value:** End-to-end trace one event from node → orchestrator → subscribed user alert.
+**Defined:** 2026-04-15  
+**Milestone:** v1.1 Local media events  
+**Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.
 
-## Next milestone (v1.1+)
+## v1.1 Requirements
 
-Requirements for the **next** shipped version are not defined yet. They will replace this section when you run **`/gsd-new-milestone`**, which typically:
+Requirements for this milestone. Each maps to roadmap phases (starting at phase **5**).
 
-- captures goals and constraints for the new version, and  
-- produces a fresh traceability table tied to new roadmap phases.
+### Media capture
 
-## v1.0 reference (shipped)
+- [ ] **MEDIA-01**: User can start and stop **microphone** capture from the client, with clear handling when permission is denied, dismissed, or revoked.
+- [ ] **MEDIA-02**: User can start and stop **camera** capture from the client, with the same permission behavior as mic (clear errors, no silent failure).
 
-All v1 requirements for the learning prototype are **archived** (complete) here:
+### Media → orchestrator events
 
-- [`milestones/v1.0-REQUIREMENTS.md`](milestones/v1.0-REQUIREMENTS.md)
+- [ ] **MEDIA-03**: **Audio-derived** activity produces `POST /events` requests using the locked **`PostEventBody`** shape (`home_id`, `event_type`, optional `body`), with **throttling** so the orchestrator is not flooded.
+- [ ] **MEDIA-04**: **Video-derived** activity produces `POST /events` with the same contract (acceptable: periodic sample, lightweight frame diff stub, or explicit “video activity” pattern documented in code).
 
-That snapshot includes **HOME-01**, **HOME-02**, **HOOK-01–04**, **NODE-01**, **UI-01**, **UI-02** (all complete).
+### End-to-end trace
 
-## v2+ backlog (ideas)
+- [ ] **MEDIA-05**: Media-originated events are **listed** in the React Events view with the same visibility rules as other events (user can confirm a real mic/camera-driven event end-to-end).
 
-See **Out of scope** and deferred items in **PROJECT.md** and archived requirements for longer-horizon ideas (e.g. Postgres, auth).
+## Future requirements (deferred)
 
-## Out of Scope
+Not in v1.1 roadmap; tracked for later versions.
+
+### Possible later
+
+- Native / non-browser capture on macOS (FFmpeg, ScreenCaptureKit) for headless or CLI-driven events.
+- Rich video analytics (on-device ML, object labels).
+- WebRTC or streaming to subscribers (beyond discrete webhook events).
+
+## Out of scope
 
 | Feature | Reason |
 |---------|--------|
-| *(carry forward from prior doc as needed)* | — |
+| Full RTSP / NVR / continuous streaming | Lab uses discrete events; keep orchestrator simple |
+| HomeKit / Matter / Home Assistant integration | Explicitly out of lab (see PROJECT.md) |
+| Multi-tenant production auth | Deferred optional hardening |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| *(populate during `/gsd-new-milestone`)* | — | — |
+| *(populated when roadmap is written)* | — | — |
 
 **Coverage:**
-- Next milestone requirements: *TBD*
-- Mapped to phases: *TBD*
+
+- v1.1 requirements: **5** total  
+- Mapped to phases: *pending*  
+- Unmapped: *pending*  
 
 ---
-*This file was reset after **v1.0** milestone close. Last milestone ship: 2026-04-15.*
+
+*v1.0 requirements snapshot:* [`milestones/v1.0-REQUIREMENTS.md`](milestones/v1.0-REQUIREMENTS.md)
+
+---
+*Requirements defined: 2026-04-15 (milestone v1.1)*
