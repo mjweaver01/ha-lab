@@ -16,12 +16,12 @@ You can **end-to-end trace one event** from “something happened on the node”
 - ✓ **GSD planning tooling** — `.cursor/get-shit-done/` and `.planning/codebase/` maps exist for workflows and AI-assisted planning.
 - ✓ **Webhook orchestrator (Phase 2)** — `Bun.serve` HTTP API: POST/GET `/events`, POST `/subscribers`, fan-out with delivery records (`HOOK-01`–`HOOK-04`).
 - ✓ **Simulated node (Phase 3)** — `bun run simulate` POSTs `PostEventBody` samples to the orchestrator (`NODE-01`).
+- ✓ **React client (Phase 4)** — `bun run client` loads an Events screen: polling list + highlight for new rows (`UI-01`, `UI-02`).
 
 ### Active
 
 - [ ] **A** home (logical “site”) can be created and named; users can be associated with that home.
 - [ ] **Clients** can register **subscription endpoints** (e.g. URLs) or in-app channels for events for a home.
-- [ ] A **React UI** lists recent events and shows alerts for users in a home.
 
 ### Out of Scope
 
@@ -65,4 +65,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after Phase 3 (simulated node) completion*
+*Last updated: 2026-04-15 after Phase 4 (React client) completion*

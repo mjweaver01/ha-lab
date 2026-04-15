@@ -23,8 +23,8 @@
 
 ### Client (React)
 
-- [ ] **UI-01**: User can view a list of recent events for a home.
-- [ ] **UI-02**: User can see alerts when new events arrive (polling or SSE/WebSocket acceptable for v1).
+- [x] **UI-01**: User can view a list of recent events for a home.
+- [x] **UI-02**: User can see alerts when new events arrive (polling or SSE/WebSocket acceptable for v1).
 
 ## v2 Requirements
 
@@ -54,8 +54,8 @@ Deferred; not in current roadmap.
 | HOOK-03 | Phase 2 | Complete |
 | HOOK-04 | Phase 2 | Complete |
 | NODE-01 | Phase 3 | Complete |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
+| UI-01 | Phase 4 | Complete |
+| UI-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 9 total
