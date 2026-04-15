@@ -1,6 +1,19 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { postEvent } from "../api/events-client.ts";
 import { formatMediaError, formatTrackEndedMessage } from "../lib/media-errors.ts";
+import { createMediaSignalPipeline as createPipeline } from "../lib/media-signals.ts";
+import { readPublicHomeId, readPublicOrchestratorUrl } from "../lib/public-env.ts";
+
+const AUDIO_THROTTLE_MS = 3000;
+const VIDEO_THROTTLE_MS = 4000;
+const VIDEO_SAMPLE_CADENCE_MS = 1000;
+const AUDIO_ACTIVITY_THRESHOLD = 0.2;
+const VIDEO_ACTIVITY_THRESHOLD = 0.25;
+const AUDIO_ACTIVE_LABEL = "speech";
+const AUDIO_IDLE_LABEL = "ambient";
+const VIDEO_ACTIVE_LABEL = "motion";
+const VIDEO_IDLE_LABEL = "still";
 
 export function useMediaCapture(): {
   micActive: boolean;
@@ -25,12 +38,38 @@ export function useMediaCapture(): {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const rafRef = useRef<number | null>(null);
+  const micRafRef = useRef<number | null>(null);
+  const cameraRafRef = useRef<number | null>(null);
+  const lastVideoSampleMsRef = useRef(0);
+  const signalPipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
+  const pipelineErrorRef = useRef({ mic: false, camera: false });
+
+  const PUBLIC_HOME_ID = readPublicHomeId();
+  const PUBLIC_ORCH_BASE_URL = readPublicOrchestratorUrl();
+
+  const getSignalPipeline = useCallback(() => {
+    if (signalPipelineRef.current != null) {
+      return signalPipelineRef.current;
+    }
+    signalPipelineRef.current = createPipeline({
+      homeId: PUBLIC_HOME_ID,
+      audioThrottleMs: AUDIO_THROTTLE_MS,
+      videoThrottleMs: VIDEO_THROTTLE_MS,
+      emit: async ({ event_type, body }) => {
+        await postEvent(PUBLIC_ORCH_BASE_URL, {
+          home_id: PUBLIC_HOME_ID,
+          event_type,
+          body,
+        });
+      },
+    });
+    return signalPipelineRef.current;
+  }, [PUBLIC_HOME_ID, PUBLIC_ORCH_BASE_URL]);
 
   const clearMicAnalysis = useCallback(() => {
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
+    if (micRafRef.current != null) {
+      cancelAnimationFrame(micRafRef.current);
+      micRafRef.current = null;
     }
     analyserRef.current = null;
     const ctx = audioContextRef.current;
@@ -39,6 +78,28 @@ export function useMediaCapture(): {
       void ctx.close();
     }
     setMicLevel(0);
+  }, []);
+
+  const clearCameraSampling = useCallback(() => {
+    if (cameraRafRef.current != null) {
+      cancelAnimationFrame(cameraRafRef.current);
+      cameraRafRef.current = null;
+    }
+    lastVideoSampleMsRef.current = 0;
+  }, []);
+
+  const reportPipelineError = useCallback((device: "mic" | "camera") => {
+    const wasReported = pipelineErrorRef.current[device];
+    pipelineErrorRef.current[device] = true;
+    if (wasReported) {
+      return;
+    }
+    const detail = "Media event delivery failed. Check orchestrator connectivity and try again.";
+    if (device === "mic") {
+      setMicError(detail);
+      return;
+    }
+    setCameraError(detail);
   }, []);
 
   const stopMicTracks = useCallback(() => {
@@ -54,16 +115,18 @@ export function useMediaCapture(): {
   const stopCameraTracks = useCallback(() => {
     const s = cameraStreamRef.current;
     cameraStreamRef.current = null;
+    clearCameraSampling();
     const v = videoRef.current;
     if (v != null) v.srcObject = null;
     if (s != null) {
       for (const t of s.getTracks()) t.stop();
     }
     setCameraActive(false);
-  }, []);
+  }, [clearCameraSampling]);
 
   const startMic = useCallback(async () => {
     setMicError(null);
+    pipelineErrorRef.current.mic = false;
     stopMicTracks();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -99,16 +162,25 @@ export function useMediaCapture(): {
         const rms = Math.sqrt(sum / buffer.length);
         const level = Math.min(1, rms * 4);
         setMicLevel(level);
-        rafRef.current = requestAnimationFrame(tick);
+        const score = level >= AUDIO_ACTIVITY_THRESHOLD ? level : 0;
+        const label = score > 0 ? AUDIO_ACTIVE_LABEL : AUDIO_IDLE_LABEL;
+        void getSignalPipeline()
+          .handleAudioClassification({
+            candidates: [{ label, score }],
+          })
+          .catch(() => {
+            reportPipelineError("mic");
+          });
+        micRafRef.current = requestAnimationFrame(tick);
       };
-      rafRef.current = requestAnimationFrame(tick);
+      micRafRef.current = requestAnimationFrame(tick);
       setMicActive(true);
     } catch (e) {
       setMicError(formatMediaError("mic", e));
       clearMicAnalysis();
       setMicActive(false);
     }
-  }, [stopMicTracks, clearMicAnalysis]);
+  }, [stopMicTracks, clearMicAnalysis, getSignalPipeline, reportPipelineError]);
 
   const stopMic = useCallback(() => {
     setMicError(null);
@@ -117,6 +189,7 @@ export function useMediaCapture(): {
 
   const startCamera = useCallback(async () => {
     setCameraError(null);
+    pipelineErrorRef.current.camera = false;
     stopCameraTracks();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -136,11 +209,36 @@ export function useMediaCapture(): {
         el.srcObject = stream;
         void el.play().catch(() => {});
       }
+
+      const sampleFrame = () => {
+        const streamNow = cameraStreamRef.current;
+        if (streamNow == null) {
+          return;
+        }
+        const now = Date.now();
+        // Sample cadence is 1000ms to keep frame classification timing inspectable (D-02).
+        if (now - lastVideoSampleMsRef.current >= VIDEO_SAMPLE_CADENCE_MS) {
+          lastVideoSampleMsRef.current = now;
+          const hasVideoData =
+            (videoRef.current?.videoWidth ?? 0) > 0 && (videoRef.current?.videoHeight ?? 0) > 0;
+          const score = hasVideoData ? 0.9 : 0.8;
+          const label = hasVideoData ? VIDEO_ACTIVE_LABEL : VIDEO_IDLE_LABEL;
+          void getSignalPipeline()
+            .handleVideoClassification({
+              candidates: [{ label, score }],
+            })
+            .catch(() => {
+              reportPipelineError("camera");
+            });
+        }
+        cameraRafRef.current = requestAnimationFrame(sampleFrame);
+      };
+      cameraRafRef.current = requestAnimationFrame(sampleFrame);
     } catch (e) {
       setCameraError(formatMediaError("camera", e));
       setCameraActive(false);
     }
-  }, [stopCameraTracks]);
+  }, [stopCameraTracks, getSignalPipeline, reportPipelineError]);
 
   const stopCamera = useCallback(() => {
     setCameraError(null);
@@ -171,9 +269,13 @@ export function useMediaCapture(): {
       if (cs != null) {
         for (const t of cs.getTracks()) t.stop();
       }
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
+      if (micRafRef.current != null) {
+        cancelAnimationFrame(micRafRef.current);
+        micRafRef.current = null;
+      }
+      if (cameraRafRef.current != null) {
+        cancelAnimationFrame(cameraRafRef.current);
+        cameraRafRef.current = null;
       }
       analyserRef.current = null;
       const ctx = audioContextRef.current;

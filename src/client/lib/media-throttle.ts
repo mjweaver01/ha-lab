@@ -8,18 +8,27 @@ export type MediaThrottleState = {
   markVideoEmitted: (nowMs: number) => void;
 };
 
-export function createMediaThrottleState(): MediaThrottleState {
+export type CreateMediaThrottleStateOptions = {
+  audioMinIntervalMs?: number;
+  videoMinIntervalMs?: number;
+};
+
+export function createMediaThrottleState(
+  options: CreateMediaThrottleStateOptions = {},
+): MediaThrottleState {
+  const audioMinIntervalMs = options.audioMinIntervalMs ?? AUDIO_MIN_INTERVAL_MS;
+  const videoMinIntervalMs = options.videoMinIntervalMs ?? VIDEO_MIN_INTERVAL_MS;
   let lastAudioEmitMs: number | undefined;
   let lastVideoEmitMs: number | undefined;
 
   return {
     canEmitAudio: (nowMs) =>
-      lastAudioEmitMs === undefined || nowMs - lastAudioEmitMs >= AUDIO_MIN_INTERVAL_MS,
+      lastAudioEmitMs === undefined || nowMs - lastAudioEmitMs >= audioMinIntervalMs,
     markAudioEmitted: (nowMs) => {
       lastAudioEmitMs = nowMs;
     },
     canEmitVideo: (nowMs) =>
-      lastVideoEmitMs === undefined || nowMs - lastVideoEmitMs >= VIDEO_MIN_INTERVAL_MS,
+      lastVideoEmitMs === undefined || nowMs - lastVideoEmitMs >= videoMinIntervalMs,
     markVideoEmitted: (nowMs) => {
       lastVideoEmitMs = nowMs;
     },

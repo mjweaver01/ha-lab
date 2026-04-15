@@ -29,6 +29,8 @@ export type CreateMediaSignalPipelineOptions = {
   nowMs?: () => number;
   audioThreshold?: number;
   videoThreshold?: number;
+  audioThrottleMs?: number;
+  videoThrottleMs?: number;
 };
 
 const DEFAULT_AUDIO_THRESHOLD = 0.65;
@@ -57,8 +59,13 @@ export function createMediaSignalPipeline({
   nowMs = () => Date.now(),
   audioThreshold = DEFAULT_AUDIO_THRESHOLD,
   videoThreshold = DEFAULT_VIDEO_THRESHOLD,
+  audioThrottleMs,
+  videoThrottleMs,
 }: CreateMediaSignalPipelineOptions): MediaSignalPipeline {
-  const throttle = createMediaThrottleState();
+  const throttle = createMediaThrottleState({
+    audioMinIntervalMs: audioThrottleMs,
+    videoMinIntervalMs: videoThrottleMs,
+  });
   void homeId;
 
   return {
