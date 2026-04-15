@@ -19,7 +19,7 @@
 
 ### Simulated node
 
-- [ ] **NODE-01**: A small script or CLI can emit sample events to the orchestrator (motion, door, camera stub) without real hardware.
+- [x] **NODE-01**: A small script or CLI can emit sample events to the orchestrator (motion, door, camera stub) without real hardware.
 
 ### Client (React)
 
@@ -53,7 +53,7 @@ Deferred; not in current roadmap.
 | HOOK-02 | Phase 2 | Complete |
 | HOOK-03 | Phase 2 | Complete |
 | HOOK-04 | Phase 2 | Complete |
-| NODE-01 | Phase 3 | Pending |
+| NODE-01 | Phase 3 | Complete |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
 
