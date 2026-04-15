@@ -17,9 +17,11 @@ You can **end-to-end trace one event** from “something happened on the node”
 - ✓ **Simulated node** — `bun run simulate` posts sample `PostEventBody` events (`NODE-01`).
 - ✓ **React client** — `bun run client` Events screen, polling, new-row accent (`UI-01`, `UI-02`).
 
-### Active (next milestone)
+### Active (v1.1 — in progress)
 
-- [ ] **Define v1.1+ goals** — Run `/gsd-new-milestone` to capture new requirements and roadmap phases.
+- [ ] **Local media capture** — Access this Mac’s microphone and camera (browser-first) with clear permission UX.
+- [ ] **Media → events** — Map audio/video signals into orchestrator events (existing or minimally extended payloads).
+- [ ] **End-to-end trace** — Real media-originated events visible through fan-out and the React Events list.
 - [ ] **Optional hardening** — Production-oriented auth, CORS policy, deployment story (only if you move beyond lab).
 
 ### Out of Scope
@@ -29,15 +31,25 @@ You can **end-to-end trace one event** from “something happened on the node”
 - **Production Postgres** — `bun:sqlite` for the lab; Postgres remains an optional later swap.
 - **Multi-tenant SaaS hardening** — Auth can be minimal; no enterprise compliance story in the lab.
 
+## Current Milestone: v1.1 Local media events
+
+**Goal:** Use this computer’s real **audio** and **video** as inputs so orchestrator events reflect actual media activity, not only scripted simulation.
+
+**Target features:**
+- **Capture** — Mic and camera on the dev machine (browser `getUserMedia` as the default path; extend only if needed).
+- **Signal → events** — Meaningful mapping (e.g. audio level / activity, optional video or motion-style cues) into `PostEventBody` or a small documented extension.
+- **Same pipeline** — POST to orchestrator → subscribers → Events UI, preserving the core “trace one event” learning loop.
+
 ## Current state (after v1.0)
 
 - **Shipped:** v1.0 **learning prototype** (tag **`v1.0`**). See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
+- **In progress:** v1.1 — local media → events (requirements and roadmap defined via `/gsd-new-milestone`).
 - **Stack:** Bun, TypeScript, `bun:sqlite`, React (Bun HTML bundler), no Vite.
 - **Tests:** `bun test` covers DB, orchestrator integration, fan-out, simulated node, and client API helpers.
 
 ## Next milestone goals
 
-- Refresh **REQUIREMENTS.md** and **ROADMAP.md** via `/gsd-new-milestone` (new version name, new phases, continued phase numbering).
+- Execute **v1.1** phases after `/gsd-plan-phase`.
 - Optionally close **manual UAT** (e.g. `.planning/milestone-v1-UAT.md`) if you want a recorded end-to-end smoke.
 
 ## Context
@@ -54,7 +66,8 @@ This repo is a **dumbed-down** version of a **central node + webhook orchestrato
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | SQLite first for the lab | Simple local install; Bun’s built-in module | ✓ Shipped v1.0 |
-| Simulate the “physical node” | Avoid hardware before the mental model is clear | ✓ `bun run simulate` |
+| Simulate the “physical node” (v1.0) | Avoid hardware before the mental model is clear | ✓ `bun run simulate` |
+| Add real mic/camera path (v1.1) | Prove end-to-end with actual media on the dev machine | In progress |
 | Single Bun HTTP orchestrator | One place to log, route, and debug | ✓ `src/server.ts` |
 | Bun HTML bundler for React (no Vite) | Matches stack conventions | ✓ `bun run client` |
 | Dev CORS on `GET /events` | Split ports for client + API in lab | ✓ Documented in code |
@@ -83,4 +96,4 @@ Previously listed as Active before v1.0 close:
 </details>
 
 ---
-*Last updated: 2026-04-15 after **v1.0** milestone completion*
+*Last updated: 2026-04-15 — **v1.1** milestone started (local media events)*

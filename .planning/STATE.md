@@ -1,9 +1,9 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: v1.0 milestone complete
-stopped_at: Milestone v1.0 archived
+milestone: v1.1
+milestone_name: Local media events
+status: Defining requirements
+stopped_at: Milestone v1.1 started
 last_updated: "2026-04-15T12:00:00.000Z"
 last_activity: 2026-04-15
 progress:
@@ -21,22 +21,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.  
-**Current focus:** *Planning next milestone — run `/gsd-new-milestone`*
+**Current focus:** *Milestone v1.1 — local audio/video → orchestrator events*
 
 ## Current Position
 
-Phase: *(none — v1.0 shipped)*  
+Phase: Not started (defining requirements)  
 Plan: —  
-Status: v1.0 milestone complete and archived  
-Last activity: 2026-04-15
+Status: Defining requirements  
+Last activity: 2026-04-15 — Milestone v1.1 started
 
-Progress: *(reset — define next milestone)*
+Progress: *(roadmap pending)*
 
 ## Performance Metrics
 
 **Velocity:** *(not yet tracked)*
 
-**By Phase:** *(empty until next roadmap)*
+**By Phase:** *(empty until roadmap)*
 
 ## Accumulated Context
 
@@ -61,5 +61,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-15  
-Stopped at: Milestone v1.0 complete  
+Stopped at: Milestone v1.1 — requirements/roadmap in progress  
 Resume file: None
