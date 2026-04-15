@@ -12,10 +12,10 @@
 
 ### Webhook orchestrator
 
-- [ ] **HOOK-01**: Orchestrator exposes an HTTP API to accept POSTed events from a node (payload includes home id, event type, optional JSON body).
-- [ ] **HOOK-02**: Persisted events are stored and queryable (for replay/debug).
-- [ ] **HOOK-03**: Subscribers can register a target (e.g. HTTP callback URL or in-process list) for a home’s events.
-- [ ] **HOOK-04**: On each new event, orchestrator forwards to all subscribers for that home (fan-out).
+- [x] **HOOK-01**: Orchestrator exposes an HTTP API to accept POSTed events from a node (payload includes home id, event type, optional JSON body).
+- [x] **HOOK-02**: Persisted events are stored and queryable (for replay/debug).
+- [x] **HOOK-03**: Subscribers can register a target (e.g. HTTP callback URL or in-process list) for a home’s events.
+- [x] **HOOK-04**: On each new event, orchestrator forwards to all subscribers for that home (fan-out).
 
 ### Simulated node
 
@@ -49,10 +49,10 @@ Deferred; not in current roadmap.
 |-------------|-------|--------|
 | HOME-01 | Phase 1 | Pending |
 | HOME-02 | Phase 1 | Pending |
-| HOOK-01 | Phase 2 | Pending |
-| HOOK-02 | Phase 2 | Pending |
-| HOOK-03 | Phase 2 | Pending |
-| HOOK-04 | Phase 2 | Pending |
+| HOOK-01 | Phase 2 | Complete |
+| HOOK-02 | Phase 2 | Complete |
+| HOOK-03 | Phase 2 | Complete |
+| HOOK-04 | Phase 2 | Complete |
 | NODE-01 | Phase 3 | Pending |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
@@ -64,4 +64,4 @@ Deferred; not in current roadmap.
 
 ---
 *Requirements defined: 2026-04-15*
-*Last updated: 2026-04-15 after roadmap creation*
+*Last updated: 2026-04-15 after Phase 2 completion*

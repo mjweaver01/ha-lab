@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.
-**Current focus:** Phase 02 — webhook-orchestrator
+**Current focus:** Phase 03 — simulated-node
 
 ## Current Position
 
 Phase: 03
 Plan: Not started
-Status: Executing Phase 02
+Status: Ready to plan or execute Phase 3
 Last activity: 2026-04-15
 
-Progress: █░░░░░░░░░ 0%
+Progress: ██████░░░░ 50%
 
 ## Performance Metrics
 
