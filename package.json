@@ -8,7 +8,8 @@
     "migrate": "bun run src/db/migrate.ts",
     "dev": "bun run index.ts",
     "start": "bun run index.ts",
-    "simulate": "bun run scripts/simulated-node.ts"
+    "simulate": "bun run scripts/simulated-node.ts",
+    "client": "bun ./src/client/index.html"
   },
   "dependencies": {
     "react": "19.2.5",
