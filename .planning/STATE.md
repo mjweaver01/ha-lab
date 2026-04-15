@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Local media events
 status: verifying
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-04-15T19:47:27.120Z"
-last_activity: 2026-04-15
+stopped_at: Events UX + media settings updates documented
+last_updated: "2026-04-15T22:40:00.000Z"
+last_activity: 2026-04-15 -- docs refreshed for latest media/events UX
 progress:
   total_phases: 3
   completed_phases: 2
@@ -25,12 +25,12 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 ## Current Position
 
-Phase: 06 (media-signals-events) — EXECUTING
+Phase: 06 (media-signals-events) — VERIFYING
 Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-04-15
+Status: Implementation complete — human verification pending
+Last activity: 2026-04-15 -- docs refreshed for latest media/events UX
 
-Progress: v1.0 (phases 1–4) and v1.1 Phase 5 shipped; v1.1 next is phase **6**  
+Progress: v1.0 (phases 1–4) and v1.1 Phase 5 shipped; v1.1 Phase **6** code complete with pending runtime verification  
 `[█████████████░░]` 5/7 phases complete (overall)
 
 ## Performance Metrics
@@ -51,6 +51,8 @@ See PROJECT.md Key Decisions. v1.0 decisions archived in MILESTONES.md and phase
 - [Phase 06]: Media signal pipeline emits modality intents from top classifier candidates via shared body builders.
 - [Phase 06]: Construct the media signal pipeline once per hook instance and emit via postEvent with PUBLIC_* env defaults.
 - [Phase 06]: Apply withCorsDev to POST /events responses so browser clients receive matching CORS headers on success and error.
+- [Phase 06 follow-up]: Move tuning controls to dedicated Media settings page; keep Media capture panel focused on live controls and overlays.
+- [Phase 06 follow-up]: Add live tail/timeframe filtering with virtualization + pagination so event history inspection scales in the UI.
 
 ### Pending Todos
 
@@ -77,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T19:47:27.117Z
-Stopped at: Completed 06-03-PLAN.md
+Last session: 2026-04-15T22:40:00.000Z
+Stopped at: Events UX + media settings updates documented
 Resume file: None

@@ -17,7 +17,7 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 **Phase numbering:** Integers 5–7 continue after v1.0 (1–4). Decimal phases (e.g. 5.1) are reserved for urgent insertions via `/gsd-insert-phase`.
 
 - [x] **Phase 5: Local media capture** — Mic and camera start/stop with explicit permission and error handling. (completed 2026-04-15)
-- [ ] **Phase 6: Media signals → events** — Audio- and video-derived activity posts throttled `POST /events` (`PostEventBody`).
+- [ ] **Phase 6: Media signals → events** — Audio- and video-derived activity posts throttled `POST /events` (`PostEventBody`). *(Implementation complete; manual verification pending.)*
 - [ ] **Phase 7: E2E media trace** — Media-driven events visible end-to-end in the React Events view.
 
 ## Phase Details
@@ -60,12 +60,15 @@ v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** t
 3. **Video-derived** activity triggers `POST /events` with the same contract (e.g. periodic canvas sample, lightweight diff, or documented “video activity” pattern in code comments).
 4. Naming for `event_type` / `body` for audio vs video paths is **documented in code** so the pipeline stays inspectable.
 
-**Plans**: 3 plans
-
 Plans:
-- [ ] `06-01-PLAN.md` — Add shared media event contract constants/body helpers and typed client `postEvent` transport.
-- [ ] `06-02-PLAN.md` — Build classifier-driven media signal pipeline with independent audio/video throttles and tests.
-- [ ] `06-03-PLAN.md` — Wire signal pipeline into capture hook and enable verified `/events` CORS POST/preflight behavior.
+- [x] `06-01-PLAN.md` — Add shared media event contract constants/body helpers and typed client `postEvent` transport.
+- [x] `06-02-PLAN.md` — Build classifier-driven media signal pipeline with independent audio/video throttles and tests.
+- [x] `06-03-PLAN.md` — Wire signal pipeline into capture hook and enable verified `/events` CORS POST/preflight behavior.
+
+**Execution note (2026-04-15):**
+- Media settings page, live detection overlays, and snapshot-based custom label learning are implemented.
+- Events UI now supports live tail/timeframe filtering with virtualized pagination.
+- Remaining gate for full phase close is human runtime verification (`06-HUMAN-UAT.md`).
 
 ### Phase 7: E2E media trace
 
@@ -99,5 +102,5 @@ Full phase goals and history: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROA
 |-------|-----------|----------------|--------|-----------|
 | 1–4 | v1.0 | 7/7 | Complete | 2026-04-15 |
 | 5. Local media capture | v1.1 | 2/2 | Complete    | 2026-04-15 |
-| 6. Media signals → events | v1.1 | 0/TBD | Not started | - |
+| 6. Media signals → events | v1.1 | 3/3 | Verifying (human checks pending) | - |
 | 7. E2E media trace | v1.1 | 0/TBD | Not started | - |

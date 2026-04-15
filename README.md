@@ -7,7 +7,8 @@ Entry: `bun run dev` serves the orchestrator from `index.ts` (not a console-only
 ## Current state (as of 2026-04-15)
 
 - **Shipped:** **v1.0** learning prototype (git tag **`v1.0`**) — SQLite homes/users, `Bun.serve` webhook routes, simulated node, React Events list with polling.
-- **In progress:** **v1.1** — **Phase 5** is complete: local **browser media capture** UX on the Events screen (microphone/camera via `getUserMedia`, permission prompts). **Phase 6** is next: map media signals to orchestrator events (`POST /events`); not started yet.
+- **In progress:** **v1.1** — **Phase 5** capture UX is complete, and **Phase 6** implementation is complete (media signals post throttled `media.audio` / `media.video` events to `/events`) with remaining manual runtime verification steps tracked in `.planning/phases/06-media-signals-events/06-HUMAN-UAT.md`.
+- **Current client UX:** dedicated **Media settings** page, live audio/video detection overlays, snapshot-based custom label learning, and an Events list with **live tail vs timeframe filtering**, **virtualized rendering**, and **pagination**.
 - **Canonical detail:** requirements, roadmap alignment, and milestone notes live in **`.planning/PROJECT.md`**.
 - **Stack:** Bun, TypeScript, `bun:sqlite`, React via Bun’s HTML bundler (no Vite).
 
@@ -41,7 +42,14 @@ ORCHESTRATOR_URL=http://127.0.0.1:3000 bun run simulate -- --home 1
 PUBLIC_ORCHESTRATOR_URL=http://127.0.0.1:3000 PUBLIC_HOME_ID=1 bun run client
 ```
 
-The Events UI includes a **Media capture** panel (microphone and camera). Grant permissions in the browser when prompted. Phase 6 will wire captured signals to orchestrator events; until then, capture is UI/permissions-focused, not full signal→`POST /events` yet.
+The Events UI includes a **Media capture** panel and a **Media settings** page. Grant permissions in the browser when prompted.
+
+Media behavior currently includes:
+
+- Live microphone meter + audio detection labels.
+- Live camera preview + overlay label/score.
+- Snapshot-based custom learning labels stored in browser localStorage.
+- Events list controls for live tail vs timeframe, paged navigation, and virtualized rendering for larger histories.
 
 ## Tests
 
