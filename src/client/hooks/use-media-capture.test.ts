@@ -18,9 +18,13 @@ beforeAll(() => {
 
 class MockAnalyser {
   fftSize = 2048;
+  frequencyBinCount = 1024;
   smoothingTimeConstant = 0.8;
   getFloatTimeDomainData(arr: Float32Array) {
     for (let i = 0; i < arr.length; i++) arr[i] = 0.3;
+  }
+  getByteFrequencyData(arr: Uint8Array) {
+    for (let i = 0; i < arr.length; i++) arr[i] = 160;
   }
 }
 
@@ -178,6 +182,9 @@ describe("useMediaCapture", () => {
     expect(getUserMedia).toHaveBeenCalled();
     expect(result.current.micActive).toBe(true);
     expect(result.current.micError).toBeNull();
+    await waitFor(() => {
+      expect(result.current.micLevel).toBeGreaterThan(0);
+    });
 
     act(() => {
       result.current.stopMic();

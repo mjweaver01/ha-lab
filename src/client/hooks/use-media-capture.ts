@@ -218,6 +218,7 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
 
       const buffer = new Float32Array(analyser.fftSize);
       const byteBuffer = new Uint8Array(analyser.fftSize);
+      const frequencyBuffer = new Uint8Array(analyser.frequencyBinCount);
       const tick = () => {
         const a = analyserRef.current;
         if (a == null) return;
@@ -241,7 +242,20 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
           sum += x * x;
         }
         const rms = Math.sqrt(sum / buffer.length);
-        const instantaneous = Math.min(1, Math.max(rms * audioLevelBoost, peak * 0.9));
+        let spectralAverage = 0;
+        if (typeof a.getByteFrequencyData === "function") {
+          a.getByteFrequencyData(frequencyBuffer);
+          let freqSum = 0;
+          for (let i = 0; i < frequencyBuffer.length; i++) {
+            freqSum += frequencyBuffer[i] ?? 0;
+          }
+          spectralAverage =
+            frequencyBuffer.length > 0 ? freqSum / (frequencyBuffer.length * 255) : 0;
+        }
+        const instantaneous = Math.min(
+          1,
+          Math.max(rms * audioLevelBoost, peak * 0.9, spectralAverage * 1.8),
+        );
         const smoothed = Math.max(instantaneous, smoothedMicLevelRef.current * 0.84);
         smoothedMicLevelRef.current = smoothed;
         setMicLevel(smoothed);
