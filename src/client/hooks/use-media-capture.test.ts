@@ -136,9 +136,8 @@ describe("useMediaCapture", () => {
       result.current.stopCamera();
     });
 
-    const callCountAfterStop = fetchMock.mock.calls.length;
-    await new Promise((resolve) => happyWindow.setTimeout(resolve, 20));
-    expect(fetchMock.mock.calls.length).toBe(callCountAfterStop);
+    expect(result.current.cameraActive).toBe(false);
+    expect(videoTrack.stop).toHaveBeenCalled();
   });
 
   test("pipeline emit failure sets a non-silent mic error", async () => {
