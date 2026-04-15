@@ -4,8 +4,8 @@ milestone: v1.1
 milestone_name: Local media events
 status: planning
 stopped_at: Phase 6 context gathered
-last_updated: "2026-04-15T19:02:32.184Z"
-last_activity: 2026-04-15 — Phase 5 complete
+last_updated: "2026-04-15T19:06:16.434Z"
+last_activity: 2026-04-15 - Completed quick task 260415-kz8: update README with current app state and prepare/push a new version
 progress:
   total_phases: 3
   completed_phases: 1
@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 Phase: 6
 Plan: Not started
 Status: Ready to plan or execute Phase 6
-Last activity: 2026-04-15 — Phase 5 complete
+Last activity: 2026-04-15 - Completed quick task 260415-kz8: update README with current app state and prepare/push a new version
 
 Progress: v1.0 (phases 1–4) and v1.1 Phase 5 shipped; v1.1 next is phase **6**  
 `[█████████████░░]` 5/7 phases complete (overall)
@@ -52,6 +52,12 @@ None yet.
 ### Blockers/Concerns
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260415-kz8 | update README with current app state and prepare/push a new version | 2026-04-15 | cd01e68 | [260415-kz8-update-readme-with-current-app-state-and](./quick/260415-kz8-update-readme-with-current-app-state-and/) |
 
 ## Deferred Items
 
