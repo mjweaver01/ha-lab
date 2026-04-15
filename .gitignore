@@ -1,6 +1,9 @@
 # dependencies (bun install)
 node_modules
 
+# local SQLite (Phase 1+)
+data/
+
 # output
 out
 dist
