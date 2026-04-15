@@ -1,5 +1,6 @@
 import type { EventListItem } from "./api/events-client.ts";
 import { MediaCaptureSection } from "./media-capture-section.tsx";
+import type { UseMediaCaptureOptions } from "./hooks/use-media-capture.ts";
 
 export type EventsScreenProps = {
   events: EventListItem[];
@@ -9,6 +10,8 @@ export type EventsScreenProps = {
   newIds: ReadonlySet<number>;
   homeId: number;
   pollMs: number;
+  captureSettings: UseMediaCaptureOptions;
+  onOpenMediaSettings: () => void;
 };
 
 export function EventsScreen({
@@ -19,6 +22,8 @@ export function EventsScreen({
   newIds,
   homeId,
   pollMs,
+  captureSettings,
+  onOpenMediaSettings,
 }: EventsScreenProps) {
   return (
     <div className="events-page">
@@ -27,7 +32,13 @@ export function EventsScreen({
         Home ID: {homeId} · Poll every {Math.round(pollMs / 1000)}s
       </p>
 
-      <MediaCaptureSection />
+      <div className="events-toolbar">
+        <button type="button" className="events-btn" onClick={onOpenMediaSettings}>
+          Media settings
+        </button>
+      </div>
+
+      <MediaCaptureSection settings={captureSettings} />
 
       <div className="events-toolbar">
         <button type="button" className="events-btn" onClick={onRefresh}>

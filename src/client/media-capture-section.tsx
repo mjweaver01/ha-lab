@@ -1,18 +1,33 @@
-import { useMediaCapture } from "./hooks/use-media-capture.ts";
+import { useMemo } from "react";
+import {
+  type UseMediaCaptureOptions,
+  useMediaCapture,
+} from "./hooks/use-media-capture.ts";
+import { loadLearnedVideoSamples } from "./lib/media-learning.ts";
 
-export function MediaCaptureSection() {
+export type MediaCaptureSectionProps = {
+  settings: UseMediaCaptureOptions;
+};
+
+export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
+  const learnedVideoSamples = useMemo(() => loadLearnedVideoSamples(), []);
   const {
     micActive,
     cameraActive,
     micLevel,
     micError,
     cameraError,
+    audioDetection,
+    videoDetection,
     startMic,
     stopMic,
     startCamera,
     stopCamera,
     videoRef,
-  } = useMediaCapture();
+  } = useMediaCapture({
+    ...settings,
+    learnedVideoSamples,
+  });
 
   return (
     <details className="media-capture events-panel">
@@ -46,6 +61,12 @@ export function MediaCaptureSection() {
               </div>
             ) : null}
           </div>
+          {audioDetection != null ? (
+            <p className="media-capture__detection">
+              Audio detection: <strong>{audioDetection.label}</strong> (
+              {Math.round(audioDetection.score * 100)}%)
+            </p>
+          ) : null}
         </div>
 
         <div className="media-capture__block">
@@ -63,14 +84,30 @@ export function MediaCaptureSection() {
             {cameraActive ? "Stop camera" : "Start camera"}
           </button>
           {cameraActive ? (
-            <video
-              ref={videoRef}
-              className="media-capture__video"
-              playsInline
-              muted
-              autoPlay
-              aria-label="Camera preview"
-            />
+            <div className="media-capture__video-shell">
+              <video
+                ref={videoRef}
+                className="media-capture__video"
+                playsInline
+                muted
+                autoPlay
+                aria-label="Camera preview"
+              />
+              {videoDetection != null ? (
+                <div className="media-capture__video-overlay" aria-live="polite">
+                  <span className="media-capture__video-label">{videoDetection.label}</span>
+                  <span className="media-capture__video-score">
+                    {Math.round(videoDetection.score * 100)}%
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          {videoDetection != null ? (
+            <p className="media-capture__detection">
+              Video detection: <strong>{videoDetection.label}</strong> (
+              {Math.round(videoDetection.score * 100)}%)
+            </p>
           ) : null}
         </div>
 

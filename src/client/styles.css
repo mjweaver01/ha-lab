@@ -220,3 +220,105 @@ body {
   object-fit: cover;
   background: var(--color-dominant);
 }
+
+.media-capture__video-shell {
+  position: relative;
+}
+
+.media-capture__video-overlay {
+  position: absolute;
+  left: var(--space-sm);
+  top: var(--space-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 20, 25, 0.8);
+  border: 1px solid rgba(61, 139, 253, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.media-capture__video-label {
+  font-size: var(--font-label);
+  font-weight: 600;
+}
+
+.media-capture__video-score {
+  font-size: var(--font-label);
+  color: #8b949e;
+}
+
+.media-capture__detection {
+  margin: 0;
+  color: #8b949e;
+  font-size: var(--font-label);
+}
+
+.media-capture__settings {
+  border-top: 1px solid #30363d;
+  padding-top: var(--space-sm);
+}
+
+.media-capture__settings-summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.media-capture__settings-grid {
+  margin-top: var(--space-sm);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-sm);
+}
+
+.media-capture__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--font-label);
+}
+
+.media-capture__learning {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.media-capture__learning-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.media-capture__input {
+  min-width: 220px;
+  padding: var(--space-sm);
+  border: 1px solid #30363d;
+  border-radius: var(--space-xs);
+  background: var(--color-dominant);
+  color: #e6edf3;
+}
+
+.media-capture__learning-status {
+  margin: 0;
+  color: #8b949e;
+  font-size: var(--font-label);
+}
+
+.media-capture__learned-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.media-capture__learned-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+}

@@ -1,6 +1,12 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { postEvent } from "../api/events-client.ts";
+import {
+  createLearnedVideoSample,
+  createVideoFrameFeature,
+  matchLearnedVideoLabel,
+  type LearnedVideoSample,
+} from "../lib/media-learning.ts";
 import { formatMediaError, formatTrackEndedMessage } from "../lib/media-errors.ts";
 import { createMediaSignalPipeline as createPipeline } from "../lib/media-signals.ts";
 import { readPublicHomeId, readPublicOrchestratorUrl } from "../lib/public-env.ts";
@@ -15,23 +21,68 @@ const AUDIO_IDLE_LABEL = "ambient";
 const VIDEO_ACTIVE_LABEL = "motion";
 const VIDEO_IDLE_LABEL = "still";
 
+export type MediaCaptureDetection = {
+  label: string;
+  score: number;
+  source: "audio" | "video";
+  updatedAt: number;
+  candidates: ReadonlyArray<{ label: string; score: number }>;
+};
+
+export type UseMediaCaptureOptions = {
+  audioLevelBoost?: number;
+  audioActivityThreshold?: number;
+  videoActivityThreshold?: number;
+  videoSampleCadenceMs?: number;
+  learnedVideoSamples?: readonly LearnedVideoSample[];
+  learningMatchThreshold?: number;
+};
+
 export function useMediaCapture(): {
   micActive: boolean;
   cameraActive: boolean;
   micLevel: number;
   micError: string | null;
   cameraError: string | null;
+  audioDetection: MediaCaptureDetection | null;
+  videoDetection: MediaCaptureDetection | null;
   startMic: () => Promise<void>;
   stopMic: () => void;
   startCamera: () => Promise<void>;
   stopCamera: () => void;
+  captureVideoLearningSample: (label: string) => LearnedVideoSample | null;
+  videoRef: RefObject<HTMLVideoElement | null>;
+}
+export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
+  micActive: boolean;
+  cameraActive: boolean;
+  micLevel: number;
+  micError: string | null;
+  cameraError: string | null;
+  audioDetection: MediaCaptureDetection | null;
+  videoDetection: MediaCaptureDetection | null;
+  startMic: () => Promise<void>;
+  stopMic: () => void;
+  startCamera: () => Promise<void>;
+  stopCamera: () => void;
+  captureVideoLearningSample: (label: string) => LearnedVideoSample | null;
   videoRef: RefObject<HTMLVideoElement | null>;
 } {
+  const {
+    audioLevelBoost = 8,
+    audioActivityThreshold = AUDIO_ACTIVITY_THRESHOLD,
+    videoActivityThreshold = VIDEO_ACTIVITY_THRESHOLD,
+    videoSampleCadenceMs = VIDEO_SAMPLE_CADENCE_MS,
+    learnedVideoSamples = [],
+    learningMatchThreshold = 0.65,
+  } = options;
   const [micActive, setMicActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
   const [micError, setMicError] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [audioDetection, setAudioDetection] = useState<MediaCaptureDetection | null>(null);
+  const [videoDetection, setVideoDetection] = useState<MediaCaptureDetection | null>(null);
 
   const micStreamRef = useRef<MediaStream | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -41,6 +92,8 @@ export function useMediaCapture(): {
   const micRafRef = useRef<number | null>(null);
   const cameraRafRef = useRef<number | null>(null);
   const lastVideoSampleMsRef = useRef(0);
+  const smoothedMicLevelRef = useRef(0);
+  const frameCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const signalPipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
   const pipelineErrorRef = useRef({ mic: false, camera: false });
 
@@ -78,6 +131,8 @@ export function useMediaCapture(): {
       void ctx.close();
     }
     setMicLevel(0);
+    smoothedMicLevelRef.current = 0;
+    setAudioDetection(null);
   }, []);
 
   const clearCameraSampling = useCallback(() => {
@@ -86,6 +141,15 @@ export function useMediaCapture(): {
       cameraRafRef.current = null;
     }
     lastVideoSampleMsRef.current = 0;
+    setVideoDetection(null);
+  }, []);
+
+  const ensureFrameCanvas = useCallback((): HTMLCanvasElement => {
+    if (frameCanvasRef.current != null) {
+      return frameCanvasRef.current;
+    }
+    frameCanvasRef.current = document.createElement("canvas");
+    return frameCanvasRef.current;
   }, []);
 
   const reportPipelineError = useCallback((device: "mic" | "camera") => {
@@ -141,6 +205,9 @@ export function useMediaCapture(): {
         };
       }
       const ctx = new AudioContext();
+      if (ctx.state === "suspended") {
+        await ctx.resume().catch(() => {});
+      }
       audioContextRef.current = ctx;
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
@@ -150,20 +217,43 @@ export function useMediaCapture(): {
       analyserRef.current = analyser;
 
       const buffer = new Float32Array(analyser.fftSize);
+      const byteBuffer = new Uint8Array(analyser.fftSize);
       const tick = () => {
         const a = analyserRef.current;
         if (a == null) return;
-        a.getFloatTimeDomainData(buffer);
+        if (typeof a.getFloatTimeDomainData === "function") {
+          a.getFloatTimeDomainData(buffer);
+        } else {
+          a.getByteTimeDomainData(byteBuffer);
+          for (let i = 0; i < byteBuffer.length; i++) {
+            const value = byteBuffer[i] ?? 128;
+            buffer[i] = (value - 128) / 128;
+          }
+        }
         let sum = 0;
+        let peak = 0;
         for (let i = 0; i < buffer.length; i++) {
           const x = buffer[i] ?? 0;
+          const abs = Math.abs(x);
+          if (abs > peak) {
+            peak = abs;
+          }
           sum += x * x;
         }
         const rms = Math.sqrt(sum / buffer.length);
-        const level = Math.min(1, rms * 4);
-        setMicLevel(level);
-        const score = level >= AUDIO_ACTIVITY_THRESHOLD ? level : 0;
+        const instantaneous = Math.min(1, Math.max(rms * audioLevelBoost, peak * 0.9));
+        const smoothed = Math.max(instantaneous, smoothedMicLevelRef.current * 0.84);
+        smoothedMicLevelRef.current = smoothed;
+        setMicLevel(smoothed);
+        const score = smoothed >= audioActivityThreshold ? smoothed : 0;
         const label = score > 0 ? AUDIO_ACTIVE_LABEL : AUDIO_IDLE_LABEL;
+        setAudioDetection({
+          label,
+          score,
+          source: "audio",
+          updatedAt: Date.now(),
+          candidates: [{ label, score }],
+        });
         void getSignalPipeline()
           .handleAudioClassification({
             candidates: [{ label, score }],
@@ -180,7 +270,14 @@ export function useMediaCapture(): {
       clearMicAnalysis();
       setMicActive(false);
     }
-  }, [stopMicTracks, clearMicAnalysis, getSignalPipeline, reportPipelineError]);
+  }, [
+    stopMicTracks,
+    clearMicAnalysis,
+    getSignalPipeline,
+    reportPipelineError,
+    audioLevelBoost,
+    audioActivityThreshold,
+  ]);
 
   const stopMic = useCallback(() => {
     setMicError(null);
@@ -217,15 +314,45 @@ export function useMediaCapture(): {
         }
         const now = Date.now();
         // Sample cadence is 1000ms to keep frame classification timing inspectable (D-02).
-        if (now - lastVideoSampleMsRef.current >= VIDEO_SAMPLE_CADENCE_MS) {
+        if (now - lastVideoSampleMsRef.current >= videoSampleCadenceMs) {
           lastVideoSampleMsRef.current = now;
-          const hasVideoData =
-            (videoRef.current?.videoWidth ?? 0) > 0 && (videoRef.current?.videoHeight ?? 0) > 0;
-          const score = hasVideoData ? 0.9 : 0.8;
-          const label = hasVideoData ? VIDEO_ACTIVE_LABEL : VIDEO_IDLE_LABEL;
+          const videoEl = videoRef.current;
+          const hasVideoData = (videoEl?.videoWidth ?? 0) > 0 && (videoEl?.videoHeight ?? 0) > 0;
+          let score = hasVideoData ? 0.9 : 0;
+          let label = hasVideoData ? VIDEO_ACTIVE_LABEL : VIDEO_IDLE_LABEL;
+          const candidates: Array<{ label: string; score: number }> = [{ label, score }];
+          if (videoEl != null && hasVideoData) {
+            const feature = createVideoFrameFeature(videoEl, ensureFrameCanvas());
+            if (feature != null) {
+              const learningMatch = matchLearnedVideoLabel(feature, learnedVideoSamples);
+              if (
+                learningMatch != null &&
+                learningMatch.score >= learningMatchThreshold &&
+                learningMatch.score >= score
+              ) {
+                label = learningMatch.label;
+                score = learningMatch.score;
+              }
+              if (learningMatch != null && learningMatch.score >= learningMatchThreshold) {
+                candidates.push({
+                  label: learningMatch.label,
+                  score: learningMatch.score,
+                });
+              }
+            }
+          }
+          setVideoDetection({
+            label,
+            score,
+            source: "video",
+            updatedAt: now,
+            candidates,
+          });
+          const acceptedScore = score >= videoActivityThreshold ? score : 0;
+          const acceptedLabel = acceptedScore > 0 ? label : VIDEO_IDLE_LABEL;
           void getSignalPipeline()
             .handleVideoClassification({
-              candidates: [{ label, score }],
+              candidates: [{ label: acceptedLabel, score: acceptedScore }],
             })
             .catch(() => {
               reportPipelineError("camera");
@@ -238,12 +365,36 @@ export function useMediaCapture(): {
       setCameraError(formatMediaError("camera", e));
       setCameraActive(false);
     }
-  }, [stopCameraTracks, getSignalPipeline, reportPipelineError]);
+  }, [
+    stopCameraTracks,
+    getSignalPipeline,
+    reportPipelineError,
+    videoSampleCadenceMs,
+    learnedVideoSamples,
+    learningMatchThreshold,
+    videoActivityThreshold,
+    ensureFrameCanvas,
+  ]);
 
   const stopCamera = useCallback(() => {
     setCameraError(null);
     stopCameraTracks();
   }, [stopCameraTracks]);
+
+  const captureVideoLearningSample = useCallback(
+    (label: string): LearnedVideoSample | null => {
+      const videoEl = videoRef.current;
+      if (videoEl == null) {
+        return null;
+      }
+      const feature = createVideoFrameFeature(videoEl, ensureFrameCanvas());
+      if (feature == null) {
+        return null;
+      }
+      return createLearnedVideoSample(label, feature);
+    },
+    [ensureFrameCanvas],
+  );
 
   useLayoutEffect(() => {
     if (!cameraActive) return;
@@ -294,10 +445,13 @@ export function useMediaCapture(): {
     micLevel,
     micError,
     cameraError,
+    audioDetection,
+    videoDetection,
     startMic,
     stopMic,
     startCamera,
     stopCamera,
+    captureVideoLearningSample,
     videoRef,
   };
 }
