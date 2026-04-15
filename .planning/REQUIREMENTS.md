@@ -15,8 +15,8 @@ Requirements for this milestone. Each maps to roadmap phases (starting at phase 
 
 ### Media → orchestrator events
 
-- [ ] **MEDIA-03**: **Audio-derived** activity produces `POST /events` requests using the locked **`PostEventBody`** shape (`home_id`, `event_type`, optional `body`), with **throttling** so the orchestrator is not flooded.
-- [ ] **MEDIA-04**: **Video-derived** activity produces `POST /events` with the same contract (acceptable: periodic sample, lightweight frame diff stub, or explicit “video activity” pattern documented in code).
+- [x] **MEDIA-03**: **Audio-derived** activity produces `POST /events` requests using the locked **`PostEventBody`** shape (`home_id`, `event_type`, optional `body`), with **throttling** so the orchestrator is not flooded.
+- [x] **MEDIA-04**: **Video-derived** activity produces `POST /events` with the same contract (acceptable: periodic sample, lightweight frame diff stub, or explicit “video activity” pattern documented in code).
 
 ### End-to-end trace
 
@@ -46,8 +46,8 @@ Not in v1.1 roadmap; tracked for later versions.
 |-------------|-------|--------|
 | MEDIA-01 | Phase 5 | Complete |
 | MEDIA-02 | Phase 5 | Complete |
-| MEDIA-03 | Phase 6 | Pending |
-| MEDIA-04 | Phase 6 | Pending |
+| MEDIA-03 | Phase 6 | Complete |
+| MEDIA-04 | Phase 6 | Complete |
 | MEDIA-05 | Phase 7 | Pending |
 
 **Coverage:**
