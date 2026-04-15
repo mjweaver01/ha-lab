@@ -44,13 +44,17 @@ Not in v1.1 roadmap; tracked for later versions.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| *(populated when roadmap is written)* | — | — |
+| MEDIA-01 | Phase 5 | Pending |
+| MEDIA-02 | Phase 5 | Pending |
+| MEDIA-03 | Phase 6 | Pending |
+| MEDIA-04 | Phase 6 | Pending |
+| MEDIA-05 | Phase 7 | Pending |
 
 **Coverage:**
 
 - v1.1 requirements: **5** total  
-- Mapped to phases: *pending*  
-- Unmapped: *pending*  
+- Mapped to phases: **5** / 5  
+- Unmapped: **0**  
 
 ---
 

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Local media events
-status: Defining requirements
-stopped_at: Milestone v1.1 started
+status: Ready to plan
+stopped_at: Roadmap v1.1 (phases 5–7) written
 last_updated: "2026-04-15T12:00:00.000Z"
 last_activity: 2026-04-15
 progress:
-  total_phases: 0
-  completed_phases: 0
+  total_phases: 7
+  completed_phases: 4
   total_plans: 0
   completed_plans: 0
-  percent: 0
+  percent: 57
 ---
 
 # Project State
@@ -25,12 +25,13 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 ## Current Position
 
-Phase: Not started (defining requirements)  
+Phase: **5** of **7** — Local media capture *(v1.1: 1 of 3; phases 5–7 not started)*  
 Plan: —  
-Status: Defining requirements  
-Last activity: 2026-04-15 — Milestone v1.1 started
+Status: Ready to plan (`/gsd-plan-phase 5`)  
+Last activity: 2026-04-15 — ROADMAP.md for v1.1 (phases 5–7) written
 
-Progress: *(roadmap pending)*
+Progress: v1.0 complete (phases 1–4); v1.1 next is phase **5**  
+`[████████████░░░]` 4/7 phases complete (overall)
 
 ## Performance Metrics
 
