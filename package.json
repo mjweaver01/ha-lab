@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "test": "bun test",
-    "migrate": "bun run src/db/migrate.ts"
+    "migrate": "bun run src/db/migrate.ts",
+    "dev": "bun run index.ts",
+    "start": "bun run index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
