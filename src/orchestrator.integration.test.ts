@@ -24,6 +24,17 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
     try {
       const homeId = createHome(db, { name: "Lab" });
 
+      const preflight = await fetch(`${base}/events`, {
+        method: "OPTIONS",
+        headers: {
+          Origin: "http://localhost:3001",
+          "Access-Control-Request-Method": "POST",
+        },
+      });
+      expect(preflight.status).toBe(204);
+      const allowMethods = preflight.headers.get("Access-Control-Allow-Methods");
+      expect(allowMethods).toContain("POST");
+
       const s1 = await fetch(`${base}/subscribers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,7 +75,10 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
 
       const ev = await fetch(`${base}/events`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://localhost:3001",
+        },
         body: JSON.stringify({
           home_id: homeId,
           event_type: "motion.detected",
@@ -72,6 +86,8 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
         }),
       });
       expect(ev.status).toBe(201);
+      expect(ev.headers.get("Access-Control-Allow-Origin")).toBe("*");
+      expect(ev.headers.get("Access-Control-Allow-Methods")).toContain("POST");
       const created = (await ev.json()) as { id: number };
       expect(typeof created.id).toBe("number");
 

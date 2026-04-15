@@ -7,7 +7,7 @@ import { handlePostSubscriber } from "./routes/subscribers.ts";
 function corsDevHeaders(req: Request): Headers {
   const h = new Headers();
   h.set("Access-Control-Allow-Origin", "*");
-  h.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  h.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   h.set(
     "Access-Control-Allow-Headers",
     req.headers.get("Access-Control-Request-Headers") ?? "Content-Type",
@@ -64,7 +64,8 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
     return withCorsDev(res, req);
   }
   if (path === "/events" && req.method === "POST") {
-    return handlePostEvent(req, db);
+    const res = await handlePostEvent(req, db);
+    return withCorsDev(res, req);
   }
   if (path === "/subscribers" && req.method === "POST") {
     return handlePostSubscriber(req, db);
