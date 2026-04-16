@@ -38,7 +38,7 @@ v1.2 introduces location-first operations across the app so users can manage loc
 Plans:
 - [x] 08-01-PLAN.md — Build location lifecycle schema, repository, routes, and access-scope tests.
 - [x] 08-02-PLAN.md — Implement dense locations hub, shared create/edit form UX, and lifecycle UI tests.
-- [ ] 08-03-PLAN.md — Wire app-shell hub/detail navigation and add integration navigation regression tests.
+- [x] 08-03-PLAN.md — Wire app-shell hub/detail navigation and add integration navigation regression tests.
 **UI hint**: yes
 
 ### Phase 9: Location detail visibility
