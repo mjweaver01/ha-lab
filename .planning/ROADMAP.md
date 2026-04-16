@@ -1,107 +1,99 @@
 # Roadmap: Home Assist Lab
 
-**Current milestone:** v1.1 Local media events  
+**Current milestone:** v1.2 Location management + location-scoped access/events  
 **Created:** 2026-04-15
 
 ## Milestones
 
-- ✅ **[v1.0 learning prototype](milestones/v1.0-ROADMAP.md)** — Phases 1–4 (SQLite → orchestrator → simulator → React client). Shipped **2026-04-15**.
-- ✅ **v1.1 Local media events** — Phases 5–7 (browser capture → signal → events → E2E in UI). *Complete.*
+- ✅ **[v1.0 learning prototype](milestones/v1.0-ROADMAP.md)** — Phases 1–4. Shipped 2026-04-15.
+- ✅ **v1.1 Local media events** — Phases 5–7. Complete.
+- 🚧 **v1.2 Location management + location-scoped access/events** — Phases 8–12. Planned.
 
 ## Overview
 
-v1.1 adds a **browser-first** path from this Mac’s **microphone and camera** to the existing orchestrator: `getUserMedia` and clear permission UX first, then **Web Audio** (and optional **canvas** video sampling) driving **throttled** `POST /events` with the locked **`PostEventBody`** shape, and finally confirmation that **media-originated rows** show up in the React Events list like any other event.
+v1.2 introduces location-first operations across the app so users can manage locations, view location-scoped devices and memberships, enforce role-based access, and run location-scoped webhook subscriptions with delivery visibility and recovery controls.
 
 ## Phases
 
-**Phase numbering:** Integers 5–7 continue after v1.0 (1–4). Decimal phases (e.g. 5.1) are reserved for urgent insertions via `/gsd-insert-phase`.
+**Phase numbering:** Continue after v1.1 with phases 8–12. Decimal phases (for example 8.1) are reserved for urgent insertions.
 
-- [x] **Phase 5: Local media capture** — Mic and camera start/stop with explicit permission and error handling. (completed 2026-04-15)
-- [x] **Phase 6: Media signals → events** — Audio- and video-derived activity posts throttled `POST /events` (`PostEventBody`). *(Implementation + human verification complete.)*
-- [x] **Phase 7: E2E media trace** — Media-driven events visible end-to-end in the React Events view. (completed 2026-04-15)
+- [ ] **Phase 8: Locations hub and lifecycle** - Users can list, create, edit, archive, and navigate locations.
+- [ ] **Phase 9: Location detail visibility** - Users can open a location and view scoped devices and memberships.
+- [ ] **Phase 10: Location RBAC and delegated access** - Location permissions are enforced and manageable per user and role.
+- [ ] **Phase 11: Location subscription administration** - Admins can configure location-scoped webhook subscriptions.
+- [ ] **Phase 12: Scoped delivery reliability** - Delivery execution and operability remain isolated by location.
 
 ## Phase Details
 
-### ✅ v1.1 Local media events
-
-**Milestone goal:** Real audio/video on the dev machine produce orchestrator events users can see in the same pipeline as v1.0 (no simulated node required for that path).
-
-### Phase 5: Local media capture
-
-**Goal**: Users can start and stop microphone and camera capture in the client with predictable behavior when permissions are denied, dismissed, or revoked.
-
-**Depends on**: Phase 4 (v1.0 React client and orchestrator available)
-
-**Requirements**: MEDIA-01, MEDIA-02
-
+### Phase 8: Locations hub and lifecycle
+**Goal**: Users can manage the full location lifecycle and navigate from a unified locations hub into specific locations.
+**Depends on**: Phase 7
+**Requirements**: LOC-01, LOC-02, LOC-03, LOC-04, LOC-05, VIEW-01
 **Success Criteria** (what must be TRUE):
-
-1. User can start and stop **microphone** capture from the client; running state is obvious (not ambiguous whether capture is active).
-2. If mic permission is **denied**, **dismissed**, or **revoked**, the user sees a **clear message** (no silent failure).
-3. User can start and stop **camera** capture from the client with the same clarity as mic.
-4. Camera permission failures behave like mic: **clear errors**, no silent failure.
-
-**Plans**: [`05-01-PLAN.md`](phases/05-local-media-capture/05-01-PLAN.md) (hook + errors + tests), [`05-02-PLAN.md`](phases/05-local-media-capture/05-02-PLAN.md) (Media capture UI + EventsScreen)
-
+  1. User can open a locations hub showing all active locations they can access.
+  2. User can create and edit a location with required metadata and see changes reflected in the hub.
+  3. User can archive a location, and archived locations are removed from default active views while still available for audit history.
+  4. User can navigate from the locations hub into a specific location detail page.
+**Plans**: TBD
 **UI hint**: yes
 
-### Phase 6: Media signals → events
-
-**Goal**: Audio- and video-derived activity results in orchestrator events using the existing HTTP contract without flooding the server.
-
-**Depends on**: Phase 5
-
-**Requirements**: MEDIA-03, MEDIA-04
-
+### Phase 9: Location detail visibility
+**Goal**: Users can inspect location-specific devices and user memberships from the selected location view.
+**Depends on**: Phase 8
+**Requirements**: VIEW-02, VIEW-03
 **Success Criteria** (what must be TRUE):
-
-1. **Audio-derived** activity triggers `POST /events` with valid **`PostEventBody`** (`home_id`, `event_type`, optional `body`) matching `src/types/events-api.ts`.
-2. POSTs are **throttled** (minimum interval or equivalent) so sustained activity does not overwhelm `/events` (verifiable via behavior or documented limits).
-3. **Video-derived** activity triggers `POST /events` with the same contract (e.g. periodic canvas sample, lightweight diff, or documented “video activity” pattern in code comments).
-4. Naming for `event_type` / `body` for audio vs video paths is **documented in code** so the pipeline stays inspectable.
-
-Plans:
-- [x] `06-01-PLAN.md` — Add shared media event contract constants/body helpers and typed client `postEvent` transport.
-- [x] `06-02-PLAN.md` — Build classifier-driven media signal pipeline with independent audio/video throttles and tests.
-- [x] `06-03-PLAN.md` — Wire signal pipeline into capture hook and enable verified `/events` CORS POST/preflight behavior.
-
-**Execution note (2026-04-15):**
-- Media settings page, live detection overlays, and snapshot-based custom label learning are implemented.
-- Events UI now supports live tail/timeframe filtering with virtualized pagination.
-- Human runtime verification completed (`06-HUMAN-UAT.md`), and Phase 6 is closed.
-
-### Phase 7: E2E media trace
-
-**Goal**: Users can confirm media-originated events through the same fan-out and Events UI path as scripted v1.0 events.
-
-**Depends on**: Phase 6
-
-**Requirements**: MEDIA-05
-
-**Success Criteria** (what must be TRUE):
-
-1. Events produced from **audio** activity appear in the **React Events** list with the same visibility and listing rules as events from other sources (e.g. polling / new-row behavior unchanged in intent).
-2. Events produced from **video** activity appear in the same Events list **consistently**.
-3. User can perform an **end-to-end check** without the simulated node: enable capture → produce activity → see a new row attributable to the media pipeline.
-
-**Plans**:
-- [x] `07-01-PLAN.md` — Add explicit Events UI test evidence for media event row visibility and new-row behavior parity.
-
+  1. User can view all devices associated with the selected location.
+  2. User can view all users and memberships associated with the selected location.
+  3. Switching to a different location updates the displayed devices and memberships to the new location scope.
+**Plans**: TBD
 **UI hint**: yes
 
----
+### Phase 10: Location RBAC and delegated access
+**Goal**: Access to location data and actions is controlled by server-enforced role policies, with clear admin tooling for membership and delegated roles.
+**Depends on**: Phase 9
+**Requirements**: VIEW-04, RBAC-01, RBAC-02, RBAC-03, RBAC-04, RBAC-05, RBAC-06, PERM-01, PERM-02, DELEG-01, DELEG-02, DELEG-03
+**Success Criteria** (what must be TRUE):
+  1. Admin can assign, update, and remove a user's role for a specific location.
+  2. Unauthorized users cannot read or mutate location-scoped data and receive clear access-denied responses that do not leak protected data.
+  3. UI hides or disables unauthorized actions while server-side policy remains the source of truth.
+  4. Admin can preview effective permissions for a selected user in a selected location, and the preview matches actual policy behavior.
+  5. Admin can grant temporary delegated roles with expiration, and expired delegations are automatically inactive.
+**Plans**: TBD
+**UI hint**: yes
 
-## Shipped: v1.0 (reference)
+### Phase 11: Location subscription administration
+**Goal**: Admins can create and manage webhook subscriptions scoped to a specific location and configured event filters.
+**Depends on**: Phase 10
+**Requirements**: SUB-01, SUB-02, SUB-03, SUB-05
+**Success Criteria** (what must be TRUE):
+  1. Admin can create a webhook subscription for a selected location.
+  2. Admin can edit subscription settings and event selection/filter rules for that location.
+  3. Admin can enable or disable a location subscription without deleting it.
+**Plans**: TBD
+**UI hint**: yes
 
-Full phase goals and history: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md).
+### Phase 12: Scoped delivery reliability
+**Goal**: Location events route only to matching subscriptions, and admins can observe and recover subscription delivery failures.
+**Depends on**: Phase 11
+**Requirements**: SUB-04, REL-01, REL-02, REL-03, REL-04
+**Success Criteria** (what must be TRUE):
+  1. Events are delivered only to subscriptions with the same location scope.
+  2. User can view each location subscription's last delivery status plus last success/failure timestamps and details.
+  3. Admin can trigger a test delivery for a location subscription and inspect the outcome.
+  4. Admin can manually redeliver eligible failed deliveries from the location subscription context.
+**Plans**: TBD
+**UI hint**: yes
 
 ## Progress
 
-**Execution order:** 5 → 6 → 7 (decimal insertions e.g. 5.1 run between 5 and 6 when used).
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 1–4 | v1.0 | 7/7 | Complete | 2026-04-15 |
-| 5. Local media capture | v1.1 | 2/2 | Complete    | 2026-04-15 |
-| 6. Media signals → events | v1.1 | 3/3 | Complete | 2026-04-15 |
-| 7. E2E media trace | v1.1 | 1/1 | Complete | 2026-04-15 |
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1-4. v1.0 learning prototype | 7/7 | Complete | 2026-04-15 |
+| 5. Local media capture | 2/2 | Complete | 2026-04-15 |
+| 6. Media signals -> events | 3/3 | Complete | 2026-04-15 |
+| 7. E2E media trace | 1/1 | Complete | 2026-04-15 |
+| 8. Locations hub and lifecycle | 0/TBD | Not started | - |
+| 9. Location detail visibility | 0/TBD | Not started | - |
+| 10. Location RBAC and delegated access | 0/TBD | Not started | - |
+| 11. Location subscription administration | 0/TBD | Not started | - |
+| 12. Scoped delivery reliability | 0/TBD | Not started | - |

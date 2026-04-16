@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
+milestone: v1.2
 milestone_name: Location management + location-scoped access/events
-status: defining-requirements
-stopped_at: Milestone v1.2 started
-last_updated: "2026-04-15T21:15:00.000Z"
-last_activity: 2026-04-15 -- milestone v1.2 started
+status: ready-to-plan
+stopped_at: Roadmap created for v1.2 (phases 8-12)
+last_updated: "2026-04-15T22:00:00.000Z"
+last_activity: 2026-04-15 -- roadmap created for v1.2
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,17 +21,17 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.  
-**Current focus:** Milestone v1.2 requirements and roadmap definition
+**Current focus:** Phase 8 planning for locations hub and lifecycle
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 8 of 12 (Locations hub and lifecycle)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-15 - Milestone v1.2 started
+Status: Ready to plan
+Last activity: 2026-04-15 - Roadmap created for milestone v1.2
 
-Progress: v1.0 (phases 1–4) and v1.1 (phases 5–7) are complete; v1.2 planning started  
-`[░░░░░░░░░░░░░░░░]` 0/? phases complete (v1.2)
+Progress: v1.0 (phases 1-4) and v1.1 (phases 5-7) are complete; v1.2 phases 8-12 are defined  
+`[░░░░░░░░░░░░░░░░]` 0/5 phases complete (v1.2)
 
 ## Performance Metrics
 
@@ -43,17 +43,11 @@ Progress: v1.0 (phases 1–4) and v1.1 (phases 5–7) are complete; v1.2 plannin
 
 ### Decisions
 
-See PROJECT.md Key Decisions. v1.0 decisions archived in MILESTONES.md and phase summaries.
+See PROJECT.md Key Decisions. Recent roadmap decisions:
 
-- [Phase 06]: Use a shared media-event-types module as the single source of truth for media.audio/media.video and normalized body fields.
-- [Phase 06]: Keep postEvent error wrapping aligned with fetchEvents so client transport failures stay consistent across GET and POST paths.
-- [Phase 06]: Throttle clocks update only after accepted emits to preserve accepted-post semantics.
-- [Phase 06]: Media signal pipeline emits modality intents from top classifier candidates via shared body builders.
-- [Phase 06]: Construct the media signal pipeline once per hook instance and emit via postEvent with PUBLIC_* env defaults.
-- [Phase 06]: Apply withCorsDev to POST /events responses so browser clients receive matching CORS headers on success and error.
-- [Phase 06 follow-up]: Move tuning controls to dedicated Media settings page; keep Media capture panel focused on live controls and overlays.
-- [Phase 06 follow-up]: Add live tail/timeframe filtering with virtualization + pagination so event history inspection scales in the UI.
-- [Phase 07]: Validate media-originated event rows through the standard Events list path with explicit test evidence for audio/video + new-row behavior.
+- [Phase 08]: Start v1.2 with location lifecycle and hub navigation so all downstream location features have a stable entry point.
+- [Phase 10]: Centralize role policy enforcement before advanced subscription reliability controls to prevent scope leakage.
+- [Phase 12]: Keep reliability controls tied to location-scoped routing and delivery history for operational clarity.
 
 ### Pending Todos
 
@@ -63,17 +57,6 @@ None yet.
 
 None yet.
 
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260415-kz8 | update README with current app state and prepare/push a new version | 2026-04-15 | cd01e68 | [260415-kz8-update-readme-with-current-app-state-and](./quick/260415-kz8-update-readme-with-current-app-state-and/) |
-| 260415-vpn | i want to use concurrently for a dev:all command | 2026-04-16 | 51b761a | [260415-vpn-i-want-to-use-concurrently-for-a-dev-all](./quick/260415-vpn-i-want-to-use-concurrently-for-a-dev-all/) |
-| Phase 06 P01 | 2 min | 2 tasks | 5 files |
-| Phase 06 P02 | 3 min | 2 tasks | 5 files |
-| Phase 06 P03 | 6 min | 2 tasks | 6 files |
-| Phase 07 P01 | 4 min | 1 task | 1 file |
-
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
@@ -82,6 +65,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T20:45:00.000Z
-Stopped at: Milestone v1.2 started (requirements definition)
+Last session: 2026-04-15T22:00:00.000Z
+Stopped at: v1.2 roadmap created, phase 8 ready for planning
 Resume file: None

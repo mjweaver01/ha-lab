@@ -80,41 +80,41 @@ Not in v1.2 roadmap; tracked for later versions.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOC-01 | TBD | Pending |
-| LOC-02 | TBD | Pending |
-| LOC-03 | TBD | Pending |
-| LOC-04 | TBD | Pending |
-| LOC-05 | TBD | Pending |
-| VIEW-01 | TBD | Pending |
-| VIEW-02 | TBD | Pending |
-| VIEW-03 | TBD | Pending |
-| VIEW-04 | TBD | Pending |
-| RBAC-01 | TBD | Pending |
-| RBAC-02 | TBD | Pending |
-| RBAC-03 | TBD | Pending |
-| RBAC-04 | TBD | Pending |
-| RBAC-05 | TBD | Pending |
-| RBAC-06 | TBD | Pending |
-| SUB-01 | TBD | Pending |
-| SUB-02 | TBD | Pending |
-| SUB-03 | TBD | Pending |
-| SUB-04 | TBD | Pending |
-| SUB-05 | TBD | Pending |
-| REL-01 | TBD | Pending |
-| REL-02 | TBD | Pending |
-| REL-03 | TBD | Pending |
-| REL-04 | TBD | Pending |
-| PERM-01 | TBD | Pending |
-| PERM-02 | TBD | Pending |
-| DELEG-01 | TBD | Pending |
-| DELEG-02 | TBD | Pending |
-| DELEG-03 | TBD | Pending |
+| LOC-01 | 8 | Pending |
+| LOC-02 | 8 | Pending |
+| LOC-03 | 8 | Pending |
+| LOC-04 | 8 | Pending |
+| LOC-05 | 8 | Pending |
+| VIEW-01 | 8 | Pending |
+| VIEW-02 | 9 | Pending |
+| VIEW-03 | 9 | Pending |
+| VIEW-04 | 10 | Pending |
+| RBAC-01 | 10 | Pending |
+| RBAC-02 | 10 | Pending |
+| RBAC-03 | 10 | Pending |
+| RBAC-04 | 10 | Pending |
+| RBAC-05 | 10 | Pending |
+| RBAC-06 | 10 | Pending |
+| SUB-01 | 11 | Pending |
+| SUB-02 | 11 | Pending |
+| SUB-03 | 11 | Pending |
+| SUB-04 | 12 | Pending |
+| SUB-05 | 11 | Pending |
+| REL-01 | 12 | Pending |
+| REL-02 | 12 | Pending |
+| REL-03 | 12 | Pending |
+| REL-04 | 12 | Pending |
+| PERM-01 | 10 | Pending |
+| PERM-02 | 10 | Pending |
+| DELEG-01 | 10 | Pending |
+| DELEG-02 | 10 | Pending |
+| DELEG-03 | 10 | Pending |
 
 **Coverage:**
 
 - v1.2 requirements: **29** total  
-- Mapped to phases: **0** / 29  
-- Unmapped: **29**  
+- Mapped to phases: **29** / 29  
+- Unmapped: **0**  
 
 ---
 
