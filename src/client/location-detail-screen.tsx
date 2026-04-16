@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ArrowLeft, Save } from "lucide-react";
 import type { CreateLocationBody, UpdateLocationBody } from "../types/locations-api.ts";
 import {
   DEFAULT_LOCATION_FORM,
@@ -48,7 +49,10 @@ export function LocationDetailScreen({
           ) : null}
         </div>
         <div className="ui-page-actions">
-          <button type="button" className="ui-btn" onClick={onBackToLocations}>
+          <button type="button" className="ui-btn ui-btn--with-icon" onClick={onBackToLocations}>
+            <span className="ui-btn__icon" aria-hidden>
+              <ArrowLeft size={16} />
+            </span>
             Back to locations
           </button>
         </div>
@@ -124,7 +128,10 @@ export function LocationDetailScreen({
         </label>
 
         <div className="locations-form-actions">
-          <button type="submit" className="ui-btn" disabled={submitting}>
+          <button type="submit" className="ui-btn ui-btn--with-icon" disabled={submitting}>
+            <span className="ui-btn__icon" aria-hidden>
+              <Save size={16} />
+            </span>
             {submitLabel ?? pageTitle}
           </button>
         </div>

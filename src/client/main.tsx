@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MapPinHouse, RadioTower, Settings2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -203,12 +204,21 @@ function AppHeader() {
         <div className="app-header__brand">Home Assist</div>
         <nav className="app-nav" aria-label="Primary">
           <NavLink to="/events" className={navLinkClassName(isEventsActive)}>
+            <span className="ui-btn__icon" aria-hidden>
+              <RadioTower size={16} />
+            </span>
             Events
           </NavLink>
           <NavLink to="/locations" className={navLinkClassName(isLocationsActive)}>
+            <span className="ui-btn__icon" aria-hidden>
+              <MapPinHouse size={16} />
+            </span>
             Locations
           </NavLink>
           <NavLink to="/settings/media" className={navLinkClassName(isMediaSettingsActive)}>
+            <span className="ui-btn__icon" aria-hidden>
+              <Settings2 size={16} />
+            </span>
             Media settings
           </NavLink>
         </nav>

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, within } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import { EventsScreen } from "./events-screen.tsx";
 
@@ -60,7 +60,7 @@ describe("EventsScreen media E2E trace", () => {
   });
 
   test("toggles live tail button label on click", () => {
-    const { getByText, queryByText } = render(
+    const { container, getByText, queryByText } = render(
       <EventsScreen
         events={[]}
         error={null}
@@ -81,7 +81,7 @@ describe("EventsScreen media E2E trace", () => {
     );
 
     expect(queryByText("Refresh events")).toBeNull();
-    const offButton = getByText("Turn live tail off");
+    const offButton = within(container).getByText("Turn live tail off");
     fireEvent.click(offButton);
     expect(getByText("Turn live tail on")).toBeDefined();
     expect(getByText("Refresh events")).toBeDefined();
@@ -108,8 +108,10 @@ describe("EventsScreen media E2E trace", () => {
       />,
     );
 
-    fireEvent.click(getByText("Turn live tail off"));
-    fireEvent.change(getByDisplayValue("Last 1h"), { target: { value: "custom" } });
+    fireEvent.click(within(container).getByText("Turn live tail off"));
+    fireEvent.change(within(container).getByDisplayValue("Last 1h"), {
+      target: { value: "custom" },
+    });
     const dateInputs = container.querySelectorAll("input[type='date']");
     const timeInputs = container.querySelectorAll("input[type='time']");
     const startDateInput = dateInputs[0] as HTMLInputElement | undefined;
@@ -129,6 +131,6 @@ describe("EventsScreen media E2E trace", () => {
     fireEvent.change(endDateInput, { target: { value: "2026-04-16" } });
     fireEvent.change(endTimeInput, { target: { value: "10:00" } });
 
-    expect(getByText("Timeframe: custom start/end. Showing 0 matched events.")).toBeDefined();
+    expect(getByText("Timeframe: custom start/end.")).toBeDefined();
   });
 });

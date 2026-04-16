@@ -201,6 +201,10 @@ body {
 }
 
 .ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
   font-size: var(--font-body);
   font-weight: 500;
   padding: var(--space-sm) var(--space-md);
@@ -210,6 +214,17 @@ body {
   background: #21262d;
   color: #e6edf3;
   cursor: pointer;
+}
+
+.ui-btn--with-icon {
+  /* Backwards-compatible alias: base ui-btn now includes icon/text flex layout. */
+}
+
+.ui-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
 
 .ui-btn:hover {
@@ -310,6 +325,31 @@ body {
   font-weight: 600;
   cursor: pointer;
   list-style: none;
+}
+
+.media-capture__summary-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--space-sm);
+}
+
+.media-capture__summary-main {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.media-capture__summary-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 140ms ease;
+}
+
+.media-capture[open] .media-capture__summary-caret {
+  transform: rotate(180deg);
 }
 
 .media-capture__summary::-webkit-details-marker {
@@ -503,9 +543,18 @@ body {
 
 .media-capture__rule-actions {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.media-capture__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
 }
 
 /* Locations hub + detail — Phase 08 */

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Archive, FolderOpen, Plus, RotateCcw } from "lucide-react";
 import {
   archiveLocation,
   fetchLocations,
@@ -131,11 +132,14 @@ export function LocationsScreen({
         <div className="ui-page-actions">
           <button
             type="button"
-            className="ui-btn"
+            className="ui-btn ui-btn--with-icon"
             onClick={() => {
               onCreateLocation?.();
             }}
           >
+            <span className="ui-btn__icon" aria-hidden>
+              <Plus size={16} />
+            </span>
             Create location
           </button>
         </div>
@@ -215,36 +219,45 @@ export function LocationsScreen({
                       <div className="ui-inline-actions">
                         <button
                           type="button"
-                          className="ui-btn"
+                          className="ui-btn ui-btn--with-icon"
                           onClick={(event) => {
                             event.stopPropagation();
                             onOpenLocation(location.id);
                           }}
                         >
+                          <span className="ui-btn__icon" aria-hidden>
+                            <FolderOpen size={16} />
+                          </span>
                           Open
                         </button>
                         {isArchived ? (
                           <button
                             type="button"
-                            className="ui-btn"
+                            className="ui-btn ui-btn--with-icon"
                             disabled={isBusy}
                             onClick={(event) => {
                               event.stopPropagation();
                               void onRestore(location.id);
                             }}
                           >
+                            <span className="ui-btn__icon" aria-hidden>
+                              <RotateCcw size={16} />
+                            </span>
                             Restore location
                           </button>
                         ) : (
                           <button
                             type="button"
-                            className="ui-btn ui-btn--destructive"
+                            className="ui-btn ui-btn--destructive ui-btn--with-icon"
                             disabled={isBusy}
                             onClick={(event) => {
                               event.stopPropagation();
                               void onArchive(location.id);
                             }}
                           >
+                            <span className="ui-btn__icon" aria-hidden>
+                              <Archive size={16} />
+                            </span>
                             Archive
                           </button>
                         )}

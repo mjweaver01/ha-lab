@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Bell, BellOff, Pencil, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { useMediaCapture } from "./hooks/use-media-capture.ts";
 import {
   loadLearnedVideoSamples,
@@ -48,6 +49,7 @@ export function MediaSettingsPage({
   const [ruleMinScore, setRuleMinScore] = useState(0.65);
   const [ruleCooldownMs, setRuleCooldownMs] = useState(30_000);
   const [ruleNotify, setRuleNotify] = useState(true);
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [ruleStatus, setRuleStatus] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<string>(() => {
     if (typeof Notification === "undefined") {
@@ -89,11 +91,40 @@ export function MediaSettingsPage({
     });
   };
 
+  const resetRuleForm = () => {
+    setEditingRuleId(null);
+    setRuleKind("keyword");
+    setRuleScope("global");
+    setRuleName("");
+    setRulePattern("");
+    setRuleLocationIdText("");
+    setRuleMinScore(0.65);
+    setRuleCooldownMs(30_000);
+    setRuleNotify(true);
+  };
+
+  const startEditingRule = (rule: DetectionRule) => {
+    setEditingRuleId(rule.id);
+    setRuleKind(rule.kind);
+    setRuleScope(rule.scope);
+    setRuleName(rule.name);
+    setRulePattern(rule.pattern);
+    setRuleLocationIdText(rule.locationId != null ? String(rule.locationId) : "");
+    setRuleMinScore(rule.minScore);
+    setRuleCooldownMs(rule.cooldownMs);
+    setRuleNotify(rule.notify);
+    setRuleStatus(`Editing "${rule.name}".`);
+  };
+
   const removeRule = (ruleId: string) => {
     onChangeSettings({
       ...settings,
       detectionRules: settings.detectionRules.filter((rule) => rule.id !== ruleId),
     });
+    if (editingRuleId === ruleId) {
+      resetRuleForm();
+      setRuleStatus("Deleted rule being edited.");
+    }
   };
 
   const requestNotificationPermission = async () => {
@@ -127,7 +158,7 @@ export function MediaSettingsPage({
       </p>
 
       <div className="ui-panel media-capture__settings-grid">
-        <label className="media-capture__field">
+        <label className="media-capture__field ui-field">
           <span>Audio meter sensitivity ({settings.audioLevelBoost.toFixed(1)}x)</span>
           <input
             type="range"
@@ -143,7 +174,7 @@ export function MediaSettingsPage({
             }
           />
         </label>
-        <label className="media-capture__field">
+        <label className="media-capture__field ui-field">
           <span>Audio activity threshold ({settings.audioThreshold.toFixed(2)})</span>
           <input
             type="range"
@@ -159,7 +190,7 @@ export function MediaSettingsPage({
             }
           />
         </label>
-        <label className="media-capture__field">
+        <label className="media-capture__field ui-field">
           <span>Video activity threshold ({settings.videoThreshold.toFixed(2)})</span>
           <input
             type="range"
@@ -175,7 +206,7 @@ export function MediaSettingsPage({
             }
           />
         </label>
-        <label className="media-capture__field">
+        <label className="media-capture__field ui-field">
           <span>Video sample cadence ({settings.videoCadenceMs}ms)</span>
           <input
             type="range"
@@ -191,7 +222,7 @@ export function MediaSettingsPage({
             }
           />
         </label>
-        <label className="media-capture__field">
+        <label className="media-capture__field ui-field">
           <span>Learning match threshold ({settings.learningThreshold.toFixed(2)})</span>
           <input
             type="range"
@@ -216,7 +247,7 @@ export function MediaSettingsPage({
           <code>media.detected</code> events.
         </p>
         <div className="media-capture__settings-grid">
-          <label className="media-capture__field">
+          <label className="media-capture__field ui-field">
             <span>Rule type</span>
             <select
               value={ruleKind}
@@ -230,7 +261,7 @@ export function MediaSettingsPage({
               <option value="action">Action label (camera)</option>
             </select>
           </label>
-          <label className="media-capture__field">
+          <label className="media-capture__field ui-field">
             <span>Scope</span>
             <select
               value={ruleScope}
@@ -243,7 +274,7 @@ export function MediaSettingsPage({
             </select>
           </label>
           {ruleScope === "location" ? (
-            <label className="media-capture__field">
+            <label className="media-capture__field ui-field">
               <span>Location ID</span>
               <input
                 type="number"
@@ -256,7 +287,7 @@ export function MediaSettingsPage({
               />
             </label>
           ) : null}
-          <label className="media-capture__field">
+          <label className="media-capture__field ui-field">
             <span>Rule name</span>
             <input
               className="media-capture__input"
@@ -267,7 +298,7 @@ export function MediaSettingsPage({
               }}
             />
           </label>
-          <label className="media-capture__field">
+          <label className="media-capture__field ui-field">
             <span>{ruleKind === "keyword" ? "Phrase" : "Action label"}</span>
             <input
               className="media-capture__input"
@@ -278,7 +309,7 @@ export function MediaSettingsPage({
               }}
             />
           </label>
-          <label className="media-capture__field">
+          <label className="media-capture__field ui-field">
             <span>Minimum confidence ({ruleMinScore.toFixed(2)})</span>
             <input
               type="range"
@@ -291,13 +322,13 @@ export function MediaSettingsPage({
               }}
             />
           </label>
-          <label className="media-capture__field">
+          <label className="media-capture__field ui-field">
             <span>Cooldown ({Math.round(ruleCooldownMs / 1000)}s)</span>
             <input
               type="range"
-              min={5000}
+              min={1000}
               max={180000}
-              step={5000}
+              step={1000}
               value={ruleCooldownMs}
               onChange={(event) => {
                 setRuleCooldownMs(Number(event.currentTarget.value));
@@ -334,7 +365,8 @@ export function MediaSettingsPage({
                 setRuleStatus("Enter a valid location ID for location-scoped rules.");
                 return;
               }
-              const id = `rule-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+              const id =
+                editingRuleId ?? `rule-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
               upsertRule({
                 id,
                 name: ruleName.trim() || trimmedPattern,
@@ -347,13 +379,25 @@ export function MediaSettingsPage({
                 notify: ruleNotify,
                 enabled: true,
               });
-              setRulePattern("");
-              setRuleName("");
-              setRuleStatus("Rule added.");
+              const actionLabel = editingRuleId == null ? "Rule added." : "Rule updated.";
+              resetRuleForm();
+              setRuleStatus(actionLabel);
             }}
           >
-            Add rule
+            {editingRuleId == null ? "Add rule" : "Save edits"}
           </button>
+          {editingRuleId != null ? (
+            <button
+              type="button"
+              className="ui-btn"
+              onClick={() => {
+                resetRuleForm();
+                setRuleStatus("Edit canceled.");
+              }}
+            >
+              Cancel edit
+            </button>
+          ) : null}
         </div>
         {ruleStatus != null ? <p className="media-capture__learning-status">{ruleStatus}</p> : null}
         {sortedRules.length > 0 ? (
@@ -369,40 +413,57 @@ export function MediaSettingsPage({
                   </div>
                 </div>
                 <div className="media-capture__rule-actions">
-                  <label className="media-capture__checkbox">
-                    <input
-                      type="checkbox"
-                      checked={rule.enabled}
-                      onChange={(event) => {
-                        upsertRule({
-                          ...rule,
-                          enabled: event.currentTarget.checked,
-                        });
-                      }}
-                    />
-                    Enabled
-                  </label>
-                  <label className="media-capture__checkbox">
-                    <input
-                      type="checkbox"
-                      checked={rule.notify}
-                      onChange={(event) => {
-                        upsertRule({
-                          ...rule,
-                          notify: event.currentTarget.checked,
-                        });
-                      }}
-                    />
-                    Notify
-                  </label>
                   <button
                     type="button"
-                    className="ui-btn"
+                    className="ui-btn media-capture__icon-btn"
+                    title={rule.enabled ? "Disable rule" : "Enable rule"}
+                    aria-label={rule.enabled ? "Disable rule" : "Enable rule"}
+                    onClick={() => {
+                      upsertRule({
+                        ...rule,
+                        enabled: !rule.enabled,
+                      });
+                    }}
+                  >
+                    {rule.enabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                  </button>
+                  <button
+                    type="button"
+                    className="ui-btn media-capture__icon-btn"
+                    title={rule.notify ? "Disable notifications for rule" : "Enable notifications for rule"}
+                    aria-label={
+                      rule.notify ? "Disable notifications for rule" : "Enable notifications for rule"
+                    }
+                    onClick={() => {
+                      upsertRule({
+                        ...rule,
+                        notify: !rule.notify,
+                      });
+                    }}
+                  >
+                    {rule.notify ? <Bell size={16} /> : <BellOff size={16} />}
+                  </button>
+                  <button
+                    type="button"
+                    className="ui-btn media-capture__icon-btn"
+                    title="Edit rule"
+                    aria-label="Edit rule"
+                    onClick={() => {
+                      startEditingRule(rule);
+                    }}
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className="ui-btn media-capture__icon-btn"
+                    title="Remove rule"
+                    aria-label="Remove rule"
                     onClick={() => {
                       removeRule(rule.id);
                     }}
                   >
-                    Remove
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </li>

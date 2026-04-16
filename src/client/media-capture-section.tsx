@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Camera, ChevronDown, Mic, Square } from "lucide-react";
 import {
   type UseMediaCaptureOptions,
   useMediaCapture,
@@ -31,7 +32,17 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
 
   return (
     <details className="media-capture ui-panel">
-      <summary className="media-capture__summary">Media capture</summary>
+      <summary className="media-capture__summary">
+        <span className="media-capture__summary-content">
+          <span className="media-capture__summary-main">
+            <Camera size={16} aria-hidden />
+            <span>Media capture</span>
+          </span>
+          <span className="media-capture__summary-caret" aria-hidden>
+            <ChevronDown size={14} />
+          </span>
+        </span>
+      </summary>
       <div className="media-capture__body">
         <div className="media-capture__block">
           <p className="media-capture__status">
@@ -40,12 +51,15 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
           <div className="media-capture__controls">
             <button
               type="button"
-              className="ui-btn"
+              className="ui-btn ui-btn--with-icon"
               onClick={() => {
                 if (micActive) stopMic();
                 else void startMic();
               }}
             >
+              <span className="ui-btn__icon" aria-hidden>
+                {micActive ? <Square size={14} /> : <Mic size={16} />}
+              </span>
               {micActive ? "Stop microphone" : "Start microphone"}
             </button>
             {micActive ? (
@@ -75,12 +89,15 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
           </p>
           <button
             type="button"
-            className="ui-btn"
+            className="ui-btn ui-btn--with-icon"
             onClick={() => {
               if (cameraActive) stopCamera();
               else void startCamera();
             }}
           >
+            <span className="ui-btn__icon" aria-hidden>
+              {cameraActive ? <Square size={14} /> : <Camera size={16} />}
+            </span>
             {cameraActive ? "Stop camera" : "Start camera"}
           </button>
           {cameraActive ? (

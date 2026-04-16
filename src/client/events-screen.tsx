@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Edit3, Radio, RefreshCw } from "lucide-react";
 import type { EventListItem } from "./api/events-client.ts";
 import { MediaCaptureSection } from "./media-capture-section.tsx";
 import type { UseMediaCaptureOptions } from "./hooks/use-media-capture.ts";
@@ -149,7 +150,10 @@ export function EventsScreen({
         </div>
         <div className="ui-page-actions">
           {locationId != null && onEditLocation != null ? (
-            <button type="button" className="ui-btn" onClick={onEditLocation}>
+            <button type="button" className="ui-btn ui-btn--with-icon" onClick={onEditLocation}>
+              <span className="ui-btn__icon" aria-hidden>
+                <Edit3 size={16} />
+              </span>
               Edit location
             </button>
           ) : null}
@@ -190,7 +194,7 @@ export function EventsScreen({
           </label>
           <button
             type="button"
-            className="ui-btn ui-filter-refresh"
+            className="ui-btn ui-btn--with-icon ui-filter-refresh"
             aria-pressed={filter.mode === "tail"}
             onClick={() => {
               setFilter((prev) => ({
@@ -199,10 +203,16 @@ export function EventsScreen({
               }));
             }}
           >
+            <span className="ui-btn__icon" aria-hidden>
+              <Radio size={16} />
+            </span>
             {filter.mode === "tail" ? "Turn live tail off" : "Turn live tail on"}
           </button>
           {filter.mode !== "tail" ? (
-            <button type="button" className="ui-btn" onClick={onRefresh}>
+            <button type="button" className="ui-btn ui-btn--with-icon" onClick={onRefresh}>
+              <span className="ui-btn__icon" aria-hidden>
+                <RefreshCw size={16} />
+              </span>
               Refresh events
             </button>
           ) : null}
@@ -374,12 +384,15 @@ export function EventsScreen({
           <div className="ui-pagination">
             <button
               type="button"
-              className="ui-btn"
+              className="ui-btn ui-btn--with-icon"
               onClick={() => {
                 setPage((current) => Math.max(1, current - 1));
               }}
               disabled={safePage <= 1}
             >
+              <span className="ui-btn__icon" aria-hidden>
+                <ChevronLeft size={16} />
+              </span>
               Previous
             </button>
             <span>
@@ -387,13 +400,16 @@ export function EventsScreen({
             </span>
             <button
               type="button"
-              className="ui-btn"
+              className="ui-btn ui-btn--with-icon"
               onClick={() => {
                 setPage((current) => Math.min(totalPages, current + 1));
               }}
               disabled={safePage >= totalPages}
             >
               Next
+              <span className="ui-btn__icon" aria-hidden>
+                <ChevronRight size={16} />
+              </span>
             </button>
           </div>
         </div>
