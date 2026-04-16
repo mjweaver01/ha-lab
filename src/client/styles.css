@@ -29,6 +29,67 @@ body {
   color: #e6edf3;
 }
 
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-shell__main {
+  padding-top: var(--space-md);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #30363d;
+  background: rgba(15, 20, 25, 0.96);
+  backdrop-filter: blur(6px);
+}
+
+.app-header__inner {
+  margin: 0 auto;
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.app-header__brand {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.app-nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--space-xs);
+  color: #8b949e;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.app-nav__link:hover {
+  color: #e6edf3;
+  background: #21262d;
+}
+
+.app-nav__link--active {
+  color: #e6edf3;
+  background: #1f2a3b;
+  border: 1px solid #2d3b52;
+}
+
 .events-page {
   max-width: 42rem;
   margin: 0 auto;

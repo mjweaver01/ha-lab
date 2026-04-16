@@ -37,27 +37,23 @@ export async function handlePostEvent(req: Request, db: Database): Promise<Respo
   }
 
   const location = db
-    .query("SELECT 1 AS ok FROM locations WHERE id = $id")
-    .get({ $id: parsed.location_id }) as { ok: number } | null;
+    .query("SELECT 1 AS ok FROM locations WHERE id = ?")
+    .get(parsed.location_id) as { ok: number } | null;
   if (!location) {
     return json({ error: "location not found" }, 404);
   }
 
   const bodyStr = parsed.body !== undefined ? JSON.stringify(parsed.body) : null;
   const ins = db.run(
-    "INSERT INTO events (location_id, event_type, body) VALUES ($l, $t, $b)",
-    {
-      $l: parsed.location_id,
-      $t: parsed.event_type,
-      $b: bodyStr,
-    },
+    "INSERT INTO events (location_id, event_type, body) VALUES (?, ?, ?)",
+    [parsed.location_id, parsed.event_type, bodyStr],
   );
   const id = Number(ins.lastInsertRowid);
   const row = db
     .query(
-      "SELECT id, location_id, event_type, body FROM events WHERE id = $id",
+      "SELECT id, location_id, event_type, body FROM events WHERE id = ?",
     )
-    .get({ $id: id }) as {
+    .get(id) as {
       id: number;
       location_id: number;
       event_type: string;
@@ -80,26 +76,45 @@ export async function handlePostEvent(req: Request, db: Database): Promise<Respo
 export async function handleGetEvents(req: Request, db: Database): Promise<Response> {
   const u = new URL(req.url);
   const lid = u.searchParams.get("location_id");
-  if (lid == null || lid === "") {
-    return json({ error: "location_id required" }, 400);
-  }
-  const locationId = Number(lid);
-  if (!Number.isInteger(locationId)) {
-    return json({ error: "invalid location_id" }, 400);
+  const uidHeader = req.headers.get("x-user-id");
+  const userId = uidHeader == null || uidHeader.trim() === "" ? null : Number(uidHeader);
+  if (userId != null && !Number.isInteger(userId)) {
+    return json({ error: "invalid x-user-id" }, 400);
   }
 
-  const rows = db
-    .query(
-      `SELECT id, location_id, event_type, body, created_at
-       FROM events WHERE location_id = $l ORDER BY id DESC`,
-    )
-    .all({ $l: locationId }) as Array<{
-      id: number;
-      location_id: number;
-      event_type: string;
-      body: string | null;
-      created_at: string;
-    }>;
+  let rows: Array<{
+    id: number;
+    location_id: number;
+    event_type: string;
+    body: string | null;
+    created_at: string;
+  }> = [];
+
+  if (lid != null && lid !== "") {
+    const locationId = Number(lid);
+    if (!Number.isInteger(locationId)) {
+      return json({ error: "invalid location_id" }, 400);
+    }
+    rows = db
+      .query(
+        `SELECT id, location_id, event_type, body, created_at
+         FROM events WHERE location_id = ? ORDER BY id DESC`,
+      )
+      .all(locationId) as typeof rows;
+  } else {
+    if (userId == null) {
+      return json({ error: "location_id or x-user-id required" }, 400);
+    }
+    rows = db
+      .query(
+        `SELECT e.id, e.location_id, e.event_type, e.body, e.created_at
+         FROM events e
+         JOIN location_members lm ON lm.location_id = e.location_id
+         WHERE lm.user_id = ?
+         ORDER BY e.id DESC`,
+      )
+      .all(userId) as typeof rows;
+  }
 
   const out = rows.map((r) => ({
     id: r.id,

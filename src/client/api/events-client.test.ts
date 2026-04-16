@@ -20,7 +20,7 @@ describe("fetchEvents", () => {
       );
     };
 
-    const rows = await fetchEvents("http://127.0.0.1:3000", 7, fetchImpl);
+    const rows = await fetchEvents("http://127.0.0.1:3000", { locationId: 7 }, fetchImpl);
     expect(captured[0]).toContain("/events");
     expect(captured[0]).toContain("location_id=7");
     expect(rows).toHaveLength(1);
@@ -28,15 +28,34 @@ describe("fetchEvents", () => {
   });
 
   test("rejects invalid location_id", async () => {
-    await expect(fetchEvents("http://x", 1.5, mock())).rejects.toThrow();
-    await expect(fetchEvents("http://x", Number.NaN, mock())).rejects.toThrow();
+    await expect(fetchEvents("http://x", { locationId: 1.5 }, mock())).rejects.toThrow();
+    await expect(fetchEvents("http://x", { locationId: Number.NaN }, mock())).rejects.toThrow();
   });
 
   test("throws on non-array JSON", async () => {
     const fetchImpl: typeof fetch = async () =>
       new Response(JSON.stringify({}), { status: 200 });
-    await expect(fetchEvents("http://127.0.0.1:3000", 1, fetchImpl)).rejects.toThrow(
+    await expect(fetchEvents("http://127.0.0.1:3000", { locationId: 1 }, fetchImpl)).rejects.toThrow(
       "JSON array",
     );
+  });
+
+  test("GET /events for all accessible locations sends x-user-id", async () => {
+    const captured: Array<{ url: string; userHeader: string | null }> = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      captured.push({
+        url: typeof input === "string" ? input : input.toString(),
+        userHeader: new Headers(init?.headers).get("x-user-id"),
+      });
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    };
+
+    await fetchEvents("http://127.0.0.1:3000", { userId: 12 }, fetchImpl);
+    expect(captured[0]?.url).toContain("/events");
+    expect(captured[0]?.url).not.toContain("location_id=");
+    expect(captured[0]?.userHeader).toBe("12");
   });
 });

@@ -22,10 +22,14 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
 
     try {
       const locationId = Number(
-        db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
-          $name: "Lab",
-          $code: "lab",
-        }).lastInsertRowid,
+        db.run("INSERT INTO locations (name, code) VALUES (?, ?)", ["Lab", "lab"]).lastInsertRowid,
+      );
+      const userId = Number(
+        db.run("INSERT INTO users (display_name) VALUES (?)", ["Integration Test"]).lastInsertRowid,
+      );
+      db.run(
+        "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+        [locationId, userId],
       );
 
       const preflight = await fetch(`${base}/events`, {
@@ -110,6 +114,13 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
       expect(list.status).toBe(200);
       const arr = (await list.json()) as Array<{ id: number; event_type: string }>;
       expect(arr.some((e) => e.id === created.id)).toBe(true);
+
+      const allAccessible = await fetch(`${base}/events`, {
+        headers: { "x-user-id": String(userId) },
+      });
+      expect(allAccessible.status).toBe(200);
+      const scoped = (await allAccessible.json()) as Array<{ id: number; location_id: number }>;
+      expect(scoped.some((row) => row.id === created.id && row.location_id === locationId)).toBe(true);
     } finally {
       server.stop();
       db.close();

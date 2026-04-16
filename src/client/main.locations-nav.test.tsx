@@ -3,13 +3,15 @@ import { fireEvent, render } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import type { ComponentType } from "react";
 import { App } from "./main.tsx";
+import type { UseEventsPollOptions } from "./hooks/use-events-poll.ts";
 
 beforeAll(() => {
   const happyWindow = new GlobalWindow({ url: "http://localhost/" });
   globalThis.window = happyWindow as unknown as Window & typeof globalThis;
-  globalThis.document = happyWindow.document;
-  globalThis.HTMLElement = happyWindow.HTMLElement;
-  globalThis.navigator = happyWindow.navigator;
+  globalThis.document = happyWindow.document as unknown as Document;
+  globalThis.HTMLElement =
+    happyWindow.HTMLElement as unknown as typeof globalThis.HTMLElement;
+  globalThis.navigator = happyWindow.navigator as unknown as Navigator;
   globalThis.sessionStorage = happyWindow.sessionStorage;
 });
 
@@ -19,13 +21,16 @@ beforeEach(() => {
 });
 
 describe("locations navigation", () => {
-  test("open location detail keeps hub state and supports back navigation", async () => {
+  test("open location routes to location-scoped events and supports back navigation", async () => {
     const includeArchivedState = { value: false };
     const openCalls: number[] = [];
 
     const EventsStub: ComponentType<{
+      locationId: number | null;
       onOpenMediaSettings: () => void;
-    }> = () => <div>events stub</div>;
+    }> = ({ locationId }) => (
+      <div>{locationId == null ? "events for all locations" : `events for location: ${locationId}`}</div>
+    );
 
     const LocationsStub: ComponentType<{
       onOpenLocation: (locationId: number) => void;
@@ -77,13 +82,13 @@ describe("locations navigation", () => {
     const view = render(
       <App
         deps={{
-          useEventsPollHook: () => ({
+          useEventsPollHook: (options?: UseEventsPollOptions) => ({
             events: [],
             error: null,
             loading: false,
             onRefresh: () => {},
             newIds: new Set<number>(),
-            locationId: 1,
+            locationId: options?.locationId ?? null,
             pollMs: 3000,
           }),
           EventsScreenComponent: EventsStub as never,
@@ -99,7 +104,7 @@ describe("locations navigation", () => {
       />,
     );
 
-    expect(view.getByText("events stub")).toBeDefined();
+    expect(view.getByText("events for all locations")).toBeDefined();
 
     fireEvent.click(view.getByText("Locations"));
     expect(view.getByText("locations hub")).toBeDefined();
@@ -107,7 +112,7 @@ describe("locations navigation", () => {
 
     fireEvent.click(view.getByText("include archived on"));
     fireEvent.click(view.getByText("Open row 42"));
-    expect(view.getByText("location detail id: 42")).toBeDefined();
+    expect(view.getByText("events for location: 42")).toBeDefined();
 
     fireEvent.click(view.getByText("Back to locations"));
     expect(view.getByText("locations hub")).toBeDefined();
@@ -117,13 +122,13 @@ describe("locations navigation", () => {
     view.rerender(
       <App
         deps={{
-          useEventsPollHook: () => ({
+          useEventsPollHook: (options?: UseEventsPollOptions) => ({
             events: [],
             error: null,
             loading: false,
             onRefresh: () => {},
             newIds: new Set<number>(),
-            locationId: 1,
+            locationId: options?.locationId ?? null,
             pollMs: 3000,
           }),
           EventsScreenComponent: EventsStub as never,
@@ -140,7 +145,7 @@ describe("locations navigation", () => {
     );
 
     fireEvent.click(view.getByText("Open action 42"));
-    expect(view.getByText("location detail id: 42")).toBeDefined();
+    expect(view.getByText("events for location: 42")).toBeDefined();
     expect(openCalls).toEqual([42, 42]);
   });
 });

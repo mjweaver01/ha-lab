@@ -36,6 +36,8 @@ export type UseMediaCaptureOptions = {
   videoSampleCadenceMs?: number;
   learnedVideoSamples?: readonly LearnedVideoSample[];
   learningMatchThreshold?: number;
+  locationId?: number;
+  orchestratorBaseUrl?: string;
 };
 
 export function useMediaCapture(): {
@@ -75,6 +77,8 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
     videoSampleCadenceMs = VIDEO_SAMPLE_CADENCE_MS,
     learnedVideoSamples = [],
     learningMatchThreshold = 0.65,
+    locationId: locationIdOverride,
+    orchestratorBaseUrl: orchestratorBaseUrlOverride,
   } = options;
   const [micActive, setMicActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
@@ -97,27 +101,29 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
   const signalPipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
   const pipelineErrorRef = useRef({ mic: false, camera: false });
 
-  const PUBLIC_LOCATION_ID = readPublicLocationId();
-  const PUBLIC_ORCH_BASE_URL = readPublicOrchestratorUrl();
+  const publicLocationId = readPublicLocationId();
+  const publicOrchestratorBaseUrl = readPublicOrchestratorUrl();
+  const targetLocationId = locationIdOverride ?? publicLocationId;
+  const targetOrchestratorBaseUrl = orchestratorBaseUrlOverride ?? publicOrchestratorBaseUrl;
 
   const getSignalPipeline = useCallback(() => {
     if (signalPipelineRef.current != null) {
       return signalPipelineRef.current;
     }
     signalPipelineRef.current = createPipeline({
-      locationId: PUBLIC_LOCATION_ID,
+      locationId: targetLocationId,
       audioThrottleMs: AUDIO_THROTTLE_MS,
       videoThrottleMs: VIDEO_THROTTLE_MS,
       emit: async ({ event_type, body }) => {
-        await postEvent(PUBLIC_ORCH_BASE_URL, {
-          location_id: PUBLIC_LOCATION_ID,
+        await postEvent(targetOrchestratorBaseUrl, {
+          location_id: targetLocationId,
           event_type,
           body,
         });
       },
     });
     return signalPipelineRef.current;
-  }, [PUBLIC_LOCATION_ID, PUBLIC_ORCH_BASE_URL]);
+  }, [targetLocationId, targetOrchestratorBaseUrl]);
 
   const clearMicAnalysis = useCallback(() => {
     if (micRafRef.current != null) {

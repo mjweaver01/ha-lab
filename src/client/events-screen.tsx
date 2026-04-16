@@ -16,7 +16,7 @@ export type EventsScreenProps = {
   loading: boolean;
   onRefresh: () => void;
   newIds: ReadonlySet<number>;
-  locationId: number;
+  locationId: number | null;
   pollMs: number;
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
@@ -124,7 +124,8 @@ export function EventsScreen({
         <div>
           <h1 className="events-page__title">Events</h1>
           <p className="events-page__meta">
-            Location ID: {locationId} · Poll every {Math.round(pollMs / 1000)}s
+            {locationId == null ? "All accessible locations" : `Location ID: ${locationId}`} · Poll every{" "}
+            {Math.round(pollMs / 1000)}s
           </p>
         </div>
         <div className="events-page__header-actions">

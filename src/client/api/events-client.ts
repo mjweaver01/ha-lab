@@ -28,6 +28,12 @@ function assertValidLocationId(locationId: number): void {
   }
 }
 
+function assertValidUserId(userId: number): void {
+  if (!Number.isFinite(userId) || !Number.isInteger(userId)) {
+    throw new Error("userId must be a finite integer");
+  }
+}
+
 function assertValidEventType(eventType: string): string {
   const normalized = eventType.trim();
   if (!normalized) {
@@ -63,20 +69,34 @@ function parseEventRow(data: unknown): EventListItem {
 }
 
 /**
- * Fetch events for a location from the orchestrator GET /events?location_id=
+ * Fetch events from the orchestrator.
+ * - If `locationId` is set: fetch location-scoped events.
+ * - If `locationId` is undefined and `userId` is set: fetch all locations accessible to that user.
  */
 export async function fetchEvents(
   baseUrl: string,
-  locationId: number,
+  args: {
+    locationId?: number;
+    userId?: number;
+  } = {},
   fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
 ): Promise<EventListItem[]> {
-  assertValidLocationId(locationId);
+  if (args.locationId != null) {
+    assertValidLocationId(args.locationId);
+  }
+  if (args.userId != null) {
+    assertValidUserId(args.userId);
+  }
   const url = eventsUrl(baseUrl);
-  url.searchParams.set("location_id", String(locationId));
+  if (args.locationId != null) {
+    url.searchParams.set("location_id", String(args.locationId));
+  }
 
   let res: Response;
   try {
-    res = await fetchImpl(url.toString(), { method: "GET" });
+    const headers: HeadersInit =
+      args.userId != null ? { "x-user-id": String(args.userId) } : {};
+    res = await fetchImpl(url.toString(), { method: "GET", headers });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     throw new Error(`Could not reach orchestrator: ${msg}`);

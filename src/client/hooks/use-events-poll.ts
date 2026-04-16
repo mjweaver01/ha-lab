@@ -7,18 +7,33 @@ import {
   readPublicPollMs,
 } from "../lib/public-env.ts";
 
-export function useEventsPoll(): {
+export type UseEventsPollOptions = {
+  baseUrl?: string;
+  locationId?: number;
+  pollMs?: number;
+  userId?: number;
+  includeAllLocations?: boolean;
+};
+
+export type UseEventsPollResult = {
   events: EventListItem[];
   error: string | null;
   loading: boolean;
   onRefresh: () => void;
   newIds: ReadonlySet<number>;
-  locationId: number;
+  locationId: number | null;
   pollMs: number;
-} {
-  const baseUrl = readPublicOrchestratorUrl();
-  const locationId = readPublicLocationId();
-  const pollMs = readPublicPollMs();
+};
+
+export type UseEventsPollHook = (options?: UseEventsPollOptions) => UseEventsPollResult;
+
+export function useEventsPoll(options: UseEventsPollOptions = {}): UseEventsPollResult {
+  const baseUrl = options.baseUrl ?? readPublicOrchestratorUrl();
+  const locationId =
+    options.includeAllLocations === true
+      ? null
+      : (options.locationId ?? readPublicLocationId());
+  const pollMs = options.pollMs ?? readPublicPollMs();
 
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +49,12 @@ export function useEventsPoll(): {
     setError(null);
 
     try {
-      const next = await fetchEvents(baseUrl, locationId);
+      const next = await fetchEvents(
+        baseUrl,
+        locationId != null
+          ? { locationId, userId: options.userId }
+          : { userId: options.userId },
+      );
       const prevMax = previousMaxRef.current;
       const marked = markNewEventIds(prevMax, next);
       previousMaxRef.current = maxEventId(next);
@@ -47,7 +67,7 @@ export function useEventsPoll(): {
       inFlightRef.current = false;
       setLoading(false);
     }
-  }, [baseUrl, locationId]);
+  }, [baseUrl, locationId, options.userId]);
 
   useEffect(() => {
     void refresh();
