@@ -320,7 +320,7 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
   const stopMicTracks = useCallback(() => {
     const s = micStreamRef.current;
     micStreamRef.current = null;
-    if (s != null) {
+    if (s != null && typeof s.getTracks === "function") {
       for (const t of s.getTracks()) t.stop();
     }
     clearMicAnalysis();
@@ -333,7 +333,7 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     clearCameraSampling();
     const v = videoRef.current;
     if (v != null) v.srcObject = null;
-    if (s != null) {
+    if (s != null && typeof s.getTracks === "function") {
       for (const t of s.getTracks()) t.stop();
     }
     setCameraActive(false);

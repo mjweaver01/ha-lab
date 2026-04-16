@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Camera, ChevronDown, Mic, Square } from "lucide-react";
 import {
   type UseMediaCaptureOptions,
@@ -9,6 +9,23 @@ import { loadLearnedVideoSamples } from "./lib/media-learning.ts";
 export type MediaCaptureSectionProps = {
   settings: UseMediaCaptureOptions;
 };
+
+const AUTO_MIC_KEY = "home-assist.media-capture.auto-mic.v1";
+const AUTO_CAMERA_KEY = "home-assist.media-capture.auto-camera.v1";
+
+function readAutoToggle(key: string): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.localStorage.getItem(key) === "1";
+}
+
+function writeAutoToggle(key: string, enabled: boolean): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.setItem(key, enabled ? "1" : "0");
+}
 
 export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
   const learnedVideoSamples = useMemo(() => loadLearnedVideoSamples(), []);
@@ -29,6 +46,15 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
     ...settings,
     learnedVideoSamples,
   });
+
+  useEffect(() => {
+    if (readAutoToggle(AUTO_MIC_KEY)) {
+      void startMic();
+    }
+    if (readAutoToggle(AUTO_CAMERA_KEY)) {
+      void startCamera();
+    }
+  }, []);
 
   return (
     <details className="media-capture ui-panel">
@@ -53,8 +79,13 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
               type="button"
               className="ui-btn ui-btn--with-icon"
               onClick={() => {
-                if (micActive) stopMic();
-                else void startMic();
+                if (micActive) {
+                  writeAutoToggle(AUTO_MIC_KEY, false);
+                  stopMic();
+                  return;
+                }
+                writeAutoToggle(AUTO_MIC_KEY, true);
+                void startMic();
               }}
             >
               <span className="ui-btn__icon" aria-hidden>
@@ -91,8 +122,13 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
             type="button"
             className="ui-btn ui-btn--with-icon"
             onClick={() => {
-              if (cameraActive) stopCamera();
-              else void startCamera();
+              if (cameraActive) {
+                writeAutoToggle(AUTO_CAMERA_KEY, false);
+                stopCamera();
+                return;
+              }
+              writeAutoToggle(AUTO_CAMERA_KEY, true);
+              void startCamera();
             }}
           >
             <span className="ui-btn__icon" aria-hidden>

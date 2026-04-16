@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import { act, render, waitFor } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import { MediaCaptureSection } from "./media-capture-section.tsx";
@@ -57,6 +57,11 @@ function makeStream(tracks: MediaStreamTrack[]): MediaStream {
 
 afterEach(() => {
   mock.restore();
+  window.localStorage.clear();
+});
+
+beforeEach(() => {
+  window.localStorage.clear();
 });
 
 describe("MediaCaptureSection", () => {
@@ -118,5 +123,32 @@ describe("MediaCaptureSection", () => {
       expect(container.querySelector(".ui-alert--error")).not.toBeNull();
     });
     expect(container.querySelector(".ui-alert--error")?.getAttribute("role")).toBe("alert");
+  });
+
+  test("auto-starts previously enabled microphone", async () => {
+    const audioTrack = makeTrack("audio");
+    const audioStream = makeStream([audioTrack]);
+    const getUserMedia = mock(() => Promise.resolve(audioStream));
+    Object.defineProperty(globalThis.navigator, "mediaDevices", {
+      value: { getUserMedia },
+      configurable: true,
+    });
+    window.localStorage.setItem("home-assist.media-capture.auto-mic.v1", "1");
+
+    render(
+      <MediaCaptureSection
+        settings={{
+          audioLevelBoost: DEFAULT_MEDIA_DETECTION_SETTINGS.audioLevelBoost,
+          audioActivityThreshold: DEFAULT_MEDIA_DETECTION_SETTINGS.audioThreshold,
+          videoActivityThreshold: DEFAULT_MEDIA_DETECTION_SETTINGS.videoThreshold,
+          videoSampleCadenceMs: DEFAULT_MEDIA_DETECTION_SETTINGS.videoCadenceMs,
+          learningMatchThreshold: DEFAULT_MEDIA_DETECTION_SETTINGS.learningThreshold,
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(getUserMedia).toHaveBeenCalledTimes(1);
+    });
   });
 });
