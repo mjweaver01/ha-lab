@@ -1,13 +1,20 @@
 import type { Database } from "bun:sqlite";
 import { openDatabase, resolveSqlitePath } from "./db/database.ts";
 import { handleGetEvents, handlePostEvent } from "./routes/events.ts";
+import {
+  handleArchiveLocation,
+  handleGetLocations,
+  handlePatchLocation,
+  handlePostLocation,
+  handleRestoreLocation,
+} from "./routes/locations.ts";
 import { handlePostSubscriber } from "./routes/subscribers.ts";
 
 /** Dev-only CORS for `bun ./src/client/index.html` talking to orchestrator on another port. */
 function corsDevHeaders(req: Request): Headers {
   const h = new Headers();
   h.set("Access-Control-Allow-Origin", "*");
-  h.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  h.set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
   h.set(
     "Access-Control-Allow-Headers",
     req.headers.get("Access-Control-Request-Headers") ?? "Content-Type",
@@ -36,6 +43,7 @@ export type OrchestratorServer = {
 async function routeRequest(req: Request, db: Database): Promise<Response> {
   const u = new URL(req.url);
   const path = u.pathname;
+  const locationPath = /^\/locations\/\d+(?:\/(?:archive|restore))?$/.test(path);
 
   /** Browsers (and some tools) hit `GET /` on startup — answer instead of 404 noise. */
   if (path === "/" && req.method === "GET") {
@@ -58,6 +66,12 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
       headers: corsDevHeaders(req),
     });
   }
+  if ((path === "/locations" || locationPath) && req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsDevHeaders(req),
+    });
+  }
 
   if (path === "/events" && req.method === "GET") {
     const res = await handleGetEvents(req, db);
@@ -69,6 +83,26 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
   }
   if (path === "/subscribers" && req.method === "POST") {
     return handlePostSubscriber(req, db);
+  }
+  if (path === "/locations" && req.method === "GET") {
+    const res = await handleGetLocations(req, db);
+    return withCorsDev(res, req);
+  }
+  if (path === "/locations" && req.method === "POST") {
+    const res = await handlePostLocation(req, db);
+    return withCorsDev(res, req);
+  }
+  if (locationPath && req.method === "PATCH") {
+    const res = await handlePatchLocation(req, db);
+    return withCorsDev(res, req);
+  }
+  if (/^\/locations\/\d+\/archive$/.test(path) && req.method === "POST") {
+    const res = await handleArchiveLocation(req, db);
+    return withCorsDev(res, req);
+  }
+  if (/^\/locations\/\d+\/restore$/.test(path) && req.method === "POST") {
+    const res = await handleRestoreLocation(req, db);
+    return withCorsDev(res, req);
   }
   return new Response("Not Found", { status: 404 });
 }
