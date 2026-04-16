@@ -56,9 +56,19 @@ body {
 }
 
 .app-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.app-header__brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
 
 .app-nav {

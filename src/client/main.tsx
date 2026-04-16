@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPinHouse, RadioTower, Settings2 } from "lucide-react";
+import { FlaskConical, MapPinHouse, RadioTower, Settings2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -201,7 +201,12 @@ function AppHeader() {
   return (
     <header className="app-header">
       <div className="app-header__inner">
-        <div className="app-header__brand">Home Assist</div>
+        <div className="app-header__brand">
+          <span className="app-header__brand-icon" aria-hidden>
+            <FlaskConical size={16} />
+          </span>
+          <span>Home Assist Lab</span>
+        </div>
         <nav className="app-nav" aria-label="Primary">
           <NavLink to="/events" className={navLinkClassName(isEventsActive)}>
             <span className="ui-btn__icon" aria-hidden>
