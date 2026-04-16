@@ -4,6 +4,11 @@ import { GlobalWindow } from "happy-dom";
 import type { ComponentType } from "react";
 import { App } from "./main.tsx";
 import type { UseEventsPollOptions } from "./hooks/use-events-poll.ts";
+import {
+  DEFAULT_MEDIA_DETECTION_SETTINGS,
+  saveMediaDetectionSettings,
+} from "./lib/media-settings.ts";
+import { MEDIA_DETECTED_EVENT_TYPE } from "./lib/media-event-types.ts";
 
 beforeAll(() => {
   const happyWindow = new GlobalWindow({ url: "http://localhost/" });
@@ -17,6 +22,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   globalThis.sessionStorage.clear();
+  globalThis.window.localStorage.clear();
   globalThis.window.history.replaceState({}, "", "/events");
 });
 
@@ -146,5 +152,102 @@ describe("locations navigation", () => {
     fireEvent.click(view.getByText("Open action 42"));
     expect(view.getByText("events for location: 42")).toBeDefined();
     expect(openCalls).toEqual([42, 42]);
+  });
+
+  test("shows detected notifications even away from events page", () => {
+    const calls: Array<{ title: string; body: string | undefined; tag: string | undefined }> = [];
+    class NotificationMock {
+      static permission: NotificationPermission = "granted";
+      static requestPermission(): Promise<NotificationPermission> {
+        return Promise.resolve("granted");
+      }
+
+      constructor(title: string, options?: NotificationOptions) {
+        calls.push({ title, body: options?.body, tag: options?.tag });
+      }
+    }
+    (globalThis as typeof globalThis & { Notification: typeof Notification }).Notification =
+      NotificationMock as unknown as typeof Notification;
+
+    saveMediaDetectionSettings(
+      {
+        ...DEFAULT_MEDIA_DETECTION_SETTINGS,
+        notifications: { enabled: true },
+      },
+      1,
+    );
+
+    const EventsStub: ComponentType<{
+      locationId: number | null;
+      onOpenMediaSettings: () => void;
+    }> = ({ locationId }) => (
+      <div>{locationId == null ? "events for all locations" : `events for location: ${locationId}`}</div>
+    );
+
+    const LocationsStub: ComponentType<{
+      onOpenLocation: (locationId: number) => void;
+    }> = () => <div>locations hub</div>;
+
+    const DetailStub: ComponentType<{
+      locationId?: number | null;
+      onBackToLocations: () => void;
+    }> = ({ locationId, onBackToLocations }) => (
+      <div>
+        <p>location detail id: {locationId ?? "none"}</p>
+        <button type="button" onClick={onBackToLocations}>
+          Back to locations
+        </button>
+      </div>
+    );
+
+    const view = render(
+      <App
+        deps={{
+          useEventsPollHook: (options?: UseEventsPollOptions) => ({
+            events:
+              options?.includeAllLocations === true
+                ? [
+                    {
+                      id: 8,
+                      location_id: 42,
+                      event_type: MEDIA_DETECTED_EVENT_TYPE,
+                      created_at: "2026-04-16T12:00:00.000Z",
+                      body: {
+                        source: "video",
+                        rule_name: "Person alert",
+                        match_value: "person",
+                        notify: true,
+                      },
+                    },
+                  ]
+                : [],
+            error: null,
+            loading: false,
+            onRefresh: () => {},
+            newIds: options?.includeAllLocations === true ? new Set<number>([8]) : new Set<number>(),
+            locationId: options?.locationId ?? null,
+            pollMs: 3000,
+          }),
+          EventsScreenComponent: EventsStub as never,
+          LocationsScreenComponent: LocationsStub as never,
+          LocationDetailScreenComponent: DetailStub as never,
+          createLocationFn: async () => {
+            throw new Error("not used in this notification test");
+          },
+          updateLocationFn: async () => {
+            throw new Error("not used in this notification test");
+          },
+        }}
+      />,
+    );
+
+    fireEvent.click(view.getByText("Locations"));
+    expect(view.getByText("locations hub")).toBeDefined();
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toEqual({
+      title: "Action detected",
+      body: "Person alert • person (location 42)",
+      tag: "ha-detected-1-8",
+    });
   });
 });

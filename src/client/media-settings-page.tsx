@@ -67,8 +67,6 @@ export function MediaSettingsPage({
       learningMatchThreshold: settings.learningThreshold,
       learnedVideoSamples: learnedSamples,
       detectionRules: settings.detectionRules,
-      notificationsEnabled: settings.notifications.enabled,
-      userId,
     });
 
   const upsertLearningSample = (sample: LearnedVideoSample) => {

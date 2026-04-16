@@ -69,8 +69,6 @@ export type UseMediaCaptureOptions = {
   locationId?: number;
   orchestratorBaseUrl?: string;
   detectionRules?: readonly DetectionRule[];
-  notificationsEnabled?: boolean;
-  userId?: number;
 };
 
 export type UseMediaCaptureResult = {
@@ -100,8 +98,6 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     locationId: locationIdOverride,
     orchestratorBaseUrl: orchestratorBaseUrlOverride,
     detectionRules = [],
-    notificationsEnabled = false,
-    userId = 1,
   } = options;
   const [micActive, setMicActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
@@ -150,30 +146,6 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     return signalPipelineRef.current;
   }, [targetLocationId, targetOrchestratorBaseUrl]);
 
-  const maybeNotify = useCallback(
-    (match: MediaRuleMatch) => {
-      if (!notificationsEnabled || !match.rule.notify) {
-        return;
-      }
-      if (typeof Notification === "undefined" || Notification.permission !== "granted") {
-        return;
-      }
-      const title =
-        match.source === "audio"
-          ? `Keyword detected: ${match.rule.name}`
-          : `Action detected: ${match.rule.name}`;
-      const locationTag =
-        match.rule.scope === "location" && match.rule.locationId != null
-          ? `Location ${match.rule.locationId}`
-          : "Global";
-      void new Notification(title, {
-        body: `${locationTag} • ${match.matchedValue} (${Math.round(match.score * 100)}%)`,
-        tag: `ha-detected-${userId}-${match.rule.id}`,
-      });
-    },
-    [notificationsEnabled, userId],
-  );
-
   const shouldEmitRuleMatch = useCallback((match: MediaRuleMatch, nowMs: number): boolean => {
     const cooldownMs = Math.max(0, match.rule.cooldownMs || DEFAULT_RULE_COOLDOWN_MS);
     const key = `${match.rule.id}:${match.matchedValue.toLowerCase()}`;
@@ -207,9 +179,8 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
           candidates: match.candidates,
         }),
       });
-      maybeNotify(match);
     },
-    [maybeNotify, shouldEmitRuleMatch, targetLocationId, targetOrchestratorBaseUrl],
+    [shouldEmitRuleMatch, targetLocationId, targetOrchestratorBaseUrl],
   );
 
   const clearMicAnalysis = useCallback(() => {

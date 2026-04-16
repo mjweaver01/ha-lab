@@ -16,6 +16,7 @@ import { EventsScreen } from "./events-screen.tsx";
 import { LocationDetailScreen } from "./location-detail-screen.tsx";
 import { LocationsScreen } from "./locations-screen.tsx";
 import { useEventsPoll } from "./hooks/use-events-poll.ts";
+import { useDetectedEventNotifications } from "./hooks/use-detected-event-notifications.ts";
 import type { UseEventsPollHook } from "./hooks/use-events-poll.ts";
 import { readPublicOrchestratorUrl } from "./lib/public-env.ts";
 import { MediaSettingsPage } from "./media-settings-page.tsx";
@@ -80,6 +81,12 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
     setMediaSettings(next);
     saveMediaDetectionSettings(next, userId);
   };
+  useDetectedEventNotifications({
+    events,
+    newIds,
+    enabled: mediaSettings.notifications.enabled,
+    userId,
+  });
 
   return (
     <div className="app-shell">
@@ -105,8 +112,6 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                   videoSampleCadenceMs: mediaSettings.videoCadenceMs,
                   learningMatchThreshold: mediaSettings.learningThreshold,
                   detectionRules: mediaSettings.detectionRules,
-                  notificationsEnabled: mediaSettings.notifications.enabled,
-                  userId,
                 }}
                 onOpenMediaSettings={() => {
                   navigate("/settings/media");
@@ -278,8 +283,6 @@ function LocationEventsRoute({
           videoSampleCadenceMs: mediaSettings.videoCadenceMs,
           learningMatchThreshold: mediaSettings.learningThreshold,
           detectionRules: mediaSettings.detectionRules,
-          notificationsEnabled: mediaSettings.notifications.enabled,
-          userId,
           locationId: parsedLocationId,
           orchestratorBaseUrl: baseUrl,
         }}
