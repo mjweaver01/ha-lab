@@ -100,7 +100,7 @@ describe("EventsScreen media E2E trace", () => {
     expect(within(container).getByText("rule name")).toBeDefined();
     expect(within(container).getByText("Person alert")).toBeDefined();
     expect(within(container).getByText("person (92%), motion (70%)")).toBeDefined();
-    fireEvent.click(within(container).getByText("Friendly logs"));
+    fireEvent.click(within(container).getByText("Nice"));
     expect(within(container).getByText(/"rule_name": "Person alert"/)).toBeDefined();
     expect(queryByText("rule name")).toBeNull();
   });
@@ -127,9 +127,9 @@ describe("EventsScreen media E2E trace", () => {
     );
 
     expect(queryByText("Refresh events")).toBeNull();
-    const offButton = within(container).getByText("Turn live tail off");
+    const offButton = within(container).getByRole("button", { name: "Live tail" });
     fireEvent.click(offButton);
-    expect(getByText("Turn live tail on")).toBeDefined();
+    expect(within(container).getByRole("button", { name: "Timeframe" })).toBeDefined();
     expect(getByText("Refresh events")).toBeDefined();
   });
 
@@ -154,7 +154,7 @@ describe("EventsScreen media E2E trace", () => {
       />,
     );
 
-    fireEvent.click(within(container).getByText("Turn live tail off"));
+    fireEvent.click(within(container).getByRole("button", { name: "Live tail" }));
     fireEvent.change(within(container).getByDisplayValue("Last 1h"), {
       target: { value: "custom" },
     });

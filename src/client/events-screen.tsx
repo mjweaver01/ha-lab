@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Edit3, Eye, EyeOff, Radio, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Code2, Edit3, Eye, Radio, RefreshCw } from "lucide-react";
 import type { EventListItem } from "./api/events-client.ts";
 import { MediaCaptureSection } from "./media-capture-section.tsx";
 import type { UseMediaCaptureOptions } from "./hooks/use-media-capture.ts";
@@ -323,9 +323,9 @@ export function EventsScreen({
             }}
           >
             <span className="ui-btn__icon" aria-hidden>
-              {friendlyLogs ? <Eye size={16} /> : <EyeOff size={16} />}
+              {friendlyLogs ? <Eye size={16} /> : <Code2 size={16} />}
             </span>
-            {friendlyLogs ? "Friendly logs" : "Raw JSON"}
+            {friendlyLogs ? "Nice" : "JSON"}
           </button>
           {filter.mode === "timeframe" ? (
             <label className="ui-field">
