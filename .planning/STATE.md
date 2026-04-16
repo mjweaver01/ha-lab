@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Location management + location-scoped access/events
-status: ready-to-plan
-stopped_at: Roadmap created for v1.2 (phases 8-12)
-last_updated: "2026-04-15T22:00:00.000Z"
-last_activity: 2026-04-15 -- roadmap created for v1.2
+status: planning
+stopped_at: Phase 8 context gathered
+last_updated: "2026-04-16T03:18:49.637Z"
+last_activity: 2026-04-15 - Roadmap created for milestone v1.2
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -65,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T22:00:00.000Z
-Stopped at: v1.2 roadmap created, phase 8 ready for planning
-Resume file: None
+Last session: 2026-04-16T03:18:49.630Z
+Stopped at: Phase 8 context gathered
+Resume file: .planning/phases/08-locations-hub-and-lifecycle/08-CONTEXT.md
