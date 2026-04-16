@@ -283,6 +283,18 @@ body {
 
 .ui-field select {
   padding: var(--space-sm) var(--space-sm);
+  padding-right: 2.25rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e6edf3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 0.95rem 0.95rem;
+}
+
+.ui-field select::-ms-expand {
+  display: none;
 }
 
 .ui-field input {
@@ -290,7 +302,7 @@ body {
 }
 
 .ui-field input[type="datetime-local"] {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .ui-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
