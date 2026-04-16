@@ -44,7 +44,7 @@ describe("migrate + homes integration", () => {
     db2.close();
   });
 
-  test("migrate is idempotent", () => {
+  test("applies all migrations once", () => {
     const dir = mkdtempSync(join(tmpdir(), "home-assist-test-"));
     const dbPath = join(dir, "idempotent.sqlite");
     migrate(dbPath);
