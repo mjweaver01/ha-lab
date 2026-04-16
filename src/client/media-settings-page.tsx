@@ -58,11 +58,6 @@ export function MediaSettingsPage({
 
   return (
     <div className="ui-page">
-      <div className="ui-toolbar">
-        <button type="button" className="ui-btn" onClick={onBackToEvents}>
-          Back to events
-        </button>
-      </div>
       <h1 className="ui-page-title">Media settings</h1>
       <p className="ui-page-meta">
         Tune capture behavior and teach custom labels from camera snapshots.

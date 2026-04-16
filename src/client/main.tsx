@@ -6,6 +6,7 @@ import {
   NavLink,
   Route,
   Routes,
+  useLocation,
   useNavigate,
   useParams,
 } from "react-router-dom";
@@ -184,33 +185,26 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
 }
 
 function AppHeader() {
+  const { pathname } = useLocation();
+  const isEventsActive = pathname === "/" || pathname === "/events";
+  const isLocationsActive = pathname.startsWith("/locations");
+  const isMediaSettingsActive = pathname === "/settings/media";
+
+  const navLinkClassName = (isActive: boolean) =>
+    isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link";
+
   return (
     <header className="app-header">
       <div className="app-header__inner">
         <div className="app-header__brand">Home Assist</div>
         <nav className="app-nav" aria-label="Primary">
-          <NavLink
-            to="/events"
-            className={({ isActive }) =>
-              isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link"
-            }
-          >
+          <NavLink to="/events" className={navLinkClassName(isEventsActive)}>
             Events
           </NavLink>
-          <NavLink
-            to="/locations"
-            className={({ isActive }) =>
-              isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link"
-            }
-          >
+          <NavLink to="/locations" className={navLinkClassName(isLocationsActive)}>
             Locations
           </NavLink>
-          <NavLink
-            to="/settings/media"
-            className={({ isActive }) =>
-              isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link"
-            }
-          >
+          <NavLink to="/settings/media" className={navLinkClassName(isMediaSettingsActive)}>
             Media settings
           </NavLink>
         </nav>

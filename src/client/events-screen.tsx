@@ -35,6 +35,21 @@ const DEFAULT_FILTER: EventsFilterState = {
   customEnd: "",
 };
 
+function splitLocalDateTime(value: string): { date: string; time: string } {
+  const [date = "", time = ""] = value.split("T");
+  return {
+    date,
+    time: time.slice(0, 5),
+  };
+}
+
+function mergeLocalDateTime(date: string, time: string): string {
+  if (!date) {
+    return "";
+  }
+  return `${date}T${time || "00:00"}`;
+}
+
 export function EventsScreen({
   events,
   error,
@@ -119,6 +134,8 @@ export function EventsScreen({
       : filter.preset === "custom"
         ? "Timeframe: custom start/end."
         : `Timeframe: last ${filter.preset}.`;
+  const customStartParts = splitLocalDateTime(filter.customStart);
+  const customEndParts = splitLocalDateTime(filter.customEnd);
 
   return (
     <div className="ui-page">
@@ -171,18 +188,34 @@ export function EventsScreen({
               ))}
             </select>
           </label>
-          <button type="button" className="ui-btn ui-filter-refresh" onClick={onRefresh}>
-            Refresh events
+          <button
+            type="button"
+            className="ui-btn ui-filter-refresh"
+            aria-pressed={filter.mode === "tail"}
+            onClick={() => {
+              setFilter((prev) => ({
+                ...prev,
+                mode: prev.mode === "tail" ? "timeframe" : "tail",
+              }));
+            }}
+          >
+            {filter.mode === "tail" ? "Turn live tail off" : "Turn live tail on"}
           </button>
+          {filter.mode !== "tail" ? (
+            <button type="button" className="ui-btn" onClick={onRefresh}>
+              Refresh events
+            </button>
+          ) : null}
           {filter.mode === "timeframe" ? (
             <label className="ui-field">
               <span>Preset</span>
               <select
                 value={filter.preset}
                 onChange={(event) => {
+                  const nextPreset = event.currentTarget.value as TimeRangePreset;
                   setFilter((prev) => ({
                     ...prev,
-                    preset: event.currentTarget.value as TimeRangePreset,
+                    preset: nextPreset,
                   }));
                 }}
               >
@@ -199,24 +232,58 @@ export function EventsScreen({
         {filter.mode === "timeframe" && filter.preset === "custom" ? (
           <div className="ui-filter-row">
             <label className="ui-field">
-              <span>Start</span>
+              <span>Start date</span>
               <input
-                type="datetime-local"
-                value={filter.customStart}
+                type="date"
+                value={customStartParts.date}
                 onChange={(event) => {
-                  const value = event.currentTarget.value;
-                  setFilter((prev) => ({ ...prev, customStart: value }));
+                  const nextDate = event.currentTarget.value;
+                  setFilter((prev) => ({
+                    ...prev,
+                    customStart: mergeLocalDateTime(nextDate, splitLocalDateTime(prev.customStart).time),
+                  }));
                 }}
               />
             </label>
             <label className="ui-field">
-              <span>End</span>
+              <span>Start time</span>
               <input
-                type="datetime-local"
-                value={filter.customEnd}
+                type="time"
+                value={customStartParts.time}
                 onChange={(event) => {
-                  const value = event.currentTarget.value;
-                  setFilter((prev) => ({ ...prev, customEnd: value }));
+                  const nextTime = event.currentTarget.value;
+                  setFilter((prev) => ({
+                    ...prev,
+                    customStart: mergeLocalDateTime(splitLocalDateTime(prev.customStart).date, nextTime),
+                  }));
+                }}
+              />
+            </label>
+            <label className="ui-field">
+              <span>End date</span>
+              <input
+                type="date"
+                value={customEndParts.date}
+                onChange={(event) => {
+                  const nextDate = event.currentTarget.value;
+                  setFilter((prev) => ({
+                    ...prev,
+                    customEnd: mergeLocalDateTime(nextDate, splitLocalDateTime(prev.customEnd).time),
+                  }));
+                }}
+              />
+            </label>
+            <label className="ui-field">
+              <span>End time</span>
+              <input
+                type="time"
+                value={customEndParts.time}
+                onChange={(event) => {
+                  const nextTime = event.currentTarget.value;
+                  setFilter((prev) => ({
+                    ...prev,
+                    customEnd: mergeLocalDateTime(splitLocalDateTime(prev.customEnd).date, nextTime),
+                  }));
                 }}
               />
             </label>

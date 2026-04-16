@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import { EventsScreen } from "./events-screen.tsx";
 
@@ -57,5 +57,78 @@ describe("EventsScreen media E2E trace", () => {
     expect(getByText("media.video")).toBeDefined();
     expect(container.querySelectorAll(".ui-list-row").length).toBe(2);
     expect(container.querySelectorAll(".ui-list-row--new").length).toBe(1);
+  });
+
+  test("toggles live tail button label on click", () => {
+    const { getByText, queryByText } = render(
+      <EventsScreen
+        events={[]}
+        error={null}
+        loading={false}
+        onRefresh={() => {}}
+        newIds={new Set()}
+        locationId={null}
+        pollMs={3000}
+        captureSettings={{
+          audioLevelBoost: 8,
+          audioActivityThreshold: 0.2,
+          videoActivityThreshold: 0.25,
+          videoSampleCadenceMs: 1000,
+          learningMatchThreshold: 0.65,
+        }}
+        onOpenMediaSettings={() => {}}
+      />,
+    );
+
+    expect(queryByText("Refresh events")).toBeNull();
+    const offButton = getByText("Turn live tail off");
+    fireEvent.click(offButton);
+    expect(getByText("Turn live tail on")).toBeDefined();
+    expect(getByText("Refresh events")).toBeDefined();
+  });
+
+  test("custom timeframe controls update without runtime errors", () => {
+    const { container, getByText, getByDisplayValue } = render(
+      <EventsScreen
+        events={[]}
+        error={null}
+        loading={false}
+        onRefresh={() => {}}
+        newIds={new Set()}
+        locationId={null}
+        pollMs={3000}
+        captureSettings={{
+          audioLevelBoost: 8,
+          audioActivityThreshold: 0.2,
+          videoActivityThreshold: 0.25,
+          videoSampleCadenceMs: 1000,
+          learningMatchThreshold: 0.65,
+        }}
+        onOpenMediaSettings={() => {}}
+      />,
+    );
+
+    fireEvent.click(getByText("Turn live tail off"));
+    fireEvent.change(getByDisplayValue("Last 1h"), { target: { value: "custom" } });
+    const dateInputs = container.querySelectorAll("input[type='date']");
+    const timeInputs = container.querySelectorAll("input[type='time']");
+    const startDateInput = dateInputs[0] as HTMLInputElement | undefined;
+    const endDateInput = dateInputs[1] as HTMLInputElement | undefined;
+    const startTimeInput = timeInputs[0] as HTMLInputElement | undefined;
+    const endTimeInput = timeInputs[1] as HTMLInputElement | undefined;
+    if (
+      startDateInput == null ||
+      endDateInput == null ||
+      startTimeInput == null ||
+      endTimeInput == null
+    ) {
+      throw new Error("expected custom timeframe date/time inputs");
+    }
+    fireEvent.change(startDateInput, { target: { value: "2026-04-16" } });
+    fireEvent.change(startTimeInput, { target: { value: "09:00" } });
+    fireEvent.change(endDateInput, { target: { value: "2026-04-16" } });
+    fireEvent.change(endTimeInput, { target: { value: "10:00" } });
+
+    expect(getByText("Timeframe: custom start/end. Showing 0 matched events.")).toBeDefined();
   });
 });

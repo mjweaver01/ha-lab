@@ -74,15 +74,12 @@ body {
   min-height: 40px;
 }
 
-.app-nav__link:hover {
+.app-nav__link:hover,
+.app-nav__link--active,
+.app-nav__link.active {
   color: #e6edf3;
   background: #21262d;
-}
-
-.app-nav__link--active {
-  color: #e6edf3;
-  background: #1f2a3b;
-  border: 1px solid #2d3b52;
+  border-color: var(--color-accent);
 }
 
 .ui-page {
@@ -157,11 +154,18 @@ body {
 .ui-field select,
 .ui-field input {
   font-size: var(--font-body);
-  padding: var(--space-xs) var(--space-sm);
   border: 1px solid #30363d;
   border-radius: var(--space-xs);
   background: var(--color-dominant);
   color: #e6edf3;
+}
+
+.ui-field select {
+  padding: var(--space-sm) var(--space-sm);
+}
+
+.ui-field input {
+  padding: var(--space-xs) var(--space-sm);
 }
 
 .ui-filter-summary {
