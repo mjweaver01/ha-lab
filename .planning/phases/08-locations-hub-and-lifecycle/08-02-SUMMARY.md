@@ -69,7 +69,7 @@ Each task was committed atomically:
 - `src/client/locations-screen.tsx` - dense hub table, archived toggle persistence, lifecycle actions, and VIEW-01 callbacks.
 - `src/client/location-detail-screen.tsx` - dedicated create/edit surface with shared form validation.
 - `src/client/locations-screen.test.tsx` - behavior regression coverage for states, archived flows, and navigation.
-- `src/client/styles.css` - locations-specific table, action, and form styling contracts.
+- `src/client/styles.css` - shared `ui-*` primitives plus locations/media-specific semantic layout styles.
 
 ## Decisions Made
 - Chose explicit API helpers per lifecycle action (`fetch`, `create`, `update`, `archive`, `restore`) to mirror server route boundaries and keep future RBAC behavior testable.

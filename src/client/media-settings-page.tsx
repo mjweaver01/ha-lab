@@ -57,18 +57,18 @@ export function MediaSettingsPage({
   };
 
   return (
-    <div className="events-page">
-      <div className="events-toolbar">
-        <button type="button" className="events-btn" onClick={onBackToEvents}>
+    <div className="ui-page">
+      <div className="ui-toolbar">
+        <button type="button" className="ui-btn" onClick={onBackToEvents}>
           Back to events
         </button>
       </div>
-      <h1 className="events-page__title">Media settings</h1>
-      <p className="events-page__meta">
+      <h1 className="ui-page-title">Media settings</h1>
+      <p className="ui-page-meta">
         Tune capture behavior and teach custom labels from camera snapshots.
       </p>
 
-      <div className="events-panel media-capture__settings-grid">
+      <div className="ui-panel media-capture__settings-grid">
         <label className="media-capture__field">
           <span>Audio meter sensitivity ({settings.audioLevelBoost.toFixed(1)}x)</span>
           <input
@@ -151,14 +151,14 @@ export function MediaSettingsPage({
         </label>
       </div>
 
-      <div className="events-panel media-capture__block">
+      <div className="ui-panel media-capture__block">
         <p className="media-capture__status">
           {cameraActive ? "Camera learning preview on" : "Camera learning preview off"}
         </p>
         <div className="media-capture__controls">
           <button
             type="button"
-            className="events-btn"
+            className="ui-btn"
             onClick={() => {
               if (cameraActive) stopCamera();
               else void startCamera();
@@ -200,7 +200,7 @@ export function MediaSettingsPage({
             />
             <button
               type="button"
-              className="events-btn"
+              className="ui-btn"
               onClick={() => {
                 setLearningStatus(null);
                 const label = learningLabel.trim();
@@ -234,7 +234,7 @@ export function MediaSettingsPage({
                   </span>
                   <button
                     type="button"
-                    className="events-btn"
+                    className="ui-btn"
                     onClick={() => {
                       removeLearningLabel(entry.label);
                     }}

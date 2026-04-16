@@ -191,19 +191,25 @@ function AppHeader() {
         <nav className="app-nav" aria-label="Primary">
           <NavLink
             to="/events"
-            className={({ isActive }) => (isActive ? "app-nav__link app-nav__link--active" : "app-nav__link")}
+            className={({ isActive }) =>
+              isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link"
+            }
           >
             Events
           </NavLink>
           <NavLink
             to="/locations"
-            className={({ isActive }) => (isActive ? "app-nav__link app-nav__link--active" : "app-nav__link")}
+            className={({ isActive }) =>
+              isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link"
+            }
           >
             Locations
           </NavLink>
           <NavLink
             to="/settings/media"
-            className={({ isActive }) => (isActive ? "app-nav__link app-nav__link--active" : "app-nav__link")}
+            className={({ isActive }) =>
+              isActive ? "ui-btn app-nav__link app-nav__link--active" : "ui-btn app-nav__link"
+            }
           >
             Media settings
           </NavLink>

@@ -121,18 +121,18 @@ export function EventsScreen({
         : `Timeframe: last ${filter.preset}.`;
 
   return (
-    <div className="events-page">
-      <div className="events-page__header">
+    <div className="ui-page">
+      <div className="ui-page-header">
         <div>
-          <h1 className="events-page__title">Events</h1>
-          <p className="events-page__meta">
+          <h1 className="ui-page-title">Events</h1>
+          <p className="ui-page-meta">
             {locationId == null ? "All accessible locations" : `Location ID: ${locationId}`} · Poll every{" "}
             {Math.round(pollMs / 1000)}s
           </p>
         </div>
-        <div className="events-page__header-actions">
+        <div className="ui-page-actions">
           {locationId != null && onEditLocation != null ? (
-            <button type="button" className="events-btn" onClick={onEditLocation}>
+            <button type="button" className="ui-btn" onClick={onEditLocation}>
               Edit location
             </button>
           ) : null}
@@ -141,9 +141,9 @@ export function EventsScreen({
 
       <MediaCaptureSection settings={captureSettings} />
 
-      <div className="events-panel events-filter">
-        <div className="events-filter__row">
-          <label className="events-filter__field">
+      <div className="ui-panel ui-filter">
+        <div className="ui-filter-row">
+          <label className="ui-field">
             <span>Mode</span>
             <select
               value={filter.mode}
@@ -156,7 +156,7 @@ export function EventsScreen({
               <option value="timeframe">Timeframe</option>
             </select>
           </label>
-          <label className="events-filter__field">
+          <label className="ui-field">
             <span>Rows per page</span>
             <select
               value={pageSize}
@@ -171,11 +171,11 @@ export function EventsScreen({
               ))}
             </select>
           </label>
-          <button type="button" className="events-btn events-filter__refresh" onClick={onRefresh}>
+          <button type="button" className="ui-btn ui-filter-refresh" onClick={onRefresh}>
             Refresh events
           </button>
           {filter.mode === "timeframe" ? (
-            <label className="events-filter__field">
+            <label className="ui-field">
               <span>Preset</span>
               <select
                 value={filter.preset}
@@ -197,8 +197,8 @@ export function EventsScreen({
         </div>
 
         {filter.mode === "timeframe" && filter.preset === "custom" ? (
-          <div className="events-filter__row">
-            <label className="events-filter__field">
+          <div className="ui-filter-row">
+            <label className="ui-field">
               <span>Start</span>
               <input
                 type="datetime-local"
@@ -209,7 +209,7 @@ export function EventsScreen({
                 }}
               />
             </label>
-            <label className="events-filter__field">
+            <label className="ui-field">
               <span>End</span>
               <input
                 type="datetime-local"
@@ -223,31 +223,31 @@ export function EventsScreen({
           </div>
         ) : null}
 
-        <p className="events-filter__summary">
+        <p className="ui-filter-summary">
           {timeframeSummary} Showing {filteredEvents.length} matched event
           {filteredEvents.length === 1 ? "" : "s"}.
         </p>
       </div>
 
       {error != null && error !== "" ? (
-        <div className="events-error" role="alert">
+        <div className="ui-alert ui-alert--error" role="alert">
           Could not load events. Check the API URL and that the server is running.
         </div>
       ) : null}
 
       {loading && events.length === 0 && error == null ? (
-        <p className="events-loading" aria-busy="true">
+        <p className="ui-loading" aria-busy="true">
           Loading…
         </p>
       ) : null}
 
       {!loading && error == null && filteredEvents.length === 0 ? (
-        <div className="events-panel">
-          <div className="events-empty">
-            <h2 className="events-empty__title">
+        <div className="ui-panel">
+          <div className="ui-empty">
+            <h2 className="ui-empty__title">
               {events.length === 0 ? "No events yet" : "No events in selected timeframe"}
             </h2>
-            <p className="events-empty__body">
+            <p className="ui-empty__body">
               {events.length === 0
                 ? "Start the orchestrator and simulator, or trigger an event — activity will show here."
                 : "Adjust the timeframe filters or switch to live tail."}
@@ -257,10 +257,10 @@ export function EventsScreen({
       ) : null}
 
       {filteredEvents.length > 0 ? (
-        <div className="events-panel">
+        <div className="ui-panel">
           <div
             ref={listViewportRef}
-            className="events-list-viewport"
+            className="ui-list-viewport"
             onScroll={(event) => {
               const target = event.currentTarget;
               setVirtual(
@@ -274,18 +274,18 @@ export function EventsScreen({
               );
             }}
           >
-            <ul className="events-list">
+            <ul className="ui-list">
               {topSpacerHeight > 0 ? (
                 <li style={{ height: `${topSpacerHeight}px` }} aria-hidden />
               ) : null}
               {visibleRows.map((ev) => (
                 <li
                   key={ev.id}
-                  className={newIds.has(ev.id) ? "events-row events-row--new" : "events-row"}
+                  className={newIds.has(ev.id) ? "ui-list-row ui-list-row--new" : "ui-list-row"}
                 >
-                  <div className="events-row__type">{ev.event_type}</div>
-                  <div className="events-row__time">{ev.created_at}</div>
-                  <pre className="events-row__body">
+                  <div className="ui-list-row__type">{ev.event_type}</div>
+                  <div className="ui-list-row__time">{ev.created_at}</div>
+                  <pre className="ui-list-row__body">
                     {ev.body == null
                       ? "—"
                       : typeof ev.body === "string"
@@ -300,10 +300,10 @@ export function EventsScreen({
             </ul>
           </div>
 
-          <div className="events-pagination">
+          <div className="ui-pagination">
             <button
               type="button"
-              className="events-btn"
+              className="ui-btn"
               onClick={() => {
                 setPage((current) => Math.max(1, current - 1));
               }}
@@ -316,7 +316,7 @@ export function EventsScreen({
             </span>
             <button
               type="button"
-              className="events-btn"
+              className="ui-btn"
               onClick={() => {
                 setPage((current) => Math.min(totalPages, current + 1));
               }}

@@ -85,7 +85,7 @@ describe("MediaCaptureSection", () => {
     expect(text.includes("Start microphone")).toBe(true);
   });
 
-  test("shows events-error with role=alert when getUserMedia rejects", async () => {
+  test("shows reusable error alert when getUserMedia rejects", async () => {
     const getUserMedia = mock(() =>
       Promise.reject(new DOMException("denied", "NotAllowedError")),
     );
@@ -115,8 +115,8 @@ describe("MediaCaptureSection", () => {
     });
 
     await waitFor(() => {
-      expect(container.querySelector(".events-error")).not.toBeNull();
+      expect(container.querySelector(".ui-alert--error")).not.toBeNull();
     });
-    expect(container.querySelector(".events-error")?.getAttribute("role")).toBe("alert");
+    expect(container.querySelector(".ui-alert--error")?.getAttribute("role")).toBe("alert");
   });
 });

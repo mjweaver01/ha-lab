@@ -55,7 +55,7 @@ describe("EventsScreen media E2E trace", () => {
 
     expect(getByText("media.audio")).toBeDefined();
     expect(getByText("media.video")).toBeDefined();
-    expect(container.querySelectorAll(".events-row").length).toBe(2);
-    expect(container.querySelectorAll(".events-row--new").length).toBe(1);
+    expect(container.querySelectorAll(".ui-list-row").length).toBe(2);
+    expect(container.querySelectorAll(".ui-list-row--new").length).toBe(1);
   });
 });

@@ -6,6 +6,17 @@
 
 > Note: this mapping was generated before the location unification cutover and includes legacy `home` examples in quoted snippets. Treat `location` / `location_id` as canonical for current implementation.
 
+> 2026-04-16 update: base UI styling has been normalized to shared `ui-*` primitives. Any `events-*` class references in historical snippets are superseded by:
+> - `events-page*` -> `ui-page*`
+> - `events-panel` -> `ui-panel`
+> - `events-btn` -> `ui-btn`
+> - `events-error` -> `ui-alert ui-alert--error`
+> - `events-empty*` -> `ui-empty*`
+> - `events-loading` -> `ui-loading`
+> - `events-filter*` -> `ui-filter*`
+> - `events-list*` / `events-row*` -> `ui-list*` / `ui-list-row*`
+> - `locations-table` / `locations-row*` / `locations-actions` -> `ui-table` / `ui-table-row*` / `ui-inline-actions`
+
 ## File Classification
 
 | New/Modified File | Role | Data Flow | Closest Analog | Match Quality |

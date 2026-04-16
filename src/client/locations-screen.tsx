@@ -122,16 +122,16 @@ export function LocationsScreen({
   };
 
   return (
-    <div className="events-page">
-      <div className="events-page__header">
+    <div className="ui-page">
+      <div className="ui-page-header">
         <div>
-          <h1 className="events-page__title">Locations</h1>
-          <p className="events-page__meta">Manage lifecycle state and open location detail surfaces.</p>
+          <h1 className="ui-page-title">Locations</h1>
+          <p className="ui-page-meta">Manage lifecycle state and open location detail surfaces.</p>
         </div>
-        <div className="events-page__header-actions">
+        <div className="ui-page-actions">
           <button
             type="button"
-            className="events-btn locations-create-btn"
+            className="ui-btn"
             onClick={() => {
               onCreateLocation?.();
             }}
@@ -141,7 +141,7 @@ export function LocationsScreen({
         </div>
       </div>
 
-      <div className="events-panel locations-toolbar">
+      <div className="ui-panel locations-toolbar">
         <label className="locations-include-archived">
           <input
             type="checkbox"
@@ -155,22 +155,22 @@ export function LocationsScreen({
       </div>
 
       {error != null ? (
-        <div className="events-error" role="alert">
+        <div className="ui-alert ui-alert--error" role="alert">
           {error}
         </div>
       ) : null}
 
       {loading && locations.length === 0 ? (
-        <p className="events-loading" aria-busy="true">
+        <p className="ui-loading" aria-busy="true">
           Loading locations...
         </p>
       ) : null}
 
       {!loading && sortedLocations.length === 0 && error == null ? (
-        <div className="events-panel">
-          <div className="events-empty">
-            <h2 className="events-empty__title">No locations yet</h2>
-            <p className="events-empty__body">
+        <div className="ui-panel">
+          <div className="ui-empty">
+            <h2 className="ui-empty__title">No locations yet</h2>
+            <p className="ui-empty__body">
               Create your first location to organize devices, memberships, and event access.
             </p>
           </div>
@@ -178,8 +178,8 @@ export function LocationsScreen({
       ) : null}
 
       {sortedLocations.length > 0 ? (
-        <div className="events-panel">
-          <table className="locations-table">
+        <div className="ui-panel">
+          <table className="ui-table">
             <thead>
               <tr>
                 <th scope="col">Name</th>
@@ -196,7 +196,7 @@ export function LocationsScreen({
                 return (
                   <tr
                     key={location.id}
-                    className={isArchived ? "locations-row locations-row--archived" : "locations-row"}
+                    className={isArchived ? "ui-table-row ui-table-row--muted" : "ui-table-row"}
                     onClick={() => onOpenLocation(location.id)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
@@ -212,10 +212,10 @@ export function LocationsScreen({
                     <td>{location.updated_at}</td>
                     <td>{location.code ?? "—"}</td>
                     <td>
-                      <div className="locations-actions">
+                      <div className="ui-inline-actions">
                         <button
                           type="button"
-                          className="events-btn locations-action"
+                          className="ui-btn"
                           onClick={(event) => {
                             event.stopPropagation();
                             onOpenLocation(location.id);
@@ -226,7 +226,7 @@ export function LocationsScreen({
                         {isArchived ? (
                           <button
                             type="button"
-                            className="events-btn locations-action"
+                            className="ui-btn"
                             disabled={isBusy}
                             onClick={(event) => {
                               event.stopPropagation();
@@ -238,7 +238,7 @@ export function LocationsScreen({
                         ) : (
                           <button
                             type="button"
-                            className="events-btn locations-action locations-action--destructive"
+                            className="ui-btn ui-btn--destructive"
                             disabled={isBusy}
                             onClick={(event) => {
                               event.stopPropagation();

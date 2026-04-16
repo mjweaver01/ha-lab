@@ -39,29 +39,29 @@ export function LocationDetailScreen({
   const pageTitle = mode === "create" ? "Create location" : "Edit location";
 
   return (
-    <div className="events-page">
-      <div className="events-page__header">
+    <div className="ui-page">
+      <div className="ui-page-header">
         <div>
-          <h1 className="events-page__title">{pageTitle}</h1>
+          <h1 className="ui-page-title">{pageTitle}</h1>
           {mode === "edit" && locationId != null ? (
-            <p className="events-page__meta">Location ID: {locationId}</p>
+            <p className="ui-page-meta">Location ID: {locationId}</p>
           ) : null}
         </div>
-        <div className="events-page__header-actions">
-          <button type="button" className="events-btn" onClick={onBackToLocations}>
+        <div className="ui-page-actions">
+          <button type="button" className="ui-btn" onClick={onBackToLocations}>
             Back to locations
           </button>
         </div>
       </div>
 
       {requestError != null ? (
-        <div className="events-error" role="alert">
+        <div className="ui-alert ui-alert--error" role="alert">
           {requestError}
         </div>
       ) : null}
 
       <form
-        className="events-panel locations-form"
+        className="ui-panel locations-form"
         onSubmit={(event) => {
           event.preventDefault();
           const nextErrors = validateLocationForm(form);
@@ -124,7 +124,7 @@ export function LocationDetailScreen({
         </label>
 
         <div className="locations-form-actions">
-          <button type="submit" className="events-btn" disabled={submitting}>
+          <button type="submit" className="ui-btn" disabled={submitting}>
             {submitLabel ?? pageTitle}
           </button>
         </div>

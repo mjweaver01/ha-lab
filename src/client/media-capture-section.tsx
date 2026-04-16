@@ -30,7 +30,7 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
   });
 
   return (
-    <details className="media-capture events-panel">
+    <details className="media-capture ui-panel">
       <summary className="media-capture__summary">Media capture</summary>
       <div className="media-capture__body">
         <div className="media-capture__block">
@@ -40,7 +40,7 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
           <div className="media-capture__controls">
             <button
               type="button"
-              className="events-btn"
+              className="ui-btn"
               onClick={() => {
                 if (micActive) stopMic();
                 else void startMic();
@@ -75,7 +75,7 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
           </p>
           <button
             type="button"
-            className="events-btn"
+            className="ui-btn"
             onClick={() => {
               if (cameraActive) stopCamera();
               else void startCamera();
@@ -112,7 +112,7 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
         </div>
 
         {micError != null || cameraError != null ? (
-          <div className="events-error" role="alert">
+          <div className="ui-alert ui-alert--error" role="alert">
             {micError != null ? <div>{micError}</div> : null}
             {cameraError != null ? <div>{cameraError}</div> : null}
           </div>

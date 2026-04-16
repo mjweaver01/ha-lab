@@ -26,7 +26,7 @@ reviewed_at: 2026-04-16
 
 Notes:
 - `components.json` is not present; shadcn gate executed and this contract proceeds with the existing custom design system.
-- Visual conventions must match existing `events-*` panel patterns and tokens.
+- Visual conventions must use shared `ui-*` primitives from `src/client/styles.css` (`ui-page`, `ui-panel`, `ui-btn`, `ui-alert`, `ui-list`, `ui-table`) rather than page-specific base classes.
 
 ---
 
@@ -44,7 +44,7 @@ Declared values (must be multiples of 4):
 | 2xl | 48px | Large state blocks (empty and error panels) |
 | 3xl | 64px | Page-level vertical rhythm when stacking major regions |
 
-Exceptions: minimum interactive target size is 44px height for row actions and archive/restore controls.
+Exceptions: minimum interactive target size is 40px for shared controls (`ui-btn`), with larger targets allowed for high-density table workflows.
 
 ---
 
@@ -91,6 +91,9 @@ Accent reserved for: `Create location` button, `Open` row action emphasis, keybo
   - Empty active list: render empty-state panel with CTA to create the first location.
   - Error: render non-leaky error banner and retain existing list content when possible.
 - Access-denied responses must be explicit but non-revealing; UI copy must not disclose inaccessible location identifiers.
+- Reusable UI contract:
+  - Base controls and shells must use shared primitives (`ui-*`) so buttons/panels/alerts/list containers remain visually consistent across Events, Locations, Detail, and Media Settings.
+  - Page-specific classes should only express domain/layout semantics (`media-capture__*`, `locations-*`) and must not redefine base button/panel/alert primitives.
 
 ---
 
@@ -140,7 +143,7 @@ Additional microcopy:
 - `.planning/ROADMAP.md` (phase goal and success criteria)
 - `.planning/REQUIREMENTS.md` (LOC-01..LOC-05, VIEW-01)
 - `src/client/styles.css` (existing tokens, color palette, typography baseline)
-- `src/client/events-screen.tsx` (existing panel/list/filter state conventions)
+- `src/client/events-screen.tsx` (shared `ui-*` page/list/filter conventions)
 
 ---
 

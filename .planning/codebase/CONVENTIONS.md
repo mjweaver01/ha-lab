@@ -15,7 +15,7 @@
 - Use verb-first names for side-effect operations (examples: `deliverEventToSubscribers()` in `src/webhooks/fan-out.ts`, `saveMediaDetectionSettings()` in `src/client/lib/media-settings.ts`).
 
 **Variables:**
-- Use camelCase locals/state, with concise semantic names (`baseUrl`, `homeId`, `pollMs`) in `src/client/hooks/use-events-poll.ts`.
+- Use camelCase locals/state, with concise semantic names (`baseUrl`, `locationId`, `pollMs`) in `src/client/hooks/use-events-poll.ts`.
 - Use UPPER_SNAKE_CASE for module constants (`AUDIO_THROTTLE_MS`, `VIDEO_IDLE_LABEL`) in `src/client/hooks/use-media-capture.ts`.
 - Use suffixes that encode type/units (`nowMs`, `startMs`, `dbPath`) in `src/client/lib/events-view.ts` and `src/db/migrate.test.ts`.
 
@@ -91,6 +91,13 @@
 
 **Barrel Files:**
 - Barrel files are not used; import from concrete module paths directly.
+
+## UI Styling
+
+**Shared Primitive Rule:**
+- Use shared `ui-*` classes from `src/client/styles.css` for base UI elements (pages, headers, panels, buttons, alerts, list/table containers, loading/empty states).
+- Treat domain classes (`media-capture__*`, `locations-*`, `app-*`) as semantic/layout layers on top of `ui-*`, not replacements for base primitives.
+- Avoid introducing new page-prefixed base classes (for example `events-*` style primitives) when an equivalent `ui-*` primitive already exists.
 
 ---
 

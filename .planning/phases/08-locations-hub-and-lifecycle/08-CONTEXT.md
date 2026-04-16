@@ -38,7 +38,7 @@ Deliver a unified locations hub where users can view active locations they can a
 - **D-12:** Return access-denied responses as explicit, non-leaky errors and avoid exposing inaccessible location identifiers in list/detail payloads.
 
 ### Claude's Discretion
-- Exact visual styling tokens, spacing, and iconography as long as they follow existing `events-*`/panel conventions.
+- Exact visual styling tokens, spacing, and iconography as long as they follow shared `ui-*` primitive conventions (`ui-page`, `ui-panel`, `ui-btn`, `ui-alert`, `ui-list`, `ui-table`).
 - Specific URL shape for navigation state (`path` vs query parameter) as long as deep-link behavior remains stable for location detail.
 - Precise naming for optional metadata columns as long as create/edit/list remain internally consistent.
 
