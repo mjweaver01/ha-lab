@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Edit3, Radio, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit3, Eye, EyeOff, Radio, RefreshCw } from "lucide-react";
 import type { EventListItem } from "./api/events-client.ts";
 import { MediaCaptureSection } from "./media-capture-section.tsx";
 import type { UseMediaCaptureOptions } from "./hooks/use-media-capture.ts";
@@ -36,6 +36,103 @@ const DEFAULT_FILTER: EventsFilterState = {
   customEnd: "",
 };
 
+type FriendlyLogRow = {
+  key: string;
+  value: string;
+};
+
+function formatCandidates(value: unknown): string | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  const rendered = value
+    .map((entry) => {
+      if (typeof entry !== "object" || entry == null) {
+        return null;
+      }
+      const candidate = entry as Record<string, unknown>;
+      const label =
+        typeof candidate.label === "string" && candidate.label.trim() !== ""
+          ? candidate.label.trim()
+          : null;
+      const score =
+        typeof candidate.score === "number" && Number.isFinite(candidate.score)
+          ? `${Math.round(candidate.score * 100)}%`
+          : null;
+      if (label == null && score == null) {
+        return null;
+      }
+      if (label != null && score != null) {
+        return `${label} (${score})`;
+      }
+      return label ?? score ?? null;
+    })
+    .filter((entry): entry is string => entry != null);
+  if (rendered.length === 0) {
+    return null;
+  }
+  return rendered.join(", ");
+}
+
+function toFriendlyValue(value: unknown): string {
+  if (value == null) {
+    return "none";
+  }
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return `${value.length} item${value.length === 1 ? "" : "s"}`;
+  }
+  return "object";
+}
+
+function formatFriendlyKey(key: string): string {
+  return key.replace(/_/g, " ");
+}
+
+function formatFriendlyBody(body: unknown): FriendlyLogRow[] {
+  if (body == null) {
+    return [{ key: "payload", value: "No payload" }];
+  }
+  if (typeof body === "string") {
+    return [{ key: "payload", value: body }];
+  }
+  if (Array.isArray(body)) {
+    return [{ key: "payload", value: `${body.length} item${body.length === 1 ? "" : "s"}` }];
+  }
+  if (typeof body !== "object") {
+    return [{ key: "payload", value: String(body) }];
+  }
+
+  const entries = Object.entries(body as Record<string, unknown>);
+  if (entries.length === 0) {
+    return [{ key: "payload", value: "No payload fields" }];
+  }
+  return entries
+    .slice(0, 6)
+    .map(([key, value]) => {
+      if (key === "top_score" && typeof value === "number" && Number.isFinite(value)) {
+        return {
+          key: formatFriendlyKey(key),
+          value: `${Math.round(value * 100)}%`,
+        };
+      }
+      if (key === "candidates") {
+        const renderedCandidates = formatCandidates(value);
+        return {
+          key: formatFriendlyKey(key),
+          value: renderedCandidates ?? "none",
+        };
+      }
+      return {
+        key: formatFriendlyKey(key),
+        value: toFriendlyValue(value),
+      };
+    })
+    .filter((row) => row.key.trim() !== "");
+}
+
 function splitLocalDateTime(value: string): { date: string; time: string } {
   const [date = "", time = ""] = value.split("T");
   return {
@@ -64,6 +161,7 @@ export function EventsScreen({
   onEditLocation,
 }: EventsScreenProps) {
   const [filter, setFilter] = useState<EventsFilterState>(DEFAULT_FILTER);
+  const [friendlyLogs, setFriendlyLogs] = useState(true);
   const [pageSize, setPageSize] = useState(50);
   const [page, setPage] = useState(1);
   const listViewportRef = useRef<HTMLDivElement | null>(null);
@@ -216,6 +314,19 @@ export function EventsScreen({
               Refresh events
             </button>
           ) : null}
+          <button
+            type="button"
+            className="ui-btn ui-btn--with-icon"
+            aria-pressed={friendlyLogs}
+            onClick={() => {
+              setFriendlyLogs((prev) => !prev);
+            }}
+          >
+            <span className="ui-btn__icon" aria-hidden>
+              {friendlyLogs ? <Eye size={16} /> : <EyeOff size={16} />}
+            </span>
+            {friendlyLogs ? "Friendly logs" : "Raw JSON"}
+          </button>
           {filter.mode === "timeframe" ? (
             <label className="ui-field">
               <span>Preset</span>
@@ -366,13 +477,26 @@ export function EventsScreen({
                 >
                   <div className="ui-list-row__type">{ev.event_type}</div>
                   <div className="ui-list-row__time">{ev.created_at}</div>
-                  <pre className="ui-list-row__body">
-                    {ev.body == null
-                      ? "—"
-                      : typeof ev.body === "string"
-                        ? ev.body
-                        : JSON.stringify(ev.body, null, 2)}
-                  </pre>
+                  {friendlyLogs ? (
+                    <table className="ui-list-row__body ui-list-row__body--friendly ui-log-table">
+                      <tbody>
+                        {formatFriendlyBody(ev.body).map((row) => (
+                          <tr key={`${ev.id}-${row.key}`}>
+                            <th scope="row">{row.key}</th>
+                            <td>{row.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <pre className="ui-list-row__body">
+                      {ev.body == null
+                        ? "—"
+                        : typeof ev.body === "string"
+                          ? ev.body
+                          : JSON.stringify(ev.body, null, 2)}
+                    </pre>
+                  )}
                 </li>
               ))}
               {bottomSpacerHeight > 0 ? (

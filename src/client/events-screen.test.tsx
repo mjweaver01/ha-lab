@@ -59,6 +59,52 @@ describe("EventsScreen media E2E trace", () => {
     expect(container.querySelectorAll(".ui-list-row--new").length).toBe(1);
   });
 
+  test("toggles friendly and raw log rendering", () => {
+    const events = [
+      {
+        id: 201,
+        location_id: 1,
+        event_type: "media.detected",
+        created_at: "2026-04-16T12:00:00.000Z",
+        body: {
+          rule_name: "Person alert",
+          match_score: 0.92,
+          candidates: [
+            { label: "person", score: 0.92 },
+            { label: "motion", score: 0.7 },
+          ],
+        },
+      },
+    ];
+
+    const { container, getByText, queryByText } = render(
+      <EventsScreen
+        events={events}
+        error={null}
+        loading={false}
+        onRefresh={() => {}}
+        newIds={new Set()}
+        locationId={1}
+        pollMs={3000}
+        captureSettings={{
+          audioLevelBoost: 8,
+          audioActivityThreshold: 0.2,
+          videoActivityThreshold: 0.25,
+          videoSampleCadenceMs: 1000,
+          learningMatchThreshold: 0.65,
+        }}
+        onOpenMediaSettings={() => {}}
+      />,
+    );
+
+    expect(within(container).getByText("rule name")).toBeDefined();
+    expect(within(container).getByText("Person alert")).toBeDefined();
+    expect(within(container).getByText("person (92%), motion (70%)")).toBeDefined();
+    fireEvent.click(within(container).getByText("Friendly logs"));
+    expect(within(container).getByText(/"rule_name": "Person alert"/)).toBeDefined();
+    expect(queryByText("rule name")).toBeNull();
+  });
+
   test("toggles live tail button label on click", () => {
     const { container, getByText, queryByText } = render(
       <EventsScreen
