@@ -105,6 +105,8 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                 newIds={newIds}
                 locationId={locationId}
                 pollMs={pollMs}
+                baseUrl={baseUrl}
+                userId={userId}
                 captureSettings={{
                   audioLevelBoost: mediaSettings.audioLevelBoost,
                   audioActivityThreshold: mediaSettings.audioThreshold,
@@ -210,7 +212,7 @@ function AppHeader() {
           <span className="app-header__brand-icon" aria-hidden>
             <FlaskConical size={16} />
           </span>
-          <span>Home Assist Lab</span>
+          <span>Home Assistant Lab</span>
         </div>
         <nav className="app-nav" aria-label="Primary">
           <NavLink to="/events" className={navLinkClassName(isEventsActive)}>
@@ -276,6 +278,8 @@ function LocationEventsRoute({
         newIds={newIds}
         locationId={parsedLocationId}
         pollMs={pollMs}
+        baseUrl={baseUrl}
+        userId={userId}
         captureSettings={{
           audioLevelBoost: mediaSettings.audioLevelBoost,
           audioActivityThreshold: mediaSettings.audioThreshold,

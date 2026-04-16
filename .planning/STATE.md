@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Location management + location-scoped access/events
 status: planning
-stopped_at: Phase 8 completed; ready to start Phase 9
+stopped_at: Phase 8 completed; Phase 9 planning updated for analytics + Capacitor
 last_updated: "2026-04-16T23:10:00.000Z"
 last_activity: 2026-04-16
 progress:
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.  
-**Current focus:** Phase 09 — location-detail-visibility
+**Current focus:** Phase 09 — log-analytics-and-capacitor-foundation
 
 ## Current Position
 
@@ -58,6 +58,7 @@ See PROJECT.md Key Decisions. Recent roadmap decisions:
 - [Phase 08]: Guard browser bootstrap in main.tsx with a document check so integration tests can import App safely.
 - [Post-Phase 08]: Route media detection notifications through app-level polling so alerts fire on any page.
 - [Post-Phase 08]: Persist explicit media.detected confidence and display it in both friendly logs and browser notifications.
+- [Phase 09 planning]: Prioritize Recharts event analytics and Capacitor shell setup before deferred location-detail visibility expansion.
 
 ### Pending Todos
 

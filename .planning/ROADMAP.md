@@ -1,4 +1,4 @@
-# Roadmap: Home Assist Lab
+# Roadmap: Home Assistant Lab
 
 **Current milestone:** v1.2 Location management + location-scoped access/events  
 **Created:** 2026-04-15
@@ -18,7 +18,7 @@ v1.2 introduces location-first operations across the app so users can manage loc
 **Phase numbering:** Continue after v1.1 with phases 8–12. Decimal phases (for example 8.1) are reserved for urgent insertions.
 
 - [x] **Phase 8: Locations hub and lifecycle** - Users can list, create, edit, archive, and navigate locations.
-- [ ] **Phase 9: Location detail visibility** - Users can open a location and view scoped devices and memberships.
+- [ ] **Phase 9: Log analytics and Capacitor foundation** - Users can visualize event trends and the app can run as a Capacitor mobile shell.
 - [ ] **Phase 10: Location RBAC and delegated access** - Location permissions are enforced and manageable per user and role.
 - [ ] **Phase 11: Location subscription administration** - Admins can configure location-scoped webhook subscriptions.
 - [ ] **Phase 12: Scoped delivery reliability** - Delivery execution and operability remain isolated by location.
@@ -41,15 +41,20 @@ Plans:
 - [x] 08-03-PLAN.md — Wire app-shell hub/detail navigation and add integration navigation regression tests.
 **UI hint**: yes
 
-### Phase 9: Location detail visibility
-**Goal**: Users can inspect location-specific devices and user memberships from the selected location view.
+### Phase 9: Log analytics and Capacitor foundation
+**Goal**: Users can explore event trends through Recharts analytics and run the app through Capacitor on iOS/Android.
 **Depends on**: Phase 8
-**Requirements**: VIEW-02, VIEW-03
+**Requirements**: LOG-01, LOG-02, LOG-03, LOG-04, LOG-05, CAP-01, CAP-02, CAP-03, CAP-04
 **Success Criteria** (what must be TRUE):
-  1. User can view all devices associated with the selected location.
-  2. User can view all users and memberships associated with the selected location.
-  3. Switching to a different location updates the displayed devices and memberships to the new location scope.
-**Plans**: TBD
+  1. User can view charted event trends (volume over time, type distribution, confidence trend) inline on the existing Events page, with active scope auto-applied (global Events context or selected-location context).
+  2. Analytics controls (time range and aggregation bucket) update charts and summary stats consistently without page reload.
+  3. Capacitor is configured with generated iOS/Android projects and app shell boot succeeds in native runtimes after web asset sync.
+  4. Existing web behavior (events list polling and location navigation) remains functional after analytics and Capacitor setup.
+**Plans**: 3 plans
+Plans:
+- [ ] 09-01-PLAN.md — Add analytics contracts and server aggregation endpoints for chart-ready event stats.
+- [ ] 09-02-PLAN.md — Implement Recharts analytics panel in Events UI with filter wiring and regression tests.
+- [ ] 09-03-PLAN.md — Add Capacitor runtime configuration, platform projects, and native smoke verification flow.
 **UI hint**: yes
 
 ### Phase 10: Location RBAC and delegated access
@@ -97,7 +102,7 @@ Plans:
 | 6. Media signals -> events | 3/3 | Complete | 2026-04-15 |
 | 7. E2E media trace | 1/1 | Complete | 2026-04-15 |
 | 8. Locations hub and lifecycle | 3/3 | Complete | 2026-04-16 |
-| 9. Location detail visibility | 0/TBD | Not started | - |
+| 9. Log analytics and Capacitor foundation | 0/3 | Not started | - |
 | 10. Location RBAC and delegated access | 0/TBD | Not started | - |
 | 11. Location subscription administration | 0/TBD | Not started | - |
 | 12. Scoped delivery reliability | 0/TBD | Not started | - |

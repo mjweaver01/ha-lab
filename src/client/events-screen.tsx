@@ -1,15 +1,38 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Code2, Edit3, Eye, Radio, RefreshCw } from "lucide-react";
-import type { EventListItem } from "./api/events-client.ts";
+import type { EventListItem, FetchLike } from "./api/events-client.ts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { MediaCaptureSection } from "./media-capture-section.tsx";
+import { fetchEventsAnalytics } from "./api/events-analytics-client.ts";
 import type { UseMediaCaptureOptions } from "./hooks/use-media-capture.ts";
 import {
   computeVirtualWindow,
+  computeTimeframe,
   filterEventsByTimeframe,
   paginateEvents,
   type EventsFilterState,
   type TimeRangePreset,
 } from "./lib/events-view.ts";
+import {
+  toConfidenceSeries,
+  toDistributionSeries,
+  toVolumeSeries,
+} from "./lib/events-analytics-view.ts";
+import type {
+  EventsAnalyticsBucket,
+  EventsAnalyticsResponse,
+} from "../types/events-analytics-api.ts";
 
 export type EventsScreenProps = {
   events: EventListItem[];
@@ -22,6 +45,9 @@ export type EventsScreenProps = {
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
   onEditLocation?: () => void;
+  baseUrl?: string;
+  userId?: number;
+  fetchAnalyticsImpl?: FetchLike;
 };
 
 const PAGE_SIZES = [25, 50, 100];
@@ -160,6 +186,31 @@ function mergeLocalDateTime(date: string, time: string): string {
   return `${date}T${time || "00:00"}`;
 }
 
+function toIsoOrNull(ms: number | null): string | null {
+  if (ms == null) return null;
+  return new Date(ms).toISOString();
+}
+
+function analyticsBucketFor(filter: EventsFilterState): EventsAnalyticsBucket {
+  if (filter.mode !== "timeframe") {
+    return "15m";
+  }
+  switch (filter.preset) {
+    case "15m":
+      return "5m";
+    case "1h":
+      return "15m";
+    case "6h":
+      return "1h";
+    case "24h":
+      return "1h";
+    case "custom":
+      return "15m";
+    default:
+      return "15m";
+  }
+}
+
 export function EventsScreen({
   events,
   error,
@@ -171,6 +222,9 @@ export function EventsScreen({
   captureSettings,
   onOpenMediaSettings,
   onEditLocation,
+  baseUrl,
+  userId,
+  fetchAnalyticsImpl,
 }: EventsScreenProps) {
   const [filter, setFilter] = useState<EventsFilterState>(DEFAULT_FILTER);
   const [friendlyLogs, setFriendlyLogs] = useState(true);
@@ -247,12 +301,90 @@ export function EventsScreen({
         : `Timeframe: last ${filter.preset}.`;
   const customStartParts = splitLocalDateTime(filter.customStart);
   const customEndParts = splitLocalDateTime(filter.customEnd);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<EventsAnalyticsResponse | null>(null);
+
+  const analyticsEnabled = baseUrl != null && Number.isInteger(userId);
+  const analyticsUserId = analyticsEnabled ? (userId as number) : null;
+  const analyticsBucket = analyticsBucketFor(filter);
+  const analyticsTimeframe = useMemo(() => computeTimeframe(filter, Date.now()), [filter]);
+
+  useEffect(() => {
+    if (!analyticsEnabled || analyticsUserId == null || baseUrl == null) {
+      setAnalytics(null);
+      return;
+    }
+    let cancelled = false;
+    setAnalyticsLoading(true);
+    setAnalyticsError(null);
+    void fetchEventsAnalytics(
+      baseUrl,
+      {
+        userId: analyticsUserId,
+        mode: filter.mode,
+        locationId,
+        bucket: analyticsBucket,
+        range: filter.mode === "timeframe" && filter.preset !== "custom" ? filter.preset : undefined,
+        start_at:
+          filter.mode === "timeframe" ? (toIsoOrNull(analyticsTimeframe.startMs) ?? undefined) : undefined,
+        end_at:
+          filter.mode === "timeframe" ? (toIsoOrNull(analyticsTimeframe.endMs) ?? undefined) : undefined,
+      },
+      fetchAnalyticsImpl,
+    )
+      .then((next) => {
+        if (!cancelled) {
+          setAnalytics(next);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          const msg = e instanceof Error ? e.message : String(e);
+          setAnalyticsError(msg);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setAnalyticsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    analyticsBucket,
+    analyticsEnabled,
+    analyticsUserId,
+    analyticsTimeframe.endMs,
+    analyticsTimeframe.startMs,
+    baseUrl,
+    fetchAnalyticsImpl,
+    filter.mode,
+    filter.preset,
+    locationId,
+  ]);
+
+  const volumeSeries = useMemo(
+    () => (analytics == null ? [] : toVolumeSeries(analytics)),
+    [analytics],
+  );
+  const distributionSeries = useMemo(
+    () => (analytics == null ? [] : toDistributionSeries(analytics)),
+    [analytics],
+  );
+  const confidenceSeries = useMemo(
+    () => (analytics == null ? [] : toConfidenceSeries(analytics)),
+    [analytics],
+  );
+  const pageTitle = locationId == null ? "All Events" : `Location ${locationId} Events`;
 
   return (
     <div className="ui-page">
       <div className="ui-page-header">
         <div>
-          <h1 className="ui-page-title">Events</h1>
+          <h1 className="ui-page-title">{pageTitle}</h1>
           <p className="ui-page-meta">
             {locationId == null ? "All accessible locations" : `Location ID: ${locationId}`} · Poll every{" "}
             {Math.round(pollMs / 1000)}s
@@ -428,6 +560,98 @@ export function EventsScreen({
         </p>
       </div>
 
+      <div className="ui-panel ui-analytics">
+        <div className="ui-analytics__header">
+          <h2 className="ui-page-title ui-analytics__title">Analytics</h2>
+          <p className="ui-filter-summary">Follows current mode/timeframe settings.</p>
+        </div>
+
+        {analytics == null && analyticsLoading ? (
+          <p className="ui-filter-summary">Loading analytics...</p>
+        ) : null}
+        {analyticsError != null ? (
+          <p className="ui-alert ui-alert--error">Could not load analytics: {analyticsError}</p>
+        ) : null}
+        {!analyticsEnabled ? (
+          <p className="ui-filter-summary">Analytics unavailable (missing API context).</p>
+        ) : null}
+
+        {analytics != null && analyticsError == null ? (
+          <>
+            <p className="ui-filter-summary ui-analytics__summary">
+              {analytics.totals.events} events · {analytics.totals.distinctEventTypes} event types ·{" "}
+              {analytics.totals.confidenceSamples} confidence samples
+            </p>
+            <div className="ui-analytics__grid">
+              <div className="ui-analytics__card">
+                <h3 className="ui-analytics__card-title">Volume trend</h3>
+                {volumeSeries.length === 0 ? (
+                  <p className="ui-filter-summary">No event volume data in selected range.</p>
+                ) : (
+                  <div className="ui-analytics__chart">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <ComposedChart data={volumeSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
+                        <XAxis dataKey="label" stroke="#8b949e" />
+                        <YAxis stroke="#8b949e" />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="eventCount" name="Events" fill="#3d8bfd" />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+              <div className="ui-analytics__card">
+                <h3 className="ui-analytics__card-title">Event type distribution</h3>
+                {distributionSeries.length === 0 ? (
+                  <p className="ui-filter-summary">No event-type distribution data.</p>
+                ) : (
+                  <div className="ui-analytics__chart">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={distributionSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
+                        <XAxis dataKey="eventType" stroke="#8b949e" />
+                        <YAxis stroke="#8b949e" />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="count" name="Count" fill="#4ecdc4" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+              <div className="ui-analytics__card">
+                <h3 className="ui-analytics__card-title">Confidence trend</h3>
+                {confidenceSeries.length === 0 ? (
+                  <p className="ui-filter-summary">No confidence samples in selected range.</p>
+                ) : (
+                  <div className="ui-analytics__chart">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <ComposedChart data={confidenceSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
+                        <XAxis dataKey="label" stroke="#8b949e" />
+                        <YAxis stroke="#8b949e" domain={[0, 100]} />
+                        <Tooltip />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="avgConfidence"
+                          name="Avg confidence %"
+                          stroke="#ffd166"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : null}
+      </div>
+
       {error != null && error !== "" ? (
         <div className="ui-alert ui-alert--error" role="alert">
           Could not load events. Check the API URL and that the server is running.
@@ -457,11 +681,7 @@ export function EventsScreen({
 
       {filteredEvents.length > 0 ? (
         <div className="ui-panel">
-          <p className="ui-filter-summary ui-filter-summary__events">
-            Showing {filteredEvents.length} matched event
-            {filteredEvents.length === 1 ? "" : "s"}.
-          </p>
-
+        
           <div
             ref={listViewportRef}
             className="ui-list-viewport"

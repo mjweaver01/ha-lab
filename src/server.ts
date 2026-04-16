@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { openDatabase, resolveSqlitePath } from "./db/database.ts";
+import { handleGetEventsAnalytics } from "./routes/events-analytics.ts";
 import { handleGetEvents, handlePostEvent } from "./routes/events.ts";
 import {
   handleArchiveLocation,
@@ -52,6 +53,7 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
       "Routes:\n" +
       "  GET  /events?location_id=<id>  — list events for a location\n" +
       "  GET  /events (with x-user-id)  — list events for all accessible locations\n" +
+      "  GET  /events/analytics         — event chart aggregates for active scope\n" +
       "  POST /events               — ingest event (JSON body)\n" +
       "  POST /subscribers          — register callback URL for a location\n\n" +
       "UI: run `bun run client` (separate dev server).\n";
@@ -62,6 +64,12 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
   }
 
   if (path === "/events" && req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsDevHeaders(req),
+    });
+  }
+  if (path === "/events/analytics" && req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
       headers: corsDevHeaders(req),
@@ -80,6 +88,10 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
   }
   if (path === "/events" && req.method === "POST") {
     const res = await handlePostEvent(req, db);
+    return withCorsDev(res, req);
+  }
+  if (path === "/events/analytics" && req.method === "GET") {
+    const res = await handleGetEventsAnalytics(req, db);
     return withCorsDev(res, req);
   }
   if (path === "/subscribers" && req.method === "POST") {

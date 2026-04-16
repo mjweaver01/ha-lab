@@ -1,4 +1,4 @@
-# Home Assist
+# Home Assistant Lab
 
 Home Assist is a local-first prototype for tracing events from a simulated edge node, through a Bun-based orchestrator, to subscribed users and a React client.
 
@@ -59,6 +59,36 @@ PUBLIC_ORCHESTRATOR_URL=http://127.0.0.1:3000 PUBLIC_LOCATION_ID=1 bun run clien
 ```
 
 When testing media features, allow browser microphone and camera permissions.
+
+## Capacitor mobile workflow
+
+Capacitor support uses the same React app, embedded in iOS/Android WebViews.
+
+Prerequisites:
+
+- Xcode + iOS command line tools (for iOS)
+- Android Studio with SDK + emulator image (for Android)
+
+Install deps and generate/sync native shells:
+
+```bash
+bun run build:web:mobile
+bun run mobile:sync
+```
+
+Open platform projects:
+
+```bash
+bun run mobile:ios
+bun run mobile:android
+```
+
+After client code changes, repeat:
+
+```bash
+bun run build:web:mobile
+bun run mobile:sync
+```
 
 ## Testing
 

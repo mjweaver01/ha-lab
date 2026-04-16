@@ -1,4 +1,4 @@
-# Requirements: Home Assist Lab
+# Requirements: Home Assistant Lab
 
 **Defined:** 2026-04-15  
 **Milestone:** v1.2 Location management + location-scoped access/events  
@@ -22,6 +22,21 @@ Requirements for this milestone. Each maps to roadmap phases (starting at phase 
 - [ ] **VIEW-02**: User can view all devices scoped to that location.
 - [ ] **VIEW-03**: User can view all users and memberships scoped to that location.
 - [ ] **VIEW-04**: User cannot view device or user data for a location they are not authorized to access.
+
+### Log analytics visualization
+
+- [ ] **LOG-01**: User can view event-volume trend charts for selected time range and bucket granularity inline on the existing Events page across both global and selected-location contexts.
+- [ ] **LOG-02**: User can view event-type distribution inline on the existing Events page for the active auto-applied scope.
+- [ ] **LOG-03**: User can view confidence trend analytics for detection events when confidence data exists.
+- [ ] **LOG-04**: Analytics panel uses server-provided aggregate data and updates without full page reload.
+- [ ] **LOG-05**: Analytics panel preserves existing events list usability and does not block polling.
+
+### Capacitor mobile runtime
+
+- [ ] **CAP-01**: Project includes Capacitor core configuration targeting the existing web bundle output.
+- [ ] **CAP-02**: iOS and Android platform projects can be generated and synced from the current web app.
+- [ ] **CAP-03**: App can launch in Capacitor shell with existing routes/events UI functional in native WebView.
+- [ ] **CAP-04**: Build/sync/run scripts are documented and runnable for repeatable mobile dev workflow.
 
 ### Membership + RBAC
 
@@ -86,9 +101,18 @@ Not in v1.2 roadmap; tracked for later versions.
 | LOC-04 | 8 | Complete |
 | LOC-05 | 8 | Complete |
 | VIEW-01 | 8 | Complete |
-| VIEW-02 | 9 | Pending |
-| VIEW-03 | 9 | Pending |
+| VIEW-02 | Backlog | Pending |
+| VIEW-03 | Backlog | Pending |
 | VIEW-04 | 10 | Pending |
+| LOG-01 | 9 | Pending |
+| LOG-02 | 9 | Pending |
+| LOG-03 | 9 | Pending |
+| LOG-04 | 9 | Pending |
+| LOG-05 | 9 | Pending |
+| CAP-01 | 9 | Pending |
+| CAP-02 | 9 | Pending |
+| CAP-03 | 9 | Pending |
+| CAP-04 | 9 | Pending |
 | RBAC-01 | 10 | Pending |
 | RBAC-02 | 10 | Pending |
 | RBAC-03 | 10 | Pending |
@@ -112,9 +136,9 @@ Not in v1.2 roadmap; tracked for later versions.
 
 **Coverage:**
 
-- v1.2 requirements: **29** total  
-- Mapped to phases: **29** / 29  
-- Unmapped: **0**  
+- v1.2 requirements: **38** total  
+- Mapped to phases: **36** / 38  
+- Unmapped: **2** (`VIEW-02`, `VIEW-03` moved to backlog for later scheduling)  
 
 ---
 
