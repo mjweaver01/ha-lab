@@ -17,13 +17,13 @@ You can **end-to-end trace one event** from “something happened on the node”
 - ✓ **Simulated node** — `bun run simulate` posts sample `PostEventBody` events (`NODE-01`).
 - ✓ **React client** — `bun run client` Events screen, polling, new-row accent (`UI-01`, `UI-02`).
 
-### Active (v1.1 — complete)
+### Active (v1.2 — planned)
 
-- [x] **Local media capture** — Access this Mac’s microphone and camera (browser-first) with clear permission UX. *(Validated in Phase 5: 2026-04-15.)*
-- [x] **Media → events** — Audio/video signal pipeline posts throttled `media.audio` / `media.video` events through `POST /events`. *(Phase 6 implementation and runtime verification complete.)*
-- [x] **End-to-end trace** — Media-originated events are visible in the React Events list with parity behavior and E2E validation evidence.
-- [x] **Operator UX upgrades** — Events screen now supports live tail vs timeframe filters, virtualized pagination, and a dedicated Media settings page with snapshot-based label learning.
-- [ ] **Optional hardening** — Production-oriented auth, CORS policy, deployment story (only if you move beyond lab).
+- [ ] **Locations hub** — View all locations in one place with clear navigation into each location.
+- [ ] **Location details** — View devices and users scoped to a selected location.
+- [ ] **Location management** — Add, edit, and manage location records and metadata.
+- [ ] **Location + user RBAC** — Enforce role-based access so user capabilities are scoped by location and role.
+- [ ] **Location webhook subscriptions** — Manage push event subscriptions per location.
 
 ### Out of Scope
 
@@ -32,14 +32,16 @@ You can **end-to-end trace one event** from “something happened on the node”
 - **Production Postgres** — `bun:sqlite` for the lab; Postgres remains an optional later swap.
 - **Multi-tenant SaaS hardening** — Auth can be minimal; no enterprise compliance story in the lab.
 
-## Current Milestone: v1.1 Local media events
+## Current Milestone: v1.2 Location management + location-scoped access/events
 
-**Goal:** Use this computer’s real **audio** and **video** as inputs so orchestrator events reflect actual media activity, not only scripted simulation.
+**Goal:** Add full multi-location management so you can view and manage all locations in one place, with location-scoped devices/users, RBAC, and webhook push subscriptions per location.
 
 **Target features:**
-- **Capture** — Mic and camera on the dev machine (browser `getUserMedia` as the default path; extend only if needed).
-- **Signal → events** — Meaningful mapping (e.g. audio level / activity, optional video or motion-style cues) into `PostEventBody` or a small documented extension.
-- **Same pipeline** — POST to orchestrator → subscribers → Events UI, preserving the core “trace one event” learning loop.
+- **Locations index** — Unified view of all locations with fast navigation into each location.
+- **Location drill-down** — Per-location pages expose devices and users for that location.
+- **Location CRUD** — Add, edit, and manage locations through the app.
+- **RBAC foundation** — Implement full location and user RBAC support.
+- **Location push subscriptions** — Subscribe to push events from webhooks for each location.
 
 ## Current state (after v1.0)
 
@@ -50,7 +52,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 
 ## Next milestone goals
 
-- Define and scope **v1.2** goals and requirements.
+- Execute `v1.2` phases for location management, location/user RBAC, and location-scoped webhook subscriptions.
 - Optionally close **manual UAT** (e.g. `.planning/milestone-v1-UAT.md`) if you want a recorded end-to-end smoke.
 
 ## Context
@@ -99,4 +101,4 @@ Previously listed as Active before v1.0 close:
 </details>
 
 ---
-*Last updated: 2026-04-15 — **v1.1** milestone complete (phases 5-7) with media E2E trace validated*
+*Last updated: 2026-04-15 — milestone **v1.2** initialized for location management, RBAC, and location webhook subscriptions*

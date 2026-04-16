@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.1
-milestone_name: Local media events
-status: complete
-stopped_at: Phase 7 verified and v1.1 milestone complete
-last_updated: "2026-04-15T20:45:00.000Z"
-last_activity: 2026-04-15 -- phase 7 completed and milestone marked complete
+milestone_name: Location management + location-scoped access/events
+status: defining-requirements
+stopped_at: Milestone v1.2 started
+last_updated: "2026-04-15T21:15:00.000Z"
+last_activity: 2026-04-15 -- milestone v1.2 started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.  
-**Current focus:** Milestone complete — awaiting next milestone planning
+**Current focus:** Milestone v1.2 requirements and roadmap definition
 
 ## Current Position
 
-Phase: 07 (e2e-media-trace) — COMPLETE
-Plan: 1 of 1
-Status: Milestone v1.1 complete
-Last activity: 2026-04-16 - Completed quick task 260415-vpn: i want to use concurrently for a dev:all command
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-15 - Milestone v1.2 started
 
-Progress: v1.0 (phases 1–4) and v1.1 (phases 5–7) are complete  
-`[████████████████]` 7/7 phases complete (overall)
+Progress: v1.0 (phases 1–4) and v1.1 (phases 5–7) are complete; v1.2 planning started  
+`[░░░░░░░░░░░░░░░░]` 0/? phases complete (v1.2)
 
 ## Performance Metrics
 
@@ -83,5 +83,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-15T20:45:00.000Z
-Stopped at: Phase 7 verified and v1.1 milestone complete
+Stopped at: Milestone v1.2 started (requirements definition)
 Resume file: None
