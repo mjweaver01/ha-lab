@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Location management + location-scoped access/events
 status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-04-16T03:18:49.637Z"
+stopped_at: Phase 8 UI-SPEC approved
+last_updated: "2026-04-16T03:33:23.828Z"
 last_activity: 2026-04-15 - Roadmap created for milestone v1.2
 progress:
   total_phases: 5
@@ -64,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-16T03:18:49.630Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-locations-hub-and-lifecycle/08-CONTEXT.md
+Last session: 2026-04-16T03:33:23.823Z
+Stopped at: Phase 8 UI-SPEC approved
+Resume file: .planning/phases/08-locations-hub-and-lifecycle/08-UI-SPEC.md
