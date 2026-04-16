@@ -9,6 +9,7 @@
     "migrate": "bun run src/db/migrate.ts",
     "seed": "bun run scripts/seed-lab.ts",
     "dev": "bun --hot index.ts",
+    "dev:all": "concurrently \"bun run dev\" \"bun run client\"",
     "start": "bun run index.ts",
     "simulate": "bun run scripts/simulated-node.ts",
     "client": "bun ./src/client/index.html"
@@ -24,6 +25,7 @@
     "@types/bun": "latest",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "concurrently": "^9.2.1",
     "happy-dom": "20.9.0"
   },
   "peerDependencies": {
