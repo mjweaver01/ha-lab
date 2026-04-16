@@ -68,6 +68,7 @@ describe("EventsScreen media E2E trace", () => {
         created_at: "2026-04-16T12:00:00.000Z",
         body: {
           rule_name: "Person alert",
+          confidence: 0.92,
           match_score: 0.92,
           candidates: [
             { label: "person", score: 0.92 },
@@ -99,6 +100,7 @@ describe("EventsScreen media E2E trace", () => {
 
     expect(within(container).getByText("rule name")).toBeDefined();
     expect(within(container).getByText("Person alert")).toBeDefined();
+    expect(within(container).getByText("confidence")).toBeDefined();
     expect(within(container).getByText("person (92%), motion (70%)")).toBeDefined();
     fireEvent.click(within(container).getByText("Nice"));
     expect(within(container).getByText(/"rule_name": "Person alert"/)).toBeDefined();

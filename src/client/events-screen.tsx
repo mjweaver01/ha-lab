@@ -105,7 +105,10 @@ function formatFriendlyBody(body: unknown): FriendlyLogRow[] {
     return [{ key: "payload", value: String(body) }];
   }
 
-  const entries = Object.entries(body as Record<string, unknown>);
+  const payload = body as Record<string, unknown>;
+  const entries = Object.entries(payload);
+  const hasExplicitConfidence =
+    typeof payload.confidence === "number" && Number.isFinite(payload.confidence);
   if (entries.length === 0) {
     return [{ key: "payload", value: "No payload fields" }];
   }
@@ -115,6 +118,15 @@ function formatFriendlyBody(body: unknown): FriendlyLogRow[] {
       if (key === "top_score" && typeof value === "number" && Number.isFinite(value)) {
         return {
           key: formatFriendlyKey(key),
+          value: `${Math.round(value * 100)}%`,
+        };
+      }
+      if (key === "match_score" && hasExplicitConfidence) {
+        return null;
+      }
+      if ((key === "confidence" || key === "match_score") && typeof value === "number") {
+        return {
+          key: "confidence",
           value: `${Math.round(value * 100)}%`,
         };
       }
@@ -130,7 +142,7 @@ function formatFriendlyBody(body: unknown): FriendlyLogRow[] {
         value: toFriendlyValue(value),
       };
     })
-    .filter((row) => row.key.trim() !== "");
+    .filter((row): row is FriendlyLogRow => row != null && row.key.trim() !== "");
 }
 
 function splitLocalDateTime(value: string): { date: string; time: string } {

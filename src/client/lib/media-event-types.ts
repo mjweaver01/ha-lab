@@ -22,6 +22,7 @@ export type MediaDetectedEventBody = {
   rule_scope: "global" | "location";
   rule_location_id: number | null;
   match_value: string;
+  confidence: number;
   match_score: number;
   notify: boolean;
   candidates?: MediaCandidate[];
@@ -116,6 +117,7 @@ export function buildDetectedEventBody(args: {
     rule_scope: args.ruleScope,
     rule_location_id: args.ruleLocationId,
     match_value: trimLabel(args.matchValue),
+    confidence: clampScore(args.matchScore),
     match_score: clampScore(args.matchScore),
     notify: args.notify,
   };

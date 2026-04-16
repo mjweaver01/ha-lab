@@ -216,6 +216,7 @@ describe("locations navigation", () => {
                         source: "video",
                         rule_name: "Person alert",
                         match_value: "person",
+                        confidence: 0.92,
                         notify: true,
                       },
                     },
@@ -246,7 +247,7 @@ describe("locations navigation", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]).toEqual({
       title: "Action detected",
-      body: "Person alert • person (location 42)",
+      body: "Person alert • person (92%) • location 42",
       tag: "ha-detected-1-8",
     });
   });
