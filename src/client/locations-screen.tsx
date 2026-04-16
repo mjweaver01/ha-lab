@@ -10,6 +10,11 @@ export type LocationsScreenProps = {
   baseUrl: string;
   userId: number;
   onOpenLocation: (locationId: number) => void;
+  api?: {
+    fetchLocations: typeof fetchLocations;
+    archiveLocation: typeof archiveLocation;
+    restoreLocation: typeof restoreLocation;
+  };
 };
 
 const ARCHIVE_COPY =
@@ -34,7 +39,16 @@ function writeIncludeArchivedPreference(includeArchived: boolean): void {
   window.sessionStorage.setItem(INCLUDE_ARCHIVED_KEY, includeArchived ? "1" : "0");
 }
 
-export function LocationsScreen({ baseUrl, userId, onOpenLocation }: LocationsScreenProps) {
+export function LocationsScreen({
+  baseUrl,
+  userId,
+  onOpenLocation,
+  api = {
+    fetchLocations,
+    archiveLocation,
+    restoreLocation,
+  },
+}: LocationsScreenProps) {
   const [includeArchived, setIncludeArchived] = useState(readIncludeArchivedPreference);
   const [locations, setLocations] = useState<LocationListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +61,7 @@ export function LocationsScreen({ baseUrl, userId, onOpenLocation }: LocationsSc
     setLoading(true);
     setError(null);
     try {
-      const rows = await fetchLocations({ baseUrl, userId, includeArchived });
+      const rows = await api.fetchLocations({ baseUrl, userId, includeArchived });
       setLocations(rows);
     } catch {
       // Do not leak location identifiers from backend errors.
@@ -74,7 +88,7 @@ export function LocationsScreen({ baseUrl, userId, onOpenLocation }: LocationsSc
     setBusyId(locationId);
     setError(null);
     try {
-      await archiveLocation({
+      await api.archiveLocation({
         baseUrl,
         userId,
         locationId,
@@ -92,7 +106,7 @@ export function LocationsScreen({ baseUrl, userId, onOpenLocation }: LocationsSc
     setBusyId(locationId);
     setError(null);
     try {
-      await restoreLocation({
+      await api.restoreLocation({
         baseUrl,
         userId,
         locationId,

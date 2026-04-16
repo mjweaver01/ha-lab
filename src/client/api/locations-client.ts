@@ -9,25 +9,25 @@ type ClientContext = {
   userId: number;
 };
 
-type FetchLocationsArgs = ClientContext & {
+export type FetchLocationsArgs = ClientContext & {
   includeArchived?: boolean;
 };
 
-type CreateLocationArgs = ClientContext & {
+export type CreateLocationArgs = ClientContext & {
   body: CreateLocationBody;
 };
 
-type UpdateLocationArgs = ClientContext & {
+export type UpdateLocationArgs = ClientContext & {
   locationId: number;
   body: UpdateLocationBody;
 };
 
-type ArchiveLocationArgs = ClientContext & {
+export type ArchiveLocationArgs = ClientContext & {
   locationId: number;
   archiveReason?: string;
 };
 
-type RestoreLocationArgs = ClientContext & {
+export type RestoreLocationArgs = ClientContext & {
   locationId: number;
 };
 
