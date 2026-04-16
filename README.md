@@ -1,20 +1,46 @@
-# home-assist
+# Home Assist
 
-Lab prototype: **Bun** + **SQLite** webhook orchestrator, simulated node, and **React** Events UI — trace activity from a node through the orchestrator to subscribers and the browser.
+Home Assist is a local-first prototype for tracing events from a simulated edge node, through a Bun-based orchestrator, to subscribed users and a React client.
 
-Entry: `bun run dev` serves the orchestrator from `index.ts` (not a console-only stub).
+The system combines:
 
-## Current state (as of 2026-04-15)
+- A webhook orchestrator built with `Bun.serve`
+- SQLite persistence for homes, users, and events
+- A simulated node event producer
+- A React events interface with live media signal support
 
-- **Shipped:** **v1.0** learning prototype (git tag **`v1.0`**) — SQLite homes/users, `Bun.serve` webhook routes, simulated node, React Events list with polling.
-- **Current milestone:** **v1.1 Local media events (shipped)**.
-- **Completed in v1.1:** **Phase 5** local media capture UX, **Phase 6** media signals → events (including human runtime verification), and **Phase 7** E2E media trace.
-- **Next milestone work:** define and plan **v1.2** scope.
-- **Current client UX:** dedicated **Media settings** page, live audio/video detection overlays, snapshot-based custom label learning, and an Events list with **live tail vs timeframe filtering**, **virtualized rendering**, and **pagination**.
-- **Canonical detail:** requirements, roadmap alignment, and milestone notes live in **`.planning/PROJECT.md`**.
-- **Stack:** Bun, TypeScript, `bun:sqlite`, React via Bun’s HTML bundler (no Vite).
+## Current Product Status
 
-## Setup
+As of 2026-04-15:
+
+- `v1.0` shipped as the baseline learning prototype (tag: `v1.0`)
+- Milestone `v1.1` (Local media events) is complete
+- Milestone `v1.1` delivered:
+  - Local media capture UX (Phase 5)
+  - Media signal to event pipeline with runtime verification (Phase 6)
+  - End-to-end media trace validation (Phase 7)
+- Next planned work is milestone `v1.2` scoping and planning
+
+Authoritative planning, requirements, and milestone notes are maintained in `.planning/PROJECT.md`.
+
+## Key Capabilities
+
+- Media settings and capture flows in the client
+- Live audio/video detection overlays
+- Snapshot-based custom label learning in browser storage
+- Events list with live tail or timeframe filtering
+- Virtualized rendering and pagination for larger event histories
+
+## Technology Stack
+
+- Bun
+- TypeScript
+- `bun:sqlite`
+- React (Bun HTML bundler, no Vite)
+
+## Getting Started
+
+Install dependencies and initialize local data:
 
 ```bash
 bun install
@@ -22,45 +48,36 @@ bun run migrate
 bun run seed
 ```
 
-`seed` creates a default **Lab** home (and user) so `home_id=1` exists. Without it, `POST /events` returns **404 home not found** for `--home 1`.
+`bun run seed` creates the default `Lab` home and user (`home_id=1`). Without seed data, `POST /events` for `home_id=1` returns `404 home not found`.
 
-## Run
+## Running the Application
 
-**Terminal 1 — orchestrator** (default port `3000`):
+Start services in separate terminals.
+
+1. Orchestrator (default port `3000`)
 
 ```bash
 bun run dev
 ```
 
-**Terminal 2 — simulate node** (optional):
+2. Simulated node (optional)
 
 ```bash
 ORCHESTRATOR_URL=http://127.0.0.1:3000 bun run simulate -- --home 1
 ```
 
-**Terminal 3 — React client** (optional):
+3. React client (optional)
 
 ```bash
 PUBLIC_ORCHESTRATOR_URL=http://127.0.0.1:3000 PUBLIC_HOME_ID=1 bun run client
 ```
 
-The Events UI includes a **Media capture** panel and a **Media settings** page. Grant permissions in the browser when prompted.
+When testing media features, allow browser microphone and camera permissions.
 
-Media behavior currently includes:
-
-- Live microphone meter + audio detection labels.
-- Live camera preview + overlay label/score.
-- Snapshot-based custom learning labels stored in browser localStorage.
-- Events list controls for live tail vs timeframe, paged navigation, and virtualized rendering for larger histories.
-
-## Tests
+## Testing
 
 ```bash
 bun test
 ```
 
-Covers DB, orchestrator integration, fan-out, simulated node, and client helpers.
-
----
-
-This project was created with `bun init` (Bun v1.3.8). [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Current test coverage includes database behavior, orchestrator integration, event fan-out, simulated node flows, and client utility logic.
