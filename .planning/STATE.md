@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Location management + location-scoped access/events
 status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-04-16T03:57:59.524Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-04-16T04:07:28.745Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 ## Current Position
 
 Phase: 08 (locations-hub-and-lifecycle) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -51,6 +51,9 @@ See PROJECT.md Key Decisions. Recent roadmap decisions:
 - [Phase 08]: Use x-user-id integer header as the phase-8 actor contract for locations routes.
 - [Phase 08]: Return generic access denied payloads for unauthorized location mutations to avoid data leakage.
 - [Phase 08]: Use positional sqlite bindings in location writes to satisfy strict Bun TypeScript signatures.
+- [Phase 08]: Persist include-archived state in sessionStorage for page-session continuity.
+- [Phase 08]: Normalize location mutation payloads to name/code/notes only before network writes.
+- [Phase 08]: Inject locations API dependencies into LocationsScreen so behavior tests can mock lifecycle calls.
 
 ### Pending Todos
 
@@ -66,9 +69,10 @@ None yet.
 |----------|------|--------|-------------|
 | uat | `.planning/milestone-v1-UAT.md` — multi-phase manual UAT not finished | open | 2026-04-15 |
 | Phase 08 P01 | 4 min | 3 tasks | 7 files |
+| Phase 08 P02 | 6 min | 3 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-04-16T03:57:59.522Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-04-16T04:07:28.742Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None

@@ -18,7 +18,7 @@ Requirements for this milestone. Each maps to roadmap phases (starting at phase 
 
 ### Location views (devices + users)
 
-- [ ] **VIEW-01**: User can open a location detail page from the locations hub.
+- [x] **VIEW-01**: User can open a location detail page from the locations hub.
 - [ ] **VIEW-02**: User can view all devices scoped to that location.
 - [ ] **VIEW-03**: User can view all users and memberships scoped to that location.
 - [ ] **VIEW-04**: User cannot view device or user data for a location they are not authorized to access.
@@ -85,7 +85,7 @@ Not in v1.2 roadmap; tracked for later versions.
 | LOC-03 | 8 | Complete |
 | LOC-04 | 8 | Complete |
 | LOC-05 | 8 | Complete |
-| VIEW-01 | 8 | Pending |
+| VIEW-01 | 8 | Complete |
 | VIEW-02 | 9 | Pending |
 | VIEW-03 | 9 | Pending |
 | VIEW-04 | 10 | Pending |
