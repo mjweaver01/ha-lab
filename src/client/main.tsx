@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FlaskConical, MapPinHouse, RadioTower, Settings2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import {
@@ -11,7 +11,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { createLocation, updateLocation } from "./api/locations-client.ts";
+import { createLocation, fetchLocations, updateLocation } from "./api/locations-client.ts";
 import { EventsScreen } from "./events-screen.tsx";
 import { LocationDetailScreen } from "./location-detail-screen.tsx";
 import { LocationsScreen } from "./locations-screen.tsx";
@@ -76,6 +76,37 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
   const [mediaSettings, setMediaSettings] = useState<MediaDetectionSettings>(() =>
     loadMediaDetectionSettings(userId),
   );
+  const [locationNamesById, setLocationNamesById] = useState<Map<number, string>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchLocations({ baseUrl, userId, includeArchived: true })
+      .then((locations) => {
+        if (cancelled) {
+          return;
+        }
+        const next = new Map<number, string>();
+        for (const location of locations) {
+          const trimmedName = location.name.trim();
+          if (trimmedName !== "") {
+            next.set(location.id, trimmedName);
+          }
+        }
+        setLocationNamesById(next);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLocationNamesById(new Map());
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [baseUrl, userId]);
+  const locationNames = useMemo(
+    () => locationNamesById as ReadonlyMap<number, string>,
+    [locationNamesById],
+  );
 
   const applySettings = (next: MediaDetectionSettings) => {
     setMediaSettings(next);
@@ -87,6 +118,7 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
     enabled: mediaSettings.notifications.enabled,
     userId,
     detectionRules: mediaSettings.detectionRules,
+    locationNamesById: locationNames,
   });
 
   return (
@@ -105,6 +137,7 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                 onRefresh={onRefresh}
                 newIds={newIds}
                 locationId={locationId}
+                locationName={locationId == null ? null : (locationNames.get(locationId) ?? null)}
                 pollMs={pollMs}
                 baseUrl={baseUrl}
                 userId={userId}
@@ -145,6 +178,7 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                 useEventsPollHook={useEventsPollHook}
                 EventsScreenComponent={EventsScreenComponent}
                 mediaSettings={mediaSettings}
+                locationNamesById={locationNames}
               />
             }
           />
@@ -245,12 +279,14 @@ function LocationEventsRoute({
   useEventsPollHook,
   EventsScreenComponent,
   mediaSettings,
+  locationNamesById,
 }: {
   baseUrl: string;
   userId: number;
   useEventsPollHook: UseEventsPollHook;
   EventsScreenComponent: typeof EventsScreen;
   mediaSettings: MediaDetectionSettings;
+  locationNamesById: ReadonlyMap<number, string>;
 }) {
   const navigate = useNavigate();
   const { locationId: routeLocationId } = useParams<{ locationId?: string }>();
@@ -277,6 +313,7 @@ function LocationEventsRoute({
         onRefresh={onRefresh}
         newIds={newIds}
         locationId={parsedLocationId}
+        locationName={locationNamesById.get(parsedLocationId) ?? null}
         pollMs={pollMs}
         baseUrl={baseUrl}
         userId={userId}

@@ -20,6 +20,7 @@ type UseDetectedEventNotificationsArgs = {
   enabled: boolean;
   userId: number;
   detectionRules?: readonly DetectionRule[];
+  locationNamesById?: ReadonlyMap<number, string>;
 };
 
 type TranscriptBody = {
@@ -106,12 +107,12 @@ function shouldNotifyRuleMatch(match: MediaRuleMatch): boolean {
   return match.rule.enabled === true && match.rule.notify === true;
 }
 
-function notificationFromRuleMatch(match: MediaRuleMatch, locationId: number) {
+function notificationFromRuleMatch(match: MediaRuleMatch, locationLabel: string) {
   const title = match.source === "audio" ? "Keyword detected" : "Action detected";
   const confidenceSuffix = ` (${Math.round(match.score * 100)}%)`;
   return {
     title,
-    body: `${match.rule.name} • ${match.matchedValue}${confidenceSuffix} • location ${locationId}`,
+    body: `${match.rule.name} • ${match.matchedValue}${confidenceSuffix} • ${locationLabel}`,
   };
 }
 
@@ -129,6 +130,7 @@ export function useDetectedEventNotifications({
   enabled,
   userId,
   detectionRules = [],
+  locationNamesById = new Map<number, string>(),
 }: UseDetectedEventNotificationsArgs): void {
   const notifiedEventIdsRef = useRef(new Set<number>());
   const ruleCooldownRef = useRef(new Map<string, number>());
@@ -178,6 +180,7 @@ export function useDetectedEventNotifications({
     }
 
     for (const event of pendingEvents) {
+      const locationLabel = locationNamesById.get(event.location_id) ?? `Location ${event.location_id}`;
       if (
         event.event_type === MEDIA_TRANSCRIPT_EVENT_TYPE ||
         event.event_type === MEDIA_AUDIO_EVENT_TYPE
@@ -207,7 +210,7 @@ export function useDetectedEventNotifications({
             continue;
           }
           ruleCooldownRef.current.set(key, now);
-          const msg = notificationFromRuleMatch(match, event.location_id);
+          const msg = notificationFromRuleMatch(match, locationLabel);
           dispatchNotification(
             msg.title,
             msg.body,
@@ -240,7 +243,7 @@ export function useDetectedEventNotifications({
             continue;
           }
           ruleCooldownRef.current.set(key, now);
-          const msg = notificationFromRuleMatch(match, event.location_id);
+          const msg = notificationFromRuleMatch(match, locationLabel);
           dispatchNotification(
             msg.title,
             msg.body,
@@ -257,5 +260,5 @@ export function useDetectedEventNotifications({
     if (maxProcessedId > maxSeenSafe) {
       maxObservedEventIdRef.current = maxProcessedId;
     }
-  }, [detectionRules, enabled, events, newIds, userId]);
+  }, [detectionRules, enabled, events, locationNamesById, newIds, userId]);
 }

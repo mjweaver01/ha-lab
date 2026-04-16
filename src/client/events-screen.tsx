@@ -42,6 +42,7 @@ export type EventsScreenProps = {
   onRefresh: () => void;
   newIds: ReadonlySet<number>;
   locationId: number | null;
+  locationName?: string | null;
   pollMs: number;
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
@@ -251,6 +252,7 @@ export function EventsScreen({
   onRefresh,
   newIds,
   locationId,
+  locationName,
   pollMs,
   captureSettings,
   onOpenMediaSettings,
@@ -409,7 +411,9 @@ export function EventsScreen({
     () => (analytics == null ? [] : toConfidenceSeries(analytics)),
     [analytics],
   );
-  const pageTitle = locationId == null ? "All Events" : `Location ${locationId} Events`;
+  const resolvedLocationName =
+    locationId == null ? null : locationName?.trim() || `Location ${locationId}`;
+  const pageTitle = locationId == null ? "All Events" : `${resolvedLocationName} Events`;
 
   return (
     <div className="ui-page">
@@ -417,8 +421,10 @@ export function EventsScreen({
         <div>
           <h1 className="ui-page-title">{pageTitle}</h1>
           <p className="ui-page-meta">
-            {locationId == null ? "All accessible locations" : `Location ID: ${locationId}`} · Poll every{" "}
-            {Math.round(pollMs / 1000)}s
+            {locationId == null
+              ? "All accessible locations"
+              : `ID ${locationId}`}{" "}
+              · Poll every {" "}{Math.round(pollMs / 1000)}s
           </p>
         </div>
         <div className="ui-page-actions">

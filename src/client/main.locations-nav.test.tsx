@@ -260,7 +260,7 @@ describe("locations navigation", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]).toEqual({
       title: "Action detected",
-      body: "Person alert • person (92%) • location 42",
+      body: "Person alert • person (92%) • Location 42",
       tag: "ha-rule-1-42-rule-person-8",
     });
   });
