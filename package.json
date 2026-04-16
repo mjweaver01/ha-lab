@@ -12,7 +12,8 @@
     "dev:all": "concurrently \"bun run dev\" \"bun run client\"",
     "start": "bun run index.ts",
     "simulate": "bun run scripts/simulated-node.ts",
-    "client": "bun ./src/client/index.html"
+    "client": "bun ./src/client/index.html",
+    "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@mediapipe/tasks-audio": "^0.10.34",
