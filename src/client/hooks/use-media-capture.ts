@@ -9,7 +9,7 @@ import {
 } from "../lib/media-learning.ts";
 import { formatMediaError, formatTrackEndedMessage } from "../lib/media-errors.ts";
 import { createMediaSignalPipeline as createPipeline } from "../lib/media-signals.ts";
-import { readPublicHomeId, readPublicOrchestratorUrl } from "../lib/public-env.ts";
+import { readPublicLocationId, readPublicOrchestratorUrl } from "../lib/public-env.ts";
 
 const AUDIO_THROTTLE_MS = 3000;
 const VIDEO_THROTTLE_MS = 4000;
@@ -97,7 +97,7 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
   const signalPipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
   const pipelineErrorRef = useRef({ mic: false, camera: false });
 
-  const PUBLIC_HOME_ID = readPublicHomeId();
+  const PUBLIC_LOCATION_ID = readPublicLocationId();
   const PUBLIC_ORCH_BASE_URL = readPublicOrchestratorUrl();
 
   const getSignalPipeline = useCallback(() => {
@@ -105,19 +105,19 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
       return signalPipelineRef.current;
     }
     signalPipelineRef.current = createPipeline({
-      homeId: PUBLIC_HOME_ID,
+      locationId: PUBLIC_LOCATION_ID,
       audioThrottleMs: AUDIO_THROTTLE_MS,
       videoThrottleMs: VIDEO_THROTTLE_MS,
       emit: async ({ event_type, body }) => {
         await postEvent(PUBLIC_ORCH_BASE_URL, {
-          home_id: PUBLIC_HOME_ID,
+          location_id: PUBLIC_LOCATION_ID,
           event_type,
           body,
         });
       },
     });
     return signalPipelineRef.current;
-  }, [PUBLIC_HOME_ID, PUBLIC_ORCH_BASE_URL]);
+  }, [PUBLIC_LOCATION_ID, PUBLIC_ORCH_BASE_URL]);
 
   const clearMicAnalysis = useCallback(() => {
     if (micRafRef.current != null) {

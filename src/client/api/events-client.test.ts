@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 import { fetchEvents } from "./events-client.ts";
 
 describe("fetchEvents", () => {
-  test("GET /events?home_id= with encoded id", async () => {
+  test("GET /events?location_id= with encoded id", async () => {
     const captured: string[] = [];
     const fetchImpl: typeof fetch = async (input) => {
       captured.push(typeof input === "string" ? input : input.toString());
@@ -10,7 +10,7 @@ describe("fetchEvents", () => {
         JSON.stringify([
           {
             id: 1,
-            home_id: 7,
+            location_id: 7,
             event_type: "test",
             created_at: "2026-01-01T00:00:00.000Z",
             body: null,
@@ -22,12 +22,12 @@ describe("fetchEvents", () => {
 
     const rows = await fetchEvents("http://127.0.0.1:3000", 7, fetchImpl);
     expect(captured[0]).toContain("/events");
-    expect(captured[0]).toContain("home_id=7");
+    expect(captured[0]).toContain("location_id=7");
     expect(rows).toHaveLength(1);
     expect(rows[0]?.id).toBe(1);
   });
 
-  test("rejects invalid home_id", async () => {
+  test("rejects invalid location_id", async () => {
     await expect(fetchEvents("http://x", 1.5, mock())).rejects.toThrow();
     await expect(fetchEvents("http://x", Number.NaN, mock())).rejects.toThrow();
   });

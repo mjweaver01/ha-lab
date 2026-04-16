@@ -39,10 +39,10 @@
 ## Security Considerations
 
 **No authentication/authorization on ingestion and subscriptions:**
-- Risk: Any network-reachable caller can post events or register callbacks for any `home_id`.
+- Risk: Any network-reachable caller can post events or register callbacks for any `location_id`.
 - Files: `src/server.ts`, `src/routes/events.ts`, `src/routes/subscribers.ts`
 - Current mitigation: Input-shape validation only.
-- Recommendations: Require API key or signed token on all write/read endpoints and enforce home-level authorization checks.
+- Recommendations: Require API key or signed token on all write/read endpoints and enforce location-level authorization checks.
 
 **SSRF risk in callback fan-out:**
 - Risk: Subscriber callback URLs are accepted with broad URL validation and then fetched by server-side code.
@@ -59,7 +59,7 @@
 ## Performance Bottlenecks
 
 **Unbounded event list queries and payload size:**
-- Problem: `GET /events` fetches all rows for a home with descending sort and no limit/pagination.
+- Problem: `GET /events` fetches all rows for a location with descending sort and no limit/pagination.
 - Files: `src/routes/events.ts`
 - Cause: Query omits `LIMIT/OFFSET` and does full response materialization.
 - Improvement path: Add cursor/offset pagination with indexed sort keys and return bounded page sizes.
@@ -114,7 +114,7 @@
 - Files: `src/webhooks/fan-out.ts`, `src/routes/events.ts`
 
 **Missing endpoint-level abuse protection:**
-- Problem: No visible request-size limits, rate limiting, or per-home quotas on write endpoints.
+- Problem: No visible request-size limits, rate limiting, or per-location quotas on write endpoints.
 - Blocks: Safe operation under noisy or malicious clients.
 - Files: `src/server.ts`, `src/routes/events.ts`, `src/routes/subscribers.ts`
 

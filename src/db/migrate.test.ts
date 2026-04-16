@@ -5,41 +5,55 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { migrate } from "./migrate.ts";
 import { openDatabase } from "./database.ts";
-import { addUserToHome, createHome, createUser } from "./homes.ts";
 
-describe("migrate + homes integration", () => {
-  test("home and membership survive db reopen on file path", () => {
+function createUser(dbPath: ReturnType<typeof openDatabase>, displayName: string | null): number {
+  const result = dbPath.run("INSERT INTO users (display_name) VALUES ($displayName)", {
+    $displayName: displayName,
+  });
+  return Number(result.lastInsertRowid);
+}
+
+describe("migrate + locations integration", () => {
+  test("location and membership survive db reopen on file path", () => {
     const dir = mkdtempSync(join(tmpdir(), "home-assist-test-"));
     const dbPath = join(dir, "persist.sqlite");
 
     migrate(dbPath);
 
-    let homeId: number;
+    let locationId: number;
     let userId: number;
     {
       const db = openDatabase(dbPath);
-      homeId = createHome(db, { name: "Lab" });
-      userId = createUser(db, { displayName: "Dev" });
-      expect(typeof homeId).toBe("number");
-      expect(homeId).toBeGreaterThan(0);
+      locationId = Number(
+        db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
+          $name: "Lab",
+          $code: "lab",
+        }).lastInsertRowid,
+      );
+      userId = createUser(db, "Dev");
+      expect(typeof locationId).toBe("number");
+      expect(locationId).toBeGreaterThan(0);
       expect(typeof userId).toBe("number");
       expect(userId).toBeGreaterThan(0);
-      addUserToHome(db, { homeId, userId });
+      db.run(
+        "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
+        { $locationId: locationId, $userId: userId },
+      );
       db.close();
     }
 
     const db2 = openDatabase(dbPath);
     const row = db2
       .query(
-        `SELECT h.name AS home_name, u.display_name
-         FROM home_members hm
-         JOIN homes h ON h.id = hm.home_id
-         JOIN users u ON u.id = hm.user_id
-         WHERE hm.home_id = ? AND hm.user_id = ?`,
+        `SELECT l.name AS location_name, u.display_name
+         FROM location_members lm
+         JOIN locations l ON l.id = lm.location_id
+         JOIN users u ON u.id = lm.user_id
+         WHERE lm.location_id = ? AND lm.user_id = ?`,
       )
-      .get(homeId, userId) as { home_name: string; display_name: string | null } | null;
+      .get(locationId, userId) as { location_name: string; display_name: string | null } | null;
     expect(row).not.toBeNull();
-    expect(row?.home_name).toBe("Lab");
+    expect(row?.location_name).toBe("Lab");
     expect(row?.display_name).toBe("Dev");
     db2.close();
   });
@@ -62,25 +76,43 @@ describe("migrate + homes integration", () => {
     expect(n1).toBe(n2);
   });
 
-  test("duplicate membership rejected (UNIQUE / PK)", () => {
+  test("duplicate location membership rejected (UNIQUE / PK)", () => {
     const dir = mkdtempSync(join(tmpdir(), "home-assist-test-"));
     const dbPath = join(dir, "dup.sqlite");
     migrate(dbPath);
     const db = openDatabase(dbPath);
-    const homeId = createHome(db, { name: "H" });
-    const userId = createUser(db, { displayName: null });
-    addUserToHome(db, { homeId, userId });
-    expect(() => addUserToHome(db, { homeId, userId })).toThrow();
+    const locationId = Number(
+      db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
+        $name: "H",
+        $code: "h",
+      }).lastInsertRowid,
+    );
+    const userId = createUser(db, null);
+    db.run(
+      "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
+      { $locationId: locationId, $userId: userId },
+    );
+    expect(() =>
+      db.run(
+        "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
+        { $locationId: locationId, $userId: userId },
+      ),
+    ).toThrow();
     db.close();
   });
 
-  test("FK enforcement: invalid home_id fails", () => {
+  test("FK enforcement: invalid location_id fails", () => {
     const dir = mkdtempSync(join(tmpdir(), "home-assist-test-"));
     const dbPath = join(dir, "fk.sqlite");
     migrate(dbPath);
     const db = openDatabase(dbPath);
-    const userId = createUser(db, { displayName: "x" });
-    expect(() => addUserToHome(db, { homeId: 99_999, userId })).toThrow();
+    const userId = createUser(db, "x");
+    expect(() =>
+      db.run(
+        "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
+        { $locationId: 99_999, $userId: userId },
+      ),
+    ).toThrow();
     db.close();
   });
 

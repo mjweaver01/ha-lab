@@ -10,7 +10,7 @@ import {
 function makeEvent(id: number, createdAt: string): EventListItem {
   return {
     id,
-    home_id: 7,
+    location_id: 7,
     event_type: "test.event",
     created_at: createdAt,
     body: null,

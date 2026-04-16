@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A **personal learning prototype** of a simplified “central home + webhook + alerts” model: a **simulated** node on your Mac, a **Bun** webhook **orchestrator** (SQLite) that receives events and fans them out to subscribers, and a **React** web client to list events and highlight new arrivals. It is intentionally **not** HomeKit, native mobile, or production Buildroot—enough **Bun + TypeScript + SQLite + React** to trace **node → orchestrator → subscribers → UI**.
+A **personal learning prototype** of a simplified “central location + webhook + alerts” model: a **simulated** node on your Mac, a **Bun** webhook **orchestrator** (SQLite) that receives events and fans them out to subscribers, and a **React** web client to list events and highlight new arrivals. It is intentionally **not** HomeKit, native mobile, or production Buildroot—enough **Bun + TypeScript + SQLite + React** to trace **node → orchestrator → subscribers → UI**.
 
 ## Core Value
 
@@ -12,7 +12,7 @@ You can **end-to-end trace one event** from “something happened on the node”
 
 ### Validated (v1.0 — 2026-04-15)
 
-- ✓ **SQLite home model** — Migrations, `homes` / `users` / `home_members`, FK enforcement (`HOME-01`, `HOME-02`).
+- ✓ **SQLite location model** — Migrations and FK enforcement for `locations` / `users` / `location_members` (`HOME-01`, `HOME-02` legacy requirement IDs).
 - ✓ **Webhook orchestrator** — `Bun.serve`: POST/GET `/events`, POST `/subscribers`, fan-out with delivery records (`HOOK-01`–`HOOK-04`).
 - ✓ **Simulated node** — `bun run simulate` posts sample `PostEventBody` events (`NODE-01`).
 - ✓ **React client** — `bun run client` Events screen, polling, new-row accent (`UI-01`, `UI-02`).

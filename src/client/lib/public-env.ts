@@ -11,9 +11,9 @@ export function readPublicOrchestratorUrl(): string {
   return "http://127.0.0.1:3000";
 }
 
-export function readPublicHomeId(): number {
+export function readPublicLocationId(): number {
   if (typeof process !== "undefined" && process.env) {
-    const raw = process.env.PUBLIC_HOME_ID;
+    const raw = process.env.PUBLIC_LOCATION_ID;
     if (typeof raw === "string" && raw.trim() !== "") {
       const n = Number.parseInt(raw, 10);
       if (Number.isFinite(n) && Number.isInteger(n)) return n;

@@ -24,7 +24,7 @@ export type MediaSignalPipeline = {
 };
 
 export type CreateMediaSignalPipelineOptions = {
-  homeId: number;
+  locationId: number;
   emit: EmitMediaSignalEvent;
   nowMs?: () => number;
   audioThreshold?: number;
@@ -54,7 +54,7 @@ function pickTopCandidate(result: MediaClassifierResult): MediaCandidate | undef
 }
 
 export function createMediaSignalPipeline({
-  homeId,
+  locationId,
   emit,
   nowMs = () => Date.now(),
   audioThreshold = DEFAULT_AUDIO_THRESHOLD,
@@ -66,7 +66,7 @@ export function createMediaSignalPipeline({
     audioMinIntervalMs: audioThrottleMs,
     videoMinIntervalMs: videoThrottleMs,
   });
-  void homeId;
+  void locationId;
 
   return {
     async handleAudioClassification(result) {

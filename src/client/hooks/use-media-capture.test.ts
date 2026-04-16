@@ -59,7 +59,7 @@ beforeEach(() => {
   globalThis.fetch = mock(() =>
     Promise.resolve(new Response(null, { status: 202 })),
   ) as unknown as typeof fetch;
-  process.env.PUBLIC_HOME_ID = "7";
+  process.env.PUBLIC_LOCATION_ID = "7";
   process.env.PUBLIC_ORCHESTRATOR_URL = "http://127.0.0.1:3999";
 });
 

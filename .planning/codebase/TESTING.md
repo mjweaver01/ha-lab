@@ -46,7 +46,7 @@ scripts/*.test.ts
 **Suite Organization:**
 ```typescript
 describe("fetchEvents", () => {
-  test("GET /events?home_id= with encoded id", async () => {
+  test("GET /events?location_id= with encoded id", async () => {
     // arrange
     // act
     // assert
@@ -91,7 +91,7 @@ Object.defineProperty(globalThis.navigator, "mediaDevices", {
 **Test Data:**
 ```typescript
 function makeEvent(id: number, createdAt: string): EventListItem {
-  return { id, home_id: 7, event_type: "test.event", created_at: createdAt, body: null };
+  return { id, location_id: 7, event_type: "test.event", created_at: createdAt, body: null };
 }
 ```
 
@@ -134,7 +134,12 @@ await waitFor(() => {
 **Error Testing:**
 ```typescript
 await expect(fetchEvents("http://x", Number.NaN, mock())).rejects.toThrow();
-expect(() => addUserToHome(db, { homeId: 99_999, userId })).toThrow();
+expect(() =>
+  db.run(
+    "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
+    { $locationId: 99_999, $userId: userId },
+  ),
+).toThrow();
 ```
 
 ## Coverage Gaps To Prioritize

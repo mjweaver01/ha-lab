@@ -6,7 +6,7 @@ import type { PostEventBody } from "../../types/events-api.ts";
 
 export type EventListItem = {
   id: number;
-  home_id: number;
+  location_id: number;
   event_type: string;
   /** ISO string from SQLite `created_at` */
   created_at: string;
@@ -22,9 +22,9 @@ function eventsUrl(baseUrl: string): URL {
   return new URL("/events", normalizeBaseUrl(baseUrl));
 }
 
-function assertValidHomeId(homeId: number): void {
-  if (!Number.isFinite(homeId) || !Number.isInteger(homeId)) {
-    throw new Error("home_id must be a finite integer");
+function assertValidLocationId(locationId: number): void {
+  if (!Number.isFinite(locationId) || !Number.isInteger(locationId)) {
+    throw new Error("location_id must be a finite integer");
   }
 }
 
@@ -44,8 +44,8 @@ function parseEventRow(data: unknown): EventListItem {
   if (typeof o.id !== "number" || !Number.isInteger(o.id)) {
     throw new Error("invalid event row: id");
   }
-  if (typeof o.home_id !== "number" || !Number.isInteger(o.home_id)) {
-    throw new Error("invalid event row: home_id");
+  if (typeof o.location_id !== "number" || !Number.isInteger(o.location_id)) {
+    throw new Error("invalid event row: location_id");
   }
   if (typeof o.event_type !== "string") {
     throw new Error("invalid event row: event_type");
@@ -55,7 +55,7 @@ function parseEventRow(data: unknown): EventListItem {
   }
   return {
     id: o.id,
-    home_id: o.home_id,
+    location_id: o.location_id,
     event_type: o.event_type,
     created_at: o.created_at,
     body: "body" in o ? o.body : null,
@@ -63,16 +63,16 @@ function parseEventRow(data: unknown): EventListItem {
 }
 
 /**
- * Fetch events for a home from the orchestrator GET /events?home_id=
+ * Fetch events for a location from the orchestrator GET /events?location_id=
  */
 export async function fetchEvents(
   baseUrl: string,
-  homeId: number,
+  locationId: number,
   fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
 ): Promise<EventListItem[]> {
-  assertValidHomeId(homeId);
+  assertValidLocationId(locationId);
   const url = eventsUrl(baseUrl);
-  url.searchParams.set("home_id", String(homeId));
+  url.searchParams.set("location_id", String(locationId));
 
   let res: Response;
   try {
@@ -111,7 +111,7 @@ export async function postEvent(
   payload: PostEventBody,
   fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
 ): Promise<void> {
-  assertValidHomeId(payload.home_id);
+  assertValidLocationId(payload.location_id);
   const eventType = assertValidEventType(payload.event_type);
   const url = eventsUrl(baseUrl);
   const requestBody: PostEventBody = {

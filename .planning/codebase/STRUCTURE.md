@@ -30,8 +30,8 @@ home-assist/
 
 **`src/db/`:**
 - Purpose: Schema lifecycle + DB connectivity + minimal helper writes.
-- Contains: Migration runner, SQL migration files, DB open/config helpers, seed helpers.
-- Key files: `src/db/database.ts`, `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`, `src/db/homes.ts`
+- Contains: Migration runner, SQL migration files, DB open/config helpers, and location-scoped schema evolution.
+- Key files: `src/db/database.ts`, `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`, `src/db/migrations/003_locations_lifecycle.sql`, `src/db/migrations/004_home_to_location_unification.sql`
 
 **`src/webhooks/`:**
 - Purpose: Asynchronous downstream callback fan-out with delivery auditing.

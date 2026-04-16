@@ -12,10 +12,10 @@ function json(data: unknown, status = 200): Response {
 function parsePostEventBody(data: unknown): PostEventBody | null {
   if (typeof data !== "object" || data === null) return null;
   const o = data as Record<string, unknown>;
-  if (typeof o.home_id !== "number" || !Number.isInteger(o.home_id)) return null;
+  if (typeof o.location_id !== "number" || !Number.isInteger(o.location_id)) return null;
   if (typeof o.event_type !== "string" || o.event_type.trim() === "") return null;
   const out: PostEventBody = {
-    home_id: o.home_id,
+    location_id: o.location_id,
     event_type: o.event_type,
   };
   if ("body" in o) {
@@ -36,18 +36,18 @@ export async function handlePostEvent(req: Request, db: Database): Promise<Respo
     return json({ error: "invalid body" }, 400);
   }
 
-  const home = db
-    .query("SELECT 1 AS ok FROM homes WHERE id = $id")
-    .get({ $id: parsed.home_id }) as { ok: number } | null;
-  if (!home) {
-    return json({ error: "home not found" }, 404);
+  const location = db
+    .query("SELECT 1 AS ok FROM locations WHERE id = $id")
+    .get({ $id: parsed.location_id }) as { ok: number } | null;
+  if (!location) {
+    return json({ error: "location not found" }, 404);
   }
 
   const bodyStr = parsed.body !== undefined ? JSON.stringify(parsed.body) : null;
   const ins = db.run(
-    "INSERT INTO events (home_id, event_type, body) VALUES ($h, $t, $b)",
+    "INSERT INTO events (location_id, event_type, body) VALUES ($l, $t, $b)",
     {
-      $h: parsed.home_id,
+      $l: parsed.location_id,
       $t: parsed.event_type,
       $b: bodyStr,
     },
@@ -55,11 +55,11 @@ export async function handlePostEvent(req: Request, db: Database): Promise<Respo
   const id = Number(ins.lastInsertRowid);
   const row = db
     .query(
-      "SELECT id, home_id, event_type, body FROM events WHERE id = $id",
+      "SELECT id, location_id, event_type, body FROM events WHERE id = $id",
     )
     .get({ $id: id }) as {
       id: number;
-      home_id: number;
+      location_id: number;
       event_type: string;
       body: string | null;
     };
@@ -69,7 +69,7 @@ export async function handlePostEvent(req: Request, db: Database): Promise<Respo
   return json(
     {
       id: row.id,
-      home_id: row.home_id,
+      location_id: row.location_id,
       event_type: row.event_type,
       body: parsed.body,
     },
@@ -79,23 +79,23 @@ export async function handlePostEvent(req: Request, db: Database): Promise<Respo
 
 export async function handleGetEvents(req: Request, db: Database): Promise<Response> {
   const u = new URL(req.url);
-  const hid = u.searchParams.get("home_id");
-  if (hid == null || hid === "") {
-    return json({ error: "home_id required" }, 400);
+  const lid = u.searchParams.get("location_id");
+  if (lid == null || lid === "") {
+    return json({ error: "location_id required" }, 400);
   }
-  const homeId = Number(hid);
-  if (!Number.isInteger(homeId)) {
-    return json({ error: "invalid home_id" }, 400);
+  const locationId = Number(lid);
+  if (!Number.isInteger(locationId)) {
+    return json({ error: "invalid location_id" }, 400);
   }
 
   const rows = db
     .query(
-      `SELECT id, home_id, event_type, body, created_at
-       FROM events WHERE home_id = $h ORDER BY id DESC`,
+      `SELECT id, location_id, event_type, body, created_at
+       FROM events WHERE location_id = $l ORDER BY id DESC`,
     )
-    .all({ $h: homeId }) as Array<{
+    .all({ $l: locationId }) as Array<{
       id: number;
-      home_id: number;
+      location_id: number;
       event_type: string;
       body: string | null;
       created_at: string;
@@ -103,7 +103,7 @@ export async function handleGetEvents(req: Request, db: Database): Promise<Respo
 
   const out = rows.map((r) => ({
     id: r.id,
-    home_id: r.home_id,
+    location_id: r.location_id,
     event_type: r.event_type,
     created_at: r.created_at,
     body: r.body != null ? (JSON.parse(r.body) as unknown) : null,

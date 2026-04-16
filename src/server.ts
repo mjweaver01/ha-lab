@@ -50,9 +50,9 @@ async function routeRequest(req: Request, db: Database): Promise<Response> {
     const body =
       "home-assist orchestrator\n\n" +
       "Routes:\n" +
-      "  GET  /events?home_id=<id>  — list events for a home\n" +
+      "  GET  /events?location_id=<id>  — list events for a location\n" +
       "  POST /events               — ingest event (JSON body)\n" +
-      "  POST /subscribers          — register callback URL for a home\n\n" +
+      "  POST /subscribers          — register callback URL for a location\n\n" +
       "UI: run `bun run client` (separate dev server).\n";
     return new Response(body, {
       status: 200,

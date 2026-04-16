@@ -4,7 +4,7 @@ import { markNewEventIds, maxEventId } from "./new-events.ts";
 
 const e = (id: number): EventListItem => ({
   id,
-  home_id: 1,
+  location_id: 1,
   event_type: "t",
   created_at: "2026-01-01T00:00:00.000Z",
   body: null,

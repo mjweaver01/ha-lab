@@ -17,14 +17,14 @@ describe("EventsScreen media E2E trace", () => {
     const events = [
       {
         id: 102,
-        home_id: 1,
+        location_id: 1,
         event_type: "media.video",
         created_at: "2026-04-15T20:00:00.000Z",
         body: { source: "video", top_label: "person", top_score: 0.87 },
       },
       {
         id: 101,
-        home_id: 1,
+        location_id: 1,
         event_type: "media.audio",
         created_at: "2026-04-15T19:59:57.000Z",
         body: { source: "audio", top_label: "speech", top_score: 0.81 },
@@ -38,7 +38,7 @@ describe("EventsScreen media E2E trace", () => {
         loading={false}
         onRefresh={() => {}}
         newIds={new Set([102])}
-        homeId={1}
+        locationId={1}
         pollMs={3000}
         captureSettings={{
           audioLevelBoost: 8,

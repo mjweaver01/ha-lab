@@ -5,7 +5,7 @@ Home Assist is a local-first prototype for tracing events from a simulated edge 
 The system combines:
 
 - A webhook orchestrator built with `Bun.serve`
-- SQLite persistence for homes, users, and events
+- SQLite persistence for locations, users, and events
 - A simulated node event producer
 - A React events interface with live media signal support
 
@@ -34,7 +34,7 @@ bun run migrate
 bun run seed
 ```
 
-`bun run seed` creates the default `Lab` home and user (`home_id=1`). Without seed data, `POST /events` for `home_id=1` returns `404 home not found`.
+`bun run seed` creates the default `Lab` location and user (`location_id=1`). Without seed data, `POST /events` for `location_id=1` returns `404 location not found`.
 
 ## Running the Application
 
@@ -49,13 +49,13 @@ bun run dev
 2. Simulated node (optional)
 
 ```bash
-ORCHESTRATOR_URL=http://127.0.0.1:3000 bun run simulate -- --home 1
+ORCHESTRATOR_URL=http://127.0.0.1:3000 bun run simulate -- --location 1
 ```
 
 3. React client (optional)
 
 ```bash
-PUBLIC_ORCHESTRATOR_URL=http://127.0.0.1:3000 PUBLIC_HOME_ID=1 bun run client
+PUBLIC_ORCHESTRATOR_URL=http://127.0.0.1:3000 PUBLIC_LOCATION_ID=1 bun run client
 ```
 
 When testing media features, allow browser microphone and camera permissions.

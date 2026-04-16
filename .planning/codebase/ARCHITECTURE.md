@@ -9,7 +9,7 @@
 **Key Characteristics:**
 - Single runtime process handles HTTP orchestration and DB access in `index.ts` and `src/server.ts`.
 - Route handlers own request validation and response shaping in `src/routes/events.ts` and `src/routes/subscribers.ts`.
-- Domain-specific client behavior is split into hooks and pure helper modules under `src/client/hooks/` and `src/client/lib/`.
+- Domain-specific client behavior is split into hooks and pure helper modules under `src/client/hooks/` and `src/client/lib/`, with app navigation handled by React Router in `src/client/main.tsx`.
 
 ## Layers
 
@@ -29,7 +29,7 @@
 
 **Persistence Layer:**
 - Purpose: Centralize SQLite connection behavior, schema evolution, and low-level data writes/reads.
-- Location: `src/db/database.ts`, `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`, `src/db/homes.ts`
+- Location: `src/db/database.ts`, `src/db/migrate.ts`, `src/db/migrations/001_initial.sql`, `src/db/migrations/002_events_subscribers.sql`, `src/db/migrations/003_locations_lifecycle.sql`, `src/db/migrations/004_home_to_location_unification.sql`
 - Contains: DB file resolution, `PRAGMA foreign_keys`, migration execution, seed-style helpers.
 - Depends on: `bun:sqlite` and filesystem APIs.
 - Used by: `src/server.ts`, route handlers, tests, and migration CLI.
@@ -68,7 +68,7 @@
 
 1. Producer sends `POST /events` from `scripts/simulated-node.ts` or `src/client/hooks/use-media-capture.ts` via `src/client/api/events-client.ts`.
 2. `src/server.ts` routes to `handlePostEvent()` in `src/routes/events.ts`.
-3. Route validates payload, checks `homes` existence, inserts into `events`, then calls `deliverEventToSubscribers()` in `src/webhooks/fan-out.ts`.
+3. Route validates payload, checks `locations` existence, inserts into `events`, then calls `deliverEventToSubscribers()` in `src/webhooks/fan-out.ts`.
 4. Fan-out POSTs JSON to each subscriber URL and records status rows into `event_deliveries`.
 5. Server returns `201` JSON to caller.
 
@@ -76,13 +76,13 @@
 
 1. `src/client/hooks/use-events-poll.ts` reads public env config from `src/client/lib/public-env.ts`.
 2. Hook calls `fetchEvents()` in `src/client/api/events-client.ts` on interval and manual refresh.
-3. `GET /events` in `src/routes/events.ts` returns newest-first rows for `home_id`.
+3. `GET /events` in `src/routes/events.ts` returns newest-first rows for `location_id`.
 4. `src/client/events-screen.tsx` applies filter/pagination/virtual window from `src/client/lib/events-view.ts`.
 5. UI marks new IDs using helpers in `src/client/lib/new-events.ts`.
 
 **State Management:**
 - Server state is DB-backed in SQLite tables (`events`, `subscribers`, `event_deliveries` in `src/db/migrations/002_events_subscribers.sql`).
-- Client state is local React state/refs in `src/client/main.tsx`, `src/client/events-screen.tsx`, and `src/client/hooks/use-media-capture.ts`.
+- Client state is local React state/refs in `src/client/main.tsx`, `src/client/events-screen.tsx`, and `src/client/hooks/use-media-capture.ts` with route state driven by router paths.
 - User-tuned media settings and learned labels persist in browser localStorage via `src/client/lib/media-settings.ts` and `src/client/lib/media-learning.ts`.
 
 ## Key Abstractions
@@ -122,7 +122,7 @@
 **Client Entry Point:**
 - Location: `src/client/index.html` + `src/client/main.tsx`
 - Triggers: `bun run client`
-- Responsibilities: Mount React app, switch between events screen and media settings page.
+- Responsibilities: Mount React app and route between events, locations, location detail, and media settings views.
 
 **Migration Entry Point:**
 - Location: `src/db/migrate.ts`

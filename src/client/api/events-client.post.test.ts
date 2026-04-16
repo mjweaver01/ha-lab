@@ -12,7 +12,7 @@ const postEvent = (eventsClient as { postEvent?: typeof fetch }).postEvent as (
 describe("postEvent", () => {
   test("POST /events with JSON body", async () => {
     const payload: PostEventBody = {
-      home_id: 42,
+      location_id: 42,
       event_type: "media.audio",
       body: { top_label: "Speech", top_score: 0.91 },
     };
@@ -35,7 +35,7 @@ describe("postEvent", () => {
 
   test("surfaces non-2xx response details", async () => {
     const payload: PostEventBody = {
-      home_id: 7,
+      location_id: 7,
       event_type: "media.video",
       body: { top_label: "Person", top_score: 0.8 },
     };
@@ -49,7 +49,7 @@ describe("postEvent", () => {
 
   test("wraps network failures", async () => {
     const payload: PostEventBody = {
-      home_id: 7,
+      location_id: 7,
       event_type: "media.audio",
     };
     const fetchImpl: typeof fetch = async () => {

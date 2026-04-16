@@ -1,5 +1,5 @@
-import { beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import type {
   ArchiveLocationArgs,
@@ -26,6 +26,10 @@ beforeAll(() => {
 
 beforeEach(() => {
   globalThis.sessionStorage.clear();
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 type StubApi = {

@@ -24,11 +24,11 @@ test("allSampleEvents exposes motion, door, camera.stub in order", () => {
   expect(types.length).toBeGreaterThanOrEqual(3);
 });
 
-test("first sample event preserves home_id and serializes PostEventBody keys", () => {
+test("first sample event preserves location_id and serializes PostEventBody keys", () => {
   const e = allSampleEvents(42)[0];
-  expect(e.home_id).toBe(42);
+  expect(e.location_id).toBe(42);
   const json = JSON.stringify(e);
-  expect(json).toContain('"home_id":42');
+  expect(json).toContain('"location_id":42');
   expect(json).toContain('"event_type"');
 });
 
@@ -51,14 +51,14 @@ test("postEvent uses POST JSON fetch to /events (mocked)", async () => {
   }) as typeof fetch;
   try {
     const r = await postEvent("http://127.0.0.1:3000/", {
-      home_id: 1,
+      location_id: 1,
       event_type: "motion",
     });
     expect(r.ok).toBe(true);
     expect(lastUrl.endsWith("/events")).toBe(true);
     expect(lastInit?.method).toBe("POST");
-    const body = JSON.parse(String(lastInit?.body)) as { home_id?: number };
-    expect(body.home_id).toBeDefined();
+    const body = JSON.parse(String(lastInit?.body)) as { location_id?: number };
+    expect(body.location_id).toBeDefined();
   } finally {
     globalThis.fetch = orig;
   }

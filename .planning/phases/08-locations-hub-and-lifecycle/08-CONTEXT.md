@@ -3,6 +3,8 @@
 **Gathered:** 2026-04-15
 **Status:** Ready for planning
 
+> Note: this context file contains legacy pre-cutover references to `home` tables from the original baseline. Current canonical runtime naming is `location` / `location_id`.
+
 <domain>
 ## Phase Boundary
 
@@ -57,8 +59,8 @@ Deliver a unified locations hub where users can view active locations they can a
 - `src/client/events-screen.tsx` — existing panel/list/filter/pagination interaction patterns to mirror for the locations hub.
 - `src/server.ts` — route wiring and request handling conventions for adding location endpoints.
 - `src/routes/events.ts` — validation/error response patterns for API handlers.
-- `src/db/migrations/001_initial.sql` — current `homes`/membership schema baseline.
-- `src/db/migrations/002_events_subscribers.sql` — existing location-adjacent (home-scoped) event/subscriber data relationships.
+- `src/db/migrations/001_initial.sql` — legacy baseline before location unification.
+- `src/db/migrations/004_home_to_location_unification.sql` — canonical migration that converts event/subscriber scope to `location_id`.
 
 </canonical_refs>
 
@@ -67,8 +69,8 @@ Deliver a unified locations hub where users can view active locations they can a
 
 ### Reusable Assets
 - `src/client/events-screen.tsx`: established "panel + controls + list + empty/error states" UI pattern suitable for locations hub composition.
-- `src/client/main.tsx`: existing top-level screen state orchestration pattern for introducing location hub/detail surfaces.
-- `src/db/homes.ts`: lightweight DB helper style that can be extended/replaced for location lifecycle operations.
+- `src/client/main.tsx`: route-driven app shell using React Router for events, locations, and settings flows.
+- `src/db/locations.ts`: DB helper style for location lifecycle operations.
 
 ### Established Patterns
 - Route handlers validate inputs and return structured JSON errors (`src/routes/events.ts`) with explicit status codes.
@@ -77,7 +79,7 @@ Deliver a unified locations hub where users can view active locations they can a
 
 ### Integration Points
 - Add location lifecycle endpoints through `src/server.ts` route wiring and new `src/routes/*` handlers.
-- Extend DB schema from `homes` toward explicit location lifecycle metadata and access-scoped queries.
+- Extend DB schema from canonical `locations` toward richer location lifecycle metadata and access-scoped queries.
 - Add locations hub/detail surfaces under `src/client/` and connect to API helpers under `src/client/api/`.
 
 </code_context>

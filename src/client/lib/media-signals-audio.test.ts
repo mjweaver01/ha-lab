@@ -6,7 +6,7 @@ describe("createMediaSignalPipeline audio", () => {
     let now = 1000;
     const emitted: unknown[] = [];
     const pipeline = createMediaSignalPipeline({
-      homeId: 9,
+      locationId: 9,
       nowMs: () => now,
       audioThreshold: 0.7,
       emit: async (event) => {
@@ -41,7 +41,7 @@ describe("createMediaSignalPipeline audio", () => {
     let now = 0;
     const emitted: unknown[] = [];
     const pipeline = createMediaSignalPipeline({
-      homeId: 1,
+      locationId: 1,
       nowMs: () => now,
       audioThreshold: 0.75,
       emit: (event) => {

@@ -3,13 +3,13 @@ import type { Database } from "bun:sqlite";
 /** Row from `events` after insert/select — used for webhook payload and fan-out. */
 export type EventRow = {
   id: number;
-  home_id: number;
+  location_id: number;
   event_type: string;
   body: string | null;
 };
 
 /**
- * POST JSON to each subscriber for `home_id`, record outcomes in `event_deliveries`.
+ * POST JSON to each subscriber for `location_id`, record outcomes in `event_deliveries`.
  * Await `Promise.allSettled` so one bad callback does not block others.
  */
 export async function deliverEventToSubscribers(
@@ -18,22 +18,22 @@ export async function deliverEventToSubscribers(
 ): Promise<void> {
   const subs = db
     .query(
-      "SELECT id, callback_url FROM subscribers WHERE home_id = $homeId",
+      "SELECT id, callback_url FROM subscribers WHERE location_id = $locationId",
     )
-    .all({ $homeId: event.home_id }) as { id: number; callback_url: string }[];
+    .all({ $locationId: event.location_id }) as { id: number; callback_url: string }[];
 
   let payload: Record<string, unknown>;
   try {
     payload = {
       event_id: event.id,
-      home_id: event.home_id,
+      location_id: event.location_id,
       event_type: event.event_type,
       body: event.body != null ? JSON.parse(event.body) : undefined,
     };
   } catch {
     payload = {
       event_id: event.id,
-      home_id: event.home_id,
+      location_id: event.location_id,
       event_type: event.event_type,
       body: event.body,
     };

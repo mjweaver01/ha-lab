@@ -1,34 +1,47 @@
 /**
- * Ensures at least one `homes` row exists so POST /events and the simulator work.
- * Idempotent: if a home named "Lab" (or id=1) already exists, no-op.
+ * Ensures at least one `locations` row exists so POST /events and the simulator work.
+ * Idempotent: if a location with id=1 already exists, no-op.
  */
 import { openDatabase } from "../src/db/database.ts";
-import { createHome, createUser, addUserToHome } from "../src/db/homes.ts";
 
 function main(): void {
   const db = openDatabase();
   const existing = db
-    .query("SELECT id FROM homes WHERE id = 1")
+    .query("SELECT id FROM locations WHERE id = 1")
     .get() as { id: number } | null;
   if (existing != null) {
-    console.log("Lab data OK: homes.id=1 already exists.");
+    console.log("Lab data OK: locations.id=1 already exists.");
     return;
   }
 
-  const anyHome = db.query("SELECT id FROM homes LIMIT 1").get() as
+  const anyLocation = db.query("SELECT id FROM locations LIMIT 1").get() as
     | { id: number }
     | null;
-  if (anyHome != null) {
+  if (anyLocation != null) {
     console.log(
-      `Found home id=${anyHome.id}. Use ORCHESTRATOR_URL=... bun run simulate -- --home ${anyHome.id}`,
+      `Found location id=${anyLocation.id}. Use ORCHESTRATOR_URL=... bun run simulate -- --location ${anyLocation.id}`,
     );
     return;
   }
 
-  const userId = createUser(db, { displayName: "Lab user" });
-  const homeId = createHome(db, { name: "Lab" });
-  addUserToHome(db, { homeId, userId });
-  console.log(`Seeded: homes.id=${homeId}, users.id=${userId}. Simulator default --home 1 works if homeId is 1.`);
+  const userInsert = db.run("INSERT INTO users (display_name) VALUES ($name)", { $name: "Lab user" });
+  const userId = Number(userInsert.lastInsertRowid);
+  const locationInsert = db.run(
+    "INSERT INTO locations (name, code, notes) VALUES ($name, $code, $notes)",
+    {
+      $name: "Lab",
+      $code: "lab",
+      $notes: "seeded",
+    },
+  );
+  const locationId = Number(locationInsert.lastInsertRowid);
+  db.run(
+    "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
+    { $locationId: locationId, $userId: userId },
+  );
+  console.log(
+    `Seeded: locations.id=${locationId}, users.id=${userId}. Simulator default --location 1 works if locationId is 1.`,
+  );
 }
 
 main();

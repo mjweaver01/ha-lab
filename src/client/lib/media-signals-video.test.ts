@@ -6,7 +6,7 @@ describe("createMediaSignalPipeline video", () => {
     let now = 250;
     const emitted: unknown[] = [];
     const pipeline = createMediaSignalPipeline({
-      homeId: 11,
+      locationId: 11,
       nowMs: () => now,
       videoThreshold: 0.6,
       emit: (event) => {
@@ -41,7 +41,7 @@ describe("createMediaSignalPipeline video", () => {
     let now = 0;
     const emitted: unknown[] = [];
     const pipeline = createMediaSignalPipeline({
-      homeId: 2,
+      locationId: 2,
       nowMs: () => now,
       videoThreshold: 0.8,
       emit: (event) => {

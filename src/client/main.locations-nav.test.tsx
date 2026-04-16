@@ -15,6 +15,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   globalThis.sessionStorage.clear();
+  globalThis.window.history.replaceState({}, "", "/events");
 });
 
 describe("locations navigation", () => {
@@ -82,7 +83,7 @@ describe("locations navigation", () => {
             loading: false,
             onRefresh: () => {},
             newIds: new Set<number>(),
-            homeId: 1,
+            locationId: 1,
             pollMs: 3000,
           }),
           EventsScreenComponent: EventsStub as never,
@@ -122,7 +123,7 @@ describe("locations navigation", () => {
             loading: false,
             onRefresh: () => {},
             newIds: new Set<number>(),
-            homeId: 1,
+            locationId: 1,
             pollMs: 3000,
           }),
           EventsScreenComponent: EventsStub as never,

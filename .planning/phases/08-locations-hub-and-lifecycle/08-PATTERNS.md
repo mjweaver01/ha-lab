@@ -4,6 +4,8 @@
 **Files analyzed:** 14
 **Analogs found:** 13 / 14
 
+> Note: this mapping was generated before the location unification cutover and includes legacy `home` examples in quoted snippets. Treat `location` / `location_id` as canonical for current implementation.
+
 ## File Classification
 
 | New/Modified File | Role | Data Flow | Closest Analog | Match Quality |

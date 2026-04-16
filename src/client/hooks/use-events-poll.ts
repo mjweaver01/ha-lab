@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchEvents, type EventListItem } from "../api/events-client.ts";
 import { markNewEventIds, maxEventId } from "../lib/new-events.ts";
 import {
-  readPublicHomeId,
+  readPublicLocationId,
   readPublicOrchestratorUrl,
   readPublicPollMs,
 } from "../lib/public-env.ts";
@@ -13,11 +13,11 @@ export function useEventsPoll(): {
   loading: boolean;
   onRefresh: () => void;
   newIds: ReadonlySet<number>;
-  homeId: number;
+  locationId: number;
   pollMs: number;
 } {
   const baseUrl = readPublicOrchestratorUrl();
-  const homeId = readPublicHomeId();
+  const locationId = readPublicLocationId();
   const pollMs = readPublicPollMs();
 
   const [events, setEvents] = useState<EventListItem[]>([]);
@@ -34,7 +34,7 @@ export function useEventsPoll(): {
     setError(null);
 
     try {
-      const next = await fetchEvents(baseUrl, homeId);
+      const next = await fetchEvents(baseUrl, locationId);
       const prevMax = previousMaxRef.current;
       const marked = markNewEventIds(prevMax, next);
       previousMaxRef.current = maxEventId(next);
@@ -47,7 +47,7 @@ export function useEventsPoll(): {
       inFlightRef.current = false;
       setLoading(false);
     }
-  }, [baseUrl, homeId]);
+  }, [baseUrl, locationId]);
 
   useEffect(() => {
     void refresh();
@@ -65,7 +65,7 @@ export function useEventsPoll(): {
       void refresh();
     },
     newIds,
-    homeId,
+    locationId,
     pollMs,
   };
 }

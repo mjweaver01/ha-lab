@@ -16,7 +16,7 @@ export type EventsScreenProps = {
   loading: boolean;
   onRefresh: () => void;
   newIds: ReadonlySet<number>;
-  homeId: number;
+  locationId: number;
   pollMs: number;
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
@@ -40,7 +40,7 @@ export function EventsScreen({
   loading,
   onRefresh,
   newIds,
-  homeId,
+  locationId,
   pollMs,
   captureSettings,
   onOpenMediaSettings,
@@ -124,7 +124,7 @@ export function EventsScreen({
         <div>
           <h1 className="events-page__title">Events</h1>
           <p className="events-page__meta">
-            Home ID: {homeId} · Poll every {Math.round(pollMs / 1000)}s
+            Location ID: {locationId} · Poll every {Math.round(pollMs / 1000)}s
           </p>
         </div>
         <div className="events-page__header-actions">

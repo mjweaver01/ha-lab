@@ -1,5 +1,13 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { createLocation, updateLocation } from "./api/locations-client.ts";
 import { EventsScreen } from "./events-screen.tsx";
 import { LocationDetailScreen } from "./location-detail-screen.tsx";
@@ -13,8 +21,6 @@ import {
 } from "./lib/media-settings.ts";
 import type { CreateLocationBody, UpdateLocationBody } from "../types/locations-api.ts";
 import "./styles.css";
-
-type AppScreen = "events" | "settings" | "locations" | "location-detail";
 
 type AppDependencies = {
   useEventsPollHook: typeof useEventsPoll;
@@ -42,7 +48,8 @@ const defaultDeps: AppDependencies = {
   userId: 1,
 };
 
-export function App({ deps }: AppProps = {}) {
+function AppRoutes({ deps }: { deps: AppDependencies }) {
+  const navigate = useNavigate();
   const resolvedDeps = { ...defaultDeps, ...deps };
   const {
     useEventsPollHook,
@@ -54,11 +61,8 @@ export function App({ deps }: AppProps = {}) {
     baseUrl,
     userId,
   } = resolvedDeps;
-  const { events, error, loading, onRefresh, newIds, homeId, pollMs } =
+  const { events, error, loading, onRefresh, newIds, locationId, pollMs } =
     useEventsPollHook();
-  const [screen, setScreen] = useState<AppScreen>("events");
-  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
-  const [locationDetailMode, setLocationDetailMode] = useState<"create" | "edit">("create");
   const [mediaSettings, setMediaSettings] = useState<MediaDetectionSettings>(() =>
     loadMediaDetectionSettings(),
   );
@@ -68,99 +72,151 @@ export function App({ deps }: AppProps = {}) {
     saveMediaDetectionSettings(next);
   };
 
-  if (screen === "settings") {
-    return (
-      <MediaSettingsPage
-        settings={mediaSettings}
-        onChangeSettings={applySettings}
-        onBackToEvents={() => {
-          setScreen("events");
-        }}
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/events" replace />} />
+      <Route
+        path="/events"
+        element={
+          <div>
+            <div className="events-toolbar">
+              <button
+                type="button"
+                className="events-btn"
+                onClick={() => {
+                  navigate("/locations");
+                }}
+              >
+                Locations
+              </button>
+            </div>
+            <EventsScreenComponent
+              events={events}
+              error={error}
+              loading={loading}
+              onRefresh={onRefresh}
+              newIds={newIds}
+              locationId={locationId}
+              pollMs={pollMs}
+              captureSettings={{
+                audioLevelBoost: mediaSettings.audioLevelBoost,
+                audioActivityThreshold: mediaSettings.audioThreshold,
+                videoActivityThreshold: mediaSettings.videoThreshold,
+                videoSampleCadenceMs: mediaSettings.videoCadenceMs,
+                learningMatchThreshold: mediaSettings.learningThreshold,
+              }}
+              onOpenMediaSettings={() => {
+                navigate("/settings/media");
+              }}
+            />
+          </div>
+        }
       />
-    );
-  }
+      <Route
+        path="/locations"
+        element={
+          <LocationsScreenComponent
+            baseUrl={baseUrl}
+            userId={userId}
+            onCreateLocation={() => {
+              navigate("/locations/new");
+            }}
+            onOpenLocation={(nextLocationId) => {
+              navigate(`/locations/${nextLocationId}`);
+            }}
+          />
+        }
+      />
+      <Route
+        path="/locations/new"
+        element={
+          <LocationDetailScreenComponent
+            mode="create"
+            locationId={null}
+            onBackToLocations={() => {
+              navigate("/locations");
+            }}
+            onSubmitLocation={async (payload: CreateLocationBody | UpdateLocationBody) => {
+              await createLocationFn({ baseUrl, userId, body: payload });
+              navigate("/locations");
+            }}
+          />
+        }
+      />
+      <Route
+        path="/locations/:locationId"
+        element={
+          <LocationEditRoute
+            LocationDetailScreenComponent={LocationDetailScreenComponent}
+            baseUrl={baseUrl}
+            userId={userId}
+            updateLocationFn={updateLocationFn}
+          />
+        }
+      />
+      <Route
+        path="/settings/media"
+        element={
+          <MediaSettingsPage
+            settings={mediaSettings}
+            onChangeSettings={applySettings}
+            onBackToEvents={() => {
+              navigate("/events");
+            }}
+          />
+        }
+      />
+      <Route path="*" element={<Navigate to="/events" replace />} />
+    </Routes>
+  );
+}
 
-  if (screen === "locations") {
-    return (
-      <LocationsScreenComponent
-        baseUrl={baseUrl}
-        userId={userId}
-        onCreateLocation={() => {
-          setSelectedLocationId(null);
-          setLocationDetailMode("create");
-          setScreen("location-detail");
-        }}
-        onOpenLocation={(locationId) => {
-          setSelectedLocationId(locationId);
-          setLocationDetailMode("edit");
-          setScreen("location-detail");
-        }}
-      />
-    );
-  }
-
-  if (screen === "location-detail") {
-    return (
-      <LocationDetailScreenComponent
-        mode={locationDetailMode}
-        locationId={selectedLocationId}
-        onBackToLocations={() => {
-          setScreen("locations");
-        }}
-        onSubmitLocation={async (payload: CreateLocationBody | UpdateLocationBody) => {
-          if (locationDetailMode === "create") {
-            const created = await createLocationFn({ baseUrl, userId, body: payload });
-            setSelectedLocationId(created.id);
-          } else if (selectedLocationId != null) {
-            await updateLocationFn({
-              baseUrl,
-              userId,
-              locationId: selectedLocationId,
-              body: payload,
-            });
-          } else {
-            const created = await createLocationFn({ baseUrl, userId, body: payload });
-            setSelectedLocationId(created.id);
-          }
-          setScreen("locations");
-        }}
-      />
-    );
-  }
+function LocationEditRoute({
+  LocationDetailScreenComponent,
+  baseUrl,
+  userId,
+  updateLocationFn,
+}: {
+  LocationDetailScreenComponent: typeof LocationDetailScreen;
+  baseUrl: string;
+  userId: number;
+  updateLocationFn: typeof updateLocation;
+}) {
+  const navigate = useNavigate();
+  const { locationId: routeLocationId } = useParams<{ locationId?: string }>();
+  const locationId =
+    routeLocationId != null && /^\d+$/.test(routeLocationId)
+      ? Number(routeLocationId)
+      : null;
 
   return (
-    <div>
-      <div className="events-toolbar">
-        <button
-          type="button"
-          className="events-btn"
-          onClick={() => {
-            setScreen("locations");
-          }}
-        >
-          Locations
-        </button>
-      </div>
-      <EventsScreenComponent
-        events={events}
-        error={error}
-        loading={loading}
-        onRefresh={onRefresh}
-        newIds={newIds}
-        homeId={homeId}
-        pollMs={pollMs}
-        captureSettings={{
-          audioLevelBoost: mediaSettings.audioLevelBoost,
-          audioActivityThreshold: mediaSettings.audioThreshold,
-          videoActivityThreshold: mediaSettings.videoThreshold,
-          videoSampleCadenceMs: mediaSettings.videoCadenceMs,
-          learningMatchThreshold: mediaSettings.learningThreshold,
-        }}
-        onOpenMediaSettings={() => {
-          setScreen("settings");
-        }}
-      />
-    </div>
+    <LocationDetailScreenComponent
+      mode="edit"
+      locationId={locationId}
+      onBackToLocations={() => {
+        navigate("/locations");
+      }}
+      onSubmitLocation={async (payload: CreateLocationBody | UpdateLocationBody) => {
+        if (locationId != null) {
+          await updateLocationFn({
+            baseUrl,
+            userId,
+            locationId,
+            body: payload,
+          });
+        }
+        navigate("/locations");
+      }}
+    />
+  );
+}
+
+export function App({ deps }: AppProps = {}) {
+  const resolvedDeps = { ...defaultDeps, ...deps };
+  return (
+    <BrowserRouter>
+      <AppRoutes deps={resolvedDeps} />
+    </BrowserRouter>
   );
 }
 

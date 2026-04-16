@@ -3,7 +3,7 @@
 
 **Home Assist Lab**
 
-A **personal learning prototype** of a simplified “central home + webhook + alerts” model inspired by a commercial product: a Raspberry Pi–style “home” node (simulated on your Mac), a small **webhook orchestrator** that receives events from that node and fans them out to subscribers, and a **web client** so people in a home can see activity and get alerts. It is intentionally **not** HomeKit, iOS/Android apps, or production Buildroot—just enough Bun + TypeScript + storage + React to understand the flow.
+A **personal learning prototype** of a simplified “central location + webhook + alerts” model inspired by a commercial product: a Raspberry Pi–style location node (simulated on your Mac), a small **webhook orchestrator** that receives events from that node and fans them out to subscribers, and a **web client** so people scoped to a location can see activity and get alerts. It is intentionally **not** HomeKit, iOS/Android apps, or production Buildroot—just enough Bun + TypeScript + storage + React to understand the flow.
 
 **Core Value:** You can **end-to-end trace one event** from “something happened on the node” → “orchestrator received and routed it” → “a subscribed user sees an alert”.
 

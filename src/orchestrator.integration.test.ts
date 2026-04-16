@@ -3,7 +3,6 @@ import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { migrate } from "./db/migrate.ts";
-import { createHome } from "./db/homes.ts";
 import { createServer } from "./server.ts";
 
 describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
@@ -22,7 +21,12 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
     const base = url.origin;
 
     try {
-      const homeId = createHome(db, { name: "Lab" });
+      const locationId = Number(
+        db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
+          $name: "Lab",
+          $code: "lab",
+        }).lastInsertRowid,
+      );
 
       const preflight = await fetch(`${base}/events`, {
         method: "OPTIONS",
@@ -39,7 +43,7 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          home_id: homeId,
+          location_id: locationId,
           callback_url: "http://127.0.0.1:9/a",
         }),
       });
@@ -49,7 +53,7 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          home_id: homeId,
+          location_id: locationId,
           callback_url: "http://127.0.0.1:9/b",
         }),
       });
@@ -80,7 +84,7 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
           Origin: "http://localhost:3001",
         },
         body: JSON.stringify({
-          home_id: homeId,
+          location_id: locationId,
           event_type: "motion.detected",
           body: { room: "hall" },
         }),
@@ -101,7 +105,7 @@ describe("orchestrator HTTP (HOOK-01–HOOK-04)", () => {
       expect(rows.c).toBe(2);
 
       const list = await fetch(
-        `${base}/events?home_id=${encodeURIComponent(String(homeId))}`,
+        `${base}/events?location_id=${encodeURIComponent(String(locationId))}`,
       );
       expect(list.status).toBe(200);
       const arr = (await list.json()) as Array<{ id: number; event_type: string }>;

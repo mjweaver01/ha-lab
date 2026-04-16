@@ -7,7 +7,7 @@ export function resolveSqlitePath(): string {
   return join(process.cwd(), "data/home-assist.sqlite");
 }
 
-/** Opens the app DB with `PRAGMA foreign_keys=ON` (required for Phase 2 `home_id` FKs). */
+/** Opens the app DB with `PRAGMA foreign_keys=ON` (required for location-scoped FKs). */
 export function openDatabase(path?: string): Database {
   const target = path ?? resolveSqlitePath();
   const db = new Database(target, { create: true });

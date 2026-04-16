@@ -8,7 +8,7 @@
 - TypeScript (TS 5 peer range) - application/runtime code in `index.ts`, `src/server.ts`, `src/routes/events.ts`, `src/client/main.tsx`, and scripts under `scripts/*.ts`.
 
 **Secondary:**
-- SQL (SQLite dialect) - schema and migration logic in `src/db/migrations/001_initial.sql` and `src/db/migrations/002_events_subscribers.sql`.
+- SQL (SQLite dialect) - schema and migration logic in `src/db/migrations/*.sql` (including location lifecycle and home-to-location unification).
 - HTML/CSS - Bun-served client shell in `src/client/index.html` and styling in `src/client/styles.css`.
 
 ## Runtime
@@ -26,6 +26,7 @@
 **Core:**
 - Bun HTTP server (`Bun.serve`) - orchestrator API entrypoint in `src/server.ts`.
 - React `19.2.5` + React DOM `19.2.5` - client rendering flow in `src/client/main.tsx`, `src/client/events-screen.tsx`, and `src/client/media-settings-page.tsx`.
+- React Router (`react-router-dom`) - route-driven app-shell navigation in `src/client/main.tsx`.
 
 **Testing:**
 - Bun test runner (`bun:test`) - unit and integration suites across `src/**/*.test.ts` and `src/**/*.test.tsx`.
@@ -54,7 +55,7 @@
 - Server port: `PORT` (fallback `3000`) in `src/server.ts`.
 - SQLite file path: `SQLITE_PATH` (fallback `data/home-assist.sqlite`) in `src/db/database.ts`.
 - Simulator target URL: `ORCHESTRATOR_URL` in `scripts/simulated-node.ts`.
-- Browser/public client config: `PUBLIC_ORCHESTRATOR_URL`, `PUBLIC_HOME_ID`, `PUBLIC_POLL_MS` read in `src/client/lib/public-env.ts` and exposed through `bunfig.toml`.
+- Browser/public client config: `PUBLIC_ORCHESTRATOR_URL`, `PUBLIC_LOCATION_ID`, `PUBLIC_POLL_MS` read in `src/client/lib/public-env.ts` and exposed through `bunfig.toml`.
 
 **Build:**
 - `package.json` scripts define canonical workflows (`dev`, `start`, `client`, `migrate`, `seed`, `simulate`, `test`).

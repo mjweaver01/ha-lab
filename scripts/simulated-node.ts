@@ -7,7 +7,7 @@ import { parseArgs } from "node:util";
 
 /** Phase 2 contract — field names must match orchestrator `PostEventBody`. */
 export interface PostEventBody {
-  home_id: number;
+  location_id: number;
   event_type: string;
   body?: unknown;
 }
@@ -40,32 +40,36 @@ export function eventsPostUrl(base: string): string {
   return `${stripTrailingSlashOnce(normalizeOrchestratorBaseUrl(base))}/events`;
 }
 
-export function sampleMotion(home_id: number): PostEventBody {
+export function sampleMotion(location_id: number): PostEventBody {
   return {
-    home_id,
+    location_id,
     event_type: "motion",
     body: { zone: "driveway", confidence: 0.92 },
   };
 }
 
-export function sampleDoor(home_id: number): PostEventBody {
+export function sampleDoor(location_id: number): PostEventBody {
   return {
-    home_id,
+    location_id,
     event_type: "door",
     body: { door_id: "front", state: "closed" },
   };
 }
 
-export function sampleCameraStub(home_id: number): PostEventBody {
+export function sampleCameraStub(location_id: number): PostEventBody {
   return {
-    home_id,
+    location_id,
     event_type: "camera.stub",
     body: { clip_id: "demo-001", reason: "motion" },
   };
 }
 
-export function allSampleEvents(home_id: number): PostEventBody[] {
-  return [sampleMotion(home_id), sampleDoor(home_id), sampleCameraStub(home_id)];
+export function allSampleEvents(location_id: number): PostEventBody[] {
+  return [
+    sampleMotion(location_id),
+    sampleDoor(location_id),
+    sampleCameraStub(location_id),
+  ];
 }
 
 /** POST one event to `{base}/events` using Web fetch. */
@@ -85,14 +89,14 @@ async function main(): Promise<void> {
     args: Bun.argv.slice(2),
     options: {
       url: { type: "string" },
-      home: { type: "string" },
+      location: { type: "string" },
     },
   });
 
-  const homeStr = values.home ?? "1";
-  const home_id = Number(homeStr);
-  if (!Number.isInteger(home_id)) {
-    console.error("Invalid --home: must be an integer");
+  const locationStr = values.location ?? "1";
+  const location_id = Number(locationStr);
+  if (!Number.isInteger(location_id)) {
+    console.error("Invalid --location: must be an integer");
     process.exit(1);
   }
 
@@ -100,7 +104,7 @@ async function main(): Promise<void> {
   const base = values.url ?? process.env.ORCHESTRATOR_URL ?? "";
   void normalizeOrchestratorBaseUrl(base);
 
-  const events = allSampleEvents(home_id);
+  const events = allSampleEvents(location_id);
   for (const payload of events) {
     const response = await postEvent(base, payload);
     if (!response.ok) {
@@ -118,7 +122,7 @@ async function main(): Promise<void> {
     }
   }
   console.log(
-    `OK: posted ${events.length} sample events for home_id=${home_id}`,
+    `OK: posted ${events.length} sample events for location_id=${location_id}`,
   );
 }
 

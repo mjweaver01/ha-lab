@@ -5,7 +5,7 @@
 ## APIs & External Services
 
 **Orchestrator HTTP API (internal service boundary):**
-- `GET /events?home_id=...`, `POST /events`, and `POST /subscribers` exposed by `src/server.ts` with handlers in `src/routes/events.ts` and `src/routes/subscribers.ts`.
+- `GET /events?location_id=...`, `POST /events`, and `POST /subscribers` exposed by `src/server.ts` with handlers in `src/routes/events.ts` and `src/routes/subscribers.ts`.
   - SDK/Client: custom fetch client in `src/client/api/events-client.ts` and simulator client in `scripts/simulated-node.ts`.
   - Auth: Not implemented (`src/server.ts` has no auth middleware or token checks).
 
@@ -62,7 +62,7 @@
 - `SQLITE_PATH` - SQLite DB location (`src/db/database.ts`).
 - `ORCHESTRATOR_URL` - simulator destination (`scripts/simulated-node.ts`).
 - `PUBLIC_ORCHESTRATOR_URL` - browser API base URL (`src/client/lib/public-env.ts`).
-- `PUBLIC_HOME_ID` - browser home context (`src/client/lib/public-env.ts`).
+- `PUBLIC_LOCATION_ID` - browser location context (`src/client/lib/public-env.ts`).
 - `PUBLIC_POLL_MS` - browser polling interval (`src/client/lib/public-env.ts`).
 
 **Secrets location:**
@@ -76,7 +76,7 @@
 
 **Outgoing:**
 - Fan-out `POST` requests to each stored `subscribers.callback_url` from `src/webhooks/fan-out.ts`.
-- Payload schema includes `event_id`, `home_id`, `event_type`, and `body`, assembled in `src/webhooks/fan-out.ts`.
+- Payload schema includes `event_id`, `location_id`, `event_type`, and `body`, assembled in `src/webhooks/fan-out.ts`.
 
 ---
 
