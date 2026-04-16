@@ -414,7 +414,8 @@ export function MediaSettingsPage({
                   <button
                     type="button"
                     className="ui-btn media-capture__icon-btn"
-                    title={rule.enabled ? "Disable rule" : "Enable rule"}
+                    data-title={rule.enabled ? "Disable rule" : "Enable rule"}
+                    data-tooltip-position="top"
                     aria-label={rule.enabled ? "Disable rule" : "Enable rule"}
                     onClick={() => {
                       upsertRule({
@@ -428,7 +429,8 @@ export function MediaSettingsPage({
                   <button
                     type="button"
                     className="ui-btn media-capture__icon-btn"
-                    title={rule.notify ? "Disable notifications for rule" : "Enable notifications for rule"}
+                    data-title={rule.notify ? "Disable notifications for rule" : "Enable notifications for rule"}
+                    data-tooltip-position="top"
                     aria-label={
                       rule.notify ? "Disable notifications for rule" : "Enable notifications for rule"
                     }
@@ -444,7 +446,8 @@ export function MediaSettingsPage({
                   <button
                     type="button"
                     className="ui-btn media-capture__icon-btn"
-                    title="Edit rule"
+                    data-title="Edit rule"
+                    data-tooltip-position="top"
                     aria-label="Edit rule"
                     onClick={() => {
                       startEditingRule(rule);
@@ -455,7 +458,8 @@ export function MediaSettingsPage({
                   <button
                     type="button"
                     className="ui-btn media-capture__icon-btn"
-                    title="Remove rule"
+                    data-title="Remove rule"
+                    data-tooltip-position="top"
                     aria-label="Remove rule"
                     onClick={() => {
                       removeRule(rule.id);

@@ -29,6 +29,115 @@ body {
   color: #e6edf3;
 }
 
+/* Capacitor/mobile helpers */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-area {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Custom tooltips (`data-title`) for icon-only controls */
+[data-title] {
+  position: relative;
+  --tooltip-bg: #f8fafc;
+  --tooltip-text: #111827;
+  --tooltip-border: rgba(17, 24, 39, 0.15);
+  --tooltip-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+[data-title]::before,
+[data-title]::after {
+  position: absolute;
+  left: 50%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 120ms ease;
+  transform: translate(-50%, -2px);
+  z-index: 50;
+}
+
+[data-title]::before {
+  content: attr(data-title);
+  top: calc(100% + 8px);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  border: 1px solid var(--tooltip-border);
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: var(--tooltip-shadow);
+}
+
+[data-title][data-tooltip-position="top"]::before {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+[data-title][data-tooltip-position="top"]::before,
+[data-title][data-tooltip-position="top"]::after {
+  transform: translate(-50%, 2px);
+}
+
+[data-title][data-tooltip-position="bottom-left"]::before {
+  left: 0;
+  transform: translate(0, -2px);
+}
+
+[data-title][data-tooltip-position="bottom-right"]::before {
+  left: auto;
+  right: 0;
+  transform: translate(0, -2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-title]:hover::before,
+  [data-title]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+
+  [data-title][data-tooltip-position="bottom-left"]:hover::before,
+  [data-title][data-tooltip-position="bottom-right"]:hover::before {
+    transform: translate(0, 0);
+  }
+}
+
+[data-title]:focus-visible::before,
+[data-title]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+[data-title][data-tooltip-position="bottom-left"]:focus-visible::before,
+[data-title][data-tooltip-position="bottom-right"]:focus-visible::before {
+  transform: translate(0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-title]::before,
+  [data-title]::after {
+    transition: none;
+  }
+}
+
 .app-shell {
   min-height: 100vh;
 }
