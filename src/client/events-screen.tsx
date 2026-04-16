@@ -44,6 +44,7 @@ export type EventsScreenProps = {
   locationId: number | null;
   locationName?: string | null;
   pollMs: number;
+  onPollMsChange?: (nextMs: number) => void;
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
   onEditLocation?: () => void;
@@ -53,6 +54,17 @@ export type EventsScreenProps = {
 };
 
 const PAGE_SIZES = [25, 50, 100];
+const POLL_INTERVALS = [
+  { label: "1s", ms: 1000 },
+  { label: "2s", ms: 2000 },
+  { label: "3s", ms: 3000 },
+  { label: "4s", ms: 4000 },
+  { label: "5s", ms: 5000 },
+  { label: "10s", ms: 10_000 },
+  { label: "15s", ms: 15_000 },
+  { label: "30s", ms: 30_000 },
+  { label: "60s", ms: 60_000 },
+];
 const ROW_HEIGHT = 132;
 const LIST_VIEWPORT_HEIGHT = 540;
 const OVERSCAN_ROWS = 4;
@@ -254,6 +266,7 @@ export function EventsScreen({
   locationId,
   locationName,
   pollMs,
+  onPollMsChange,
   captureSettings,
   onOpenMediaSettings,
   onEditLocation,
@@ -424,7 +437,7 @@ export function EventsScreen({
             {locationId == null
               ? "All accessible locations"
               : `ID ${locationId}`}{" "}
-              · Poll every {" "}{Math.round(pollMs / 1000)}s
+              · Poll every {Math.round(pollMs / 1000)}s
           </p>
         </div>
         <div className="ui-page-actions">
@@ -467,6 +480,24 @@ export function EventsScreen({
               {PAGE_SIZES.map((size) => (
                 <option key={size} value={size}>
                   {size}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="ui-field">
+            <span>Poll interval</span>
+            <select
+              value={pollMs}
+              onChange={(event) => {
+                const nextMs = Number(event.currentTarget.value);
+                if (onPollMsChange != null && Number.isFinite(nextMs) && nextMs >= 1000) {
+                  onPollMsChange(nextMs);
+                }
+              }}
+            >
+              {POLL_INTERVALS.map((interval) => (
+                <option key={interval.ms} value={interval.ms}>
+                  {interval.label}
                 </option>
               ))}
             </select>

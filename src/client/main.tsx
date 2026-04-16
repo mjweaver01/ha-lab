@@ -67,11 +67,13 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
     baseUrl,
     userId,
   } = resolvedDeps;
+  const [pollMsOverride, setPollMsOverride] = useState<number | undefined>(undefined);
   const { events, error, loading, onRefresh, newIds, locationId, pollMs } =
     useEventsPollHook({
       baseUrl,
       userId,
       includeAllLocations: true,
+      pollMs: pollMsOverride,
     });
   const [mediaSettings, setMediaSettings] = useState<MediaDetectionSettings>(() =>
     loadMediaDetectionSettings(userId),
@@ -139,6 +141,7 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                 locationId={locationId}
                 locationName={locationId == null ? null : (locationNames.get(locationId) ?? null)}
                 pollMs={pollMs}
+                onPollMsChange={setPollMsOverride}
                 baseUrl={baseUrl}
                 userId={userId}
                 captureSettings={{
@@ -294,10 +297,12 @@ function LocationEventsRoute({
     routeLocationId != null && /^\d+$/.test(routeLocationId)
       ? Number(routeLocationId)
       : null;
+  const [localPollMs, setLocalPollMs] = useState<number | undefined>(undefined);
   const { events, error, loading, onRefresh, newIds, pollMs } = useEventsPollHook({
     baseUrl,
     locationId: parsedLocationId ?? 1,
     userId,
+    pollMs: localPollMs,
   });
 
   if (parsedLocationId == null) {
@@ -315,6 +320,7 @@ function LocationEventsRoute({
         locationId={parsedLocationId}
         locationName={locationNamesById.get(parsedLocationId) ?? null}
         pollMs={pollMs}
+        onPollMsChange={setLocalPollMs}
         baseUrl={baseUrl}
         userId={userId}
         captureSettings={{
