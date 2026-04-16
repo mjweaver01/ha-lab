@@ -179,4 +179,28 @@ describe("EventsScreen media E2E trace", () => {
 
     expect(getByText("Timeframe: custom start/end.")).toBeDefined();
   });
+
+  test("hides media capture on all-locations view", () => {
+    const { container } = render(
+      <EventsScreen
+        events={[]}
+        error={null}
+        loading={false}
+        onRefresh={() => {}}
+        newIds={new Set()}
+        locationId={null}
+        pollMs={3000}
+        captureSettings={{
+          audioLevelBoost: 8,
+          audioActivityThreshold: 0.2,
+          videoActivityThreshold: 0.25,
+          videoSampleCadenceMs: 1000,
+          learningMatchThreshold: 0.65,
+        }}
+        onOpenMediaSettings={() => {}}
+      />,
+    );
+
+    expect(within(container).queryByText("Media capture")).toBeNull();
+  });
 });

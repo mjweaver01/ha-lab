@@ -258,7 +258,7 @@ export function EventsScreen({
         </div>
       </div>
 
-      <MediaCaptureSection settings={captureSettings} />
+      {locationId != null ? <MediaCaptureSection settings={captureSettings} /> : null}
 
       <div className="ui-panel ui-filter">
         <div className="ui-filter-row">
@@ -304,7 +304,7 @@ export function EventsScreen({
             <span className="ui-btn__icon" aria-hidden>
               <Radio size={16} />
             </span>
-            {filter.mode === "tail" ? "Turn live tail off" : "Turn live tail on"}
+            {filter.mode === "tail" ? "Live tail" : "Timeframe"}
           </button>
           {filter.mode !== "tail" ? (
             <button type="button" className="ui-btn ui-btn--with-icon" onClick={onRefresh}>
