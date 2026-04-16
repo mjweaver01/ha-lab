@@ -395,3 +395,79 @@ body {
   gap: var(--space-sm);
   padding: var(--space-xs) 0;
 }
+
+/* Locations hub + detail — Phase 08 */
+.locations-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.locations-include-archived {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 44px;
+}
+
+.locations-create-btn,
+.locations-action {
+  min-height: 44px;
+}
+
+.locations-action--destructive {
+  border-color: var(--color-destructive);
+  color: #f0b4b0;
+}
+
+.locations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.locations-table th,
+.locations-table td {
+  text-align: left;
+  padding: var(--space-sm);
+  border-bottom: 1px solid #30363d;
+}
+
+.locations-row {
+  cursor: pointer;
+}
+
+.locations-row:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.locations-row--archived {
+  color: #8b949e;
+}
+
+.locations-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.locations-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.locations-field-error {
+  color: #f0b4b0;
+  font-size: var(--font-label);
+}
+
+.locations-notes {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.locations-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
