@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Location management + location-scoped access/events
-status: verifying
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-04-16T15:00:30.471Z"
+status: planning
+stopped_at: Phase 8 completed; ready to start Phase 9
+last_updated: "2026-04-16T23:10:00.000Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 3
   completed_plans: 3
-  percent: 100
+  percent: 20
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 **Core value:** End-to-end trace one event from node → orchestrator → subscribed user alert.  
-**Current focus:** Phase 08 — locations-hub-and-lifecycle
+**Current focus:** Phase 09 — location-detail-visibility
 
 ## Current Position
 
 Phase: 9
 Plan: Not started
-Status: Phase complete — ready for verification
+Status: Ready for discuss/planning
 Last activity: 2026-04-16
 
 Progress: v1.0 (phases 1-4) and v1.1 (phases 5-7) are complete; v1.2 phases 8-12 are defined  
-`[░░░░░░░░░░░░░░░░]` 0/5 phases complete (v1.2)
+`[████░░░░░░░░░░░░]` 1/5 phases complete (v1.2)
 
 ## Performance Metrics
 
@@ -56,6 +56,8 @@ See PROJECT.md Key Decisions. Recent roadmap decisions:
 - [Phase 08]: Inject locations API dependencies into LocationsScreen so behavior tests can mock lifecycle calls.
 - [Phase 08]: Route app-shell navigation through explicit screen and selectedLocationId state for deterministic hub-detail transitions.
 - [Phase 08]: Guard browser bootstrap in main.tsx with a document check so integration tests can import App safely.
+- [Post-Phase 08]: Route media detection notifications through app-level polling so alerts fire on any page.
+- [Post-Phase 08]: Persist explicit media.detected confidence and display it in both friendly logs and browser notifications.
 
 ### Pending Todos
 

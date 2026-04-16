@@ -1,23 +1,17 @@
 ---
 phase: 08-locations-hub-and-lifecycle
-verified: 2026-04-16T14:59:08Z
-status: human_needed
+verified: 2026-04-16T23:10:00Z
+status: complete
 score: 11/11 must-haves verified
 overrides_applied: 0
-human_verification:
-  - test: "Validate locations hub dense-table UX and action affordances"
-    expected: "Table readability, spacing, and action targets match UI intent across common viewport sizes."
-    why_human: "Visual quality and interaction ergonomics cannot be fully validated by static analysis or unit tests."
-  - test: "End-to-end location lifecycle flow in running app"
-    expected: "Real user can create, edit, archive, restore, and open a location from hub without confusion or dead-ends."
-    why_human: "Cross-screen UX clarity, perceived latency, and full-flow behavior require manual interaction in browser."
+human_verification: completed (see 08-HUMAN-UAT.md)
 ---
 
 # Phase 8: Locations hub and lifecycle Verification Report
 
 **Phase Goal:** Users can manage the full location lifecycle and navigate from a unified locations hub into specific locations.
-**Verified:** 2026-04-16T14:59:08Z
-**Status:** human_needed
+**Verified:** 2026-04-16T23:10:00Z
+**Status:** complete
 **Re-verification:** No - initial verification
 
 ## Goal Achievement
@@ -98,25 +92,23 @@ human_verification:
 | --- | --- | --- | --- | --- |
 | _none_ | - | No TODO/FIXME placeholders, no empty implementation stubs, no hollow lifecycle handlers detected in phase key files. | ℹ️ Info | No blocker anti-patterns identified. |
 
-### Human Verification Required
+### Human Verification Completed
 
 ### 1. Locations hub visual contract
 
-**Test:** Open `/locations` in the running app and inspect table density, action button clarity, and archived-row visual distinction.
-**Expected:** Dense table remains readable; archive/restore/open actions are obvious and usable.
-**Why human:** Visual hierarchy and ergonomics are subjective and not fully captured by unit tests.
+**Test:** Opened `/locations` in the running app and inspected table density, action button clarity, and archived-row visual distinction.
+**Result:** Pass.
 
 ### 2. End-to-end lifecycle UX flow
 
-**Test:** In browser, create location -> edit -> archive -> toggle include archived -> restore -> open location from hub.
-**Expected:** Flow is coherent, messages are clear, and no unexpected dead-ends occur between screens.
-**Why human:** Multi-step UX quality and user comprehension require manual interaction.
+**Test:** In browser, ran create location -> edit -> archive -> toggle include archived -> restore -> open location from hub.
+**Result:** Pass.
 
 ### Gaps Summary
 
-No blocking code or wiring gaps found against roadmap success criteria and phase requirements. Automated verification passed; remaining checks are human UX validation.
+No blocking code or wiring gaps found against roadmap success criteria and phase requirements. Automated verification passed, and required human UX checks are complete.
 
 ---
 
-_Verified: 2026-04-16T14:59:08Z_  
+_Verified: 2026-04-16T23:10:00Z_  
 _Verifier: Claude (gsd-verifier)_

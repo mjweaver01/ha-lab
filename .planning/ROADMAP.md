@@ -17,7 +17,7 @@ v1.2 introduces location-first operations across the app so users can manage loc
 
 **Phase numbering:** Continue after v1.1 with phases 8–12. Decimal phases (for example 8.1) are reserved for urgent insertions.
 
-- [ ] **Phase 8: Locations hub and lifecycle** - Users can list, create, edit, archive, and navigate locations.
+- [x] **Phase 8: Locations hub and lifecycle** - Users can list, create, edit, archive, and navigate locations.
 - [ ] **Phase 9: Location detail visibility** - Users can open a location and view scoped devices and memberships.
 - [ ] **Phase 10: Location RBAC and delegated access** - Location permissions are enforced and manageable per user and role.
 - [ ] **Phase 11: Location subscription administration** - Admins can configure location-scoped webhook subscriptions.
@@ -96,7 +96,7 @@ Plans:
 | 5. Local media capture | 2/2 | Complete | 2026-04-15 |
 | 6. Media signals -> events | 3/3 | Complete | 2026-04-15 |
 | 7. E2E media trace | 1/1 | Complete | 2026-04-15 |
-| 8. Locations hub and lifecycle | 1/3 | In Progress|  |
+| 8. Locations hub and lifecycle | 3/3 | Complete | 2026-04-16 |
 | 9. Location detail visibility | 0/TBD | Not started | - |
 | 10. Location RBAC and delegated access | 0/TBD | Not started | - |
 | 11. Location subscription administration | 0/TBD | Not started | - |
