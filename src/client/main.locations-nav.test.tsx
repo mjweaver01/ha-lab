@@ -113,8 +113,7 @@ describe("locations navigation", () => {
     fireEvent.click(view.getByText("include archived on"));
     fireEvent.click(view.getByText("Open row 42"));
     expect(view.getByText("events for location: 42")).toBeDefined();
-
-    fireEvent.click(view.getByText("Back to locations"));
+    fireEvent.click(view.getByText("Locations"));
     expect(view.getByText("locations hub")).toBeDefined();
     expect(view.getByText("include archived: on")).toBeDefined();
     expect(openCalls).toEqual([42]);

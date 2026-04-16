@@ -244,26 +244,6 @@ function LocationEventsRoute({
 
   return (
     <div>
-      <div className="events-toolbar">
-        <button
-          type="button"
-          className="events-btn"
-          onClick={() => {
-            navigate("/locations");
-          }}
-        >
-          Back to locations
-        </button>
-        <button
-          type="button"
-          className="events-btn"
-          onClick={() => {
-            navigate(`/locations/${parsedLocationId}/edit`);
-          }}
-        >
-          Edit location
-        </button>
-      </div>
       <EventsScreenComponent
         events={events}
         error={error}
@@ -283,6 +263,9 @@ function LocationEventsRoute({
         }}
         onOpenMediaSettings={() => {
           navigate("/settings/media");
+        }}
+        onEditLocation={() => {
+          navigate(`/locations/${parsedLocationId}/edit`);
         }}
       />
     </div>

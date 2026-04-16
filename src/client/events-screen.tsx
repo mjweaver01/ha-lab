@@ -20,6 +20,7 @@ export type EventsScreenProps = {
   pollMs: number;
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
+  onEditLocation?: () => void;
 };
 
 const PAGE_SIZES = [25, 50, 100];
@@ -44,6 +45,7 @@ export function EventsScreen({
   pollMs,
   captureSettings,
   onOpenMediaSettings,
+  onEditLocation,
 }: EventsScreenProps) {
   const [filter, setFilter] = useState<EventsFilterState>(DEFAULT_FILTER);
   const [pageSize, setPageSize] = useState(50);
@@ -129,6 +131,11 @@ export function EventsScreen({
           </p>
         </div>
         <div className="events-page__header-actions">
+          {locationId != null && onEditLocation != null ? (
+            <button type="button" className="events-btn" onClick={onEditLocation}>
+              Edit location
+            </button>
+          ) : null}
           <button type="button" className="events-btn" onClick={onOpenMediaSettings}>
             Media settings
           </button>
