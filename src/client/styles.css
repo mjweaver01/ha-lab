@@ -636,7 +636,8 @@ body {
 
 .media-capture__input {
   min-width: 220px;
-  padding: var(--space-sm);
+  min-height: 40px;
+  padding: var(--space-xs) var(--space-sm);
   border: 1px solid #30363d;
   border-radius: var(--space-xs);
   background: var(--color-dominant);
