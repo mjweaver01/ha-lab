@@ -1,7 +1,17 @@
 import type { EventListItem } from "../api/events-client.ts";
 
 export type EventsFilterMode = "tail" | "timeframe";
-export type TimeRangePreset = "15m" | "1h" | "6h" | "24h" | "custom";
+export type TimeRangePreset =
+  | "15m"
+  | "1h"
+  | "3h"
+  | "6h"
+  | "12h"
+  | "24h"
+  | "3d"
+  | "7d"
+  | "30d"
+  | "custom";
 
 export type EventsFilterState = {
   mode: EventsFilterMode;
@@ -17,6 +27,7 @@ export type VirtualWindow = {
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
 
 function parseDateMs(value: string): number | null {
   if (!value.trim()) {
@@ -39,10 +50,20 @@ export function computeTimeframe(
       return { startMs: nowMs - 15 * MINUTE_MS, endMs: nowMs };
     case "1h":
       return { startMs: nowMs - HOUR_MS, endMs: nowMs };
+    case "3h":
+      return { startMs: nowMs - 3 * HOUR_MS, endMs: nowMs };
     case "6h":
       return { startMs: nowMs - 6 * HOUR_MS, endMs: nowMs };
+    case "12h":
+      return { startMs: nowMs - 12 * HOUR_MS, endMs: nowMs };
     case "24h":
       return { startMs: nowMs - 24 * HOUR_MS, endMs: nowMs };
+    case "3d":
+      return { startMs: nowMs - 3 * DAY_MS, endMs: nowMs };
+    case "7d":
+      return { startMs: nowMs - 7 * DAY_MS, endMs: nowMs };
+    case "30d":
+      return { startMs: nowMs - 30 * DAY_MS, endMs: nowMs };
     case "custom":
       return {
         startMs: parseDateMs(filter.customStart),

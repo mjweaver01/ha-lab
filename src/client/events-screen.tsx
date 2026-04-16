@@ -31,6 +31,7 @@ import {
 } from "./lib/events-analytics-view.ts";
 import type {
   EventsAnalyticsBucket,
+  EventsAnalyticsRange,
   EventsAnalyticsResponse,
 } from "../types/events-analytics-api.ts";
 
@@ -171,21 +172,6 @@ function formatFriendlyBody(body: unknown): FriendlyLogRow[] {
     .filter((row): row is FriendlyLogRow => row != null && row.key.trim() !== "");
 }
 
-function splitLocalDateTime(value: string): { date: string; time: string } {
-  const [date = "", time = ""] = value.split("T");
-  return {
-    date,
-    time: time.slice(0, 5),
-  };
-}
-
-function mergeLocalDateTime(date: string, time: string): string {
-  if (!date) {
-    return "";
-  }
-  return `${date}T${time || "00:00"}`;
-}
-
 function toIsoOrNull(ms: number | null): string | null {
   if (ms == null) return null;
   return new Date(ms).toISOString();
@@ -200,14 +186,38 @@ function analyticsBucketFor(filter: EventsFilterState): EventsAnalyticsBucket {
       return "5m";
     case "1h":
       return "15m";
+    case "3h":
+      return "15m";
     case "6h":
+      return "1h";
+    case "12h":
       return "1h";
     case "24h":
       return "1h";
+    case "3d":
+      return "6h";
+    case "7d":
+      return "1d";
+    case "30d":
+      return "1d";
     case "custom":
       return "15m";
     default:
       return "15m";
+  }
+}
+
+function analyticsRangeFor(filter: EventsFilterState): EventsAnalyticsRange | undefined {
+  if (filter.mode !== "timeframe") return undefined;
+  switch (filter.preset) {
+    case "15m":
+    case "1h":
+    case "6h":
+    case "24h":
+    case "7d":
+      return filter.preset;
+    default:
+      return undefined;
   }
 }
 
@@ -299,8 +309,6 @@ export function EventsScreen({
       : filter.preset === "custom"
         ? "Timeframe: custom start/end."
         : `Timeframe: last ${filter.preset}.`;
-  const customStartParts = splitLocalDateTime(filter.customStart);
-  const customEndParts = splitLocalDateTime(filter.customEnd);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<EventsAnalyticsResponse | null>(null);
@@ -325,7 +333,7 @@ export function EventsScreen({
         mode: filter.mode,
         locationId,
         bucket: analyticsBucket,
-        range: filter.mode === "timeframe" && filter.preset !== "custom" ? filter.preset : undefined,
+        range: analyticsRangeFor(filter),
         start_at:
           filter.mode === "timeframe" ? (toIsoOrNull(analyticsTimeframe.startMs) ?? undefined) : undefined,
         end_at:
@@ -486,8 +494,13 @@ export function EventsScreen({
               >
                 <option value="15m">Last 15m</option>
                 <option value="1h">Last 1h</option>
+                <option value="3h">Last 3h</option>
                 <option value="6h">Last 6h</option>
+                <option value="12h">Last 12h</option>
                 <option value="24h">Last 24h</option>
+                <option value="3d">Last 3d</option>
+                <option value="7d">Last 7d</option>
+                <option value="30d">Last 30d</option>
                 <option value="custom">Custom</option>
               </select>
             </label>
@@ -497,57 +510,27 @@ export function EventsScreen({
         {filter.mode === "timeframe" && filter.preset === "custom" ? (
           <div className="ui-filter-row">
             <label className="ui-field">
-              <span>Start date</span>
+              <span>Start</span>
               <input
-                type="date"
-                value={customStartParts.date}
+                type="datetime-local"
+                value={filter.customStart}
                 onChange={(event) => {
-                  const nextDate = event.currentTarget.value;
                   setFilter((prev) => ({
                     ...prev,
-                    customStart: mergeLocalDateTime(nextDate, splitLocalDateTime(prev.customStart).time),
+                    customStart: event.currentTarget.value,
                   }));
                 }}
               />
             </label>
             <label className="ui-field">
-              <span>Start time</span>
+              <span>End</span>
               <input
-                type="time"
-                value={customStartParts.time}
+                type="datetime-local"
+                value={filter.customEnd}
                 onChange={(event) => {
-                  const nextTime = event.currentTarget.value;
                   setFilter((prev) => ({
                     ...prev,
-                    customStart: mergeLocalDateTime(splitLocalDateTime(prev.customStart).date, nextTime),
-                  }));
-                }}
-              />
-            </label>
-            <label className="ui-field">
-              <span>End date</span>
-              <input
-                type="date"
-                value={customEndParts.date}
-                onChange={(event) => {
-                  const nextDate = event.currentTarget.value;
-                  setFilter((prev) => ({
-                    ...prev,
-                    customEnd: mergeLocalDateTime(nextDate, splitLocalDateTime(prev.customEnd).time),
-                  }));
-                }}
-              />
-            </label>
-            <label className="ui-field">
-              <span>End time</span>
-              <input
-                type="time"
-                value={customEndParts.time}
-                onChange={(event) => {
-                  const nextTime = event.currentTarget.value;
-                  setFilter((prev) => ({
-                    ...prev,
-                    customEnd: mergeLocalDateTime(splitLocalDateTime(prev.customEnd).date, nextTime),
+                    customEnd: event.currentTarget.value,
                   }));
                 }}
               />

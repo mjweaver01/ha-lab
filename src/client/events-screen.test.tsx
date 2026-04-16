@@ -160,24 +160,14 @@ describe("EventsScreen media E2E trace", () => {
     fireEvent.change(within(container).getByDisplayValue("Last 1h"), {
       target: { value: "custom" },
     });
-    const dateInputs = container.querySelectorAll("input[type='date']");
-    const timeInputs = container.querySelectorAll("input[type='time']");
-    const startDateInput = dateInputs[0] as HTMLInputElement | undefined;
-    const endDateInput = dateInputs[1] as HTMLInputElement | undefined;
-    const startTimeInput = timeInputs[0] as HTMLInputElement | undefined;
-    const endTimeInput = timeInputs[1] as HTMLInputElement | undefined;
-    if (
-      startDateInput == null ||
-      endDateInput == null ||
-      startTimeInput == null ||
-      endTimeInput == null
-    ) {
-      throw new Error("expected custom timeframe date/time inputs");
+    const datetimeInputs = container.querySelectorAll("input[type='datetime-local']");
+    const startInput = datetimeInputs[0] as HTMLInputElement | undefined;
+    const endInput = datetimeInputs[1] as HTMLInputElement | undefined;
+    if (startInput == null || endInput == null) {
+      throw new Error("expected custom timeframe datetime-local inputs");
     }
-    fireEvent.change(startDateInput, { target: { value: "2026-04-16" } });
-    fireEvent.change(startTimeInput, { target: { value: "09:00" } });
-    fireEvent.change(endDateInput, { target: { value: "2026-04-16" } });
-    fireEvent.change(endTimeInput, { target: { value: "10:00" } });
+    fireEvent.change(startInput, { target: { value: "2026-04-16T09:00" } });
+    fireEvent.change(endInput, { target: { value: "2026-04-16T10:00" } });
 
     expect(getByText("Timeframe: custom start/end.")).toBeDefined();
   });
