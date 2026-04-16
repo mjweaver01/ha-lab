@@ -18,9 +18,9 @@ export async function deliverEventToSubscribers(
 ): Promise<void> {
   const subs = db
     .query(
-      "SELECT id, callback_url FROM subscribers WHERE location_id = $locationId",
+      "SELECT id, callback_url FROM subscribers WHERE location_id = ?",
     )
-    .all({ $locationId: event.location_id }) as { id: number; callback_url: string }[];
+    .all(event.location_id) as { id: number; callback_url: string }[];
 
   let payload: Record<string, unknown>;
   try {
@@ -57,27 +57,15 @@ export async function deliverEventToSubscribers(
         }
         db.run(
           `INSERT INTO event_deliveries (event_id, subscriber_id, status, http_status, error_text)
-           VALUES ($eid, $sid, $status, $http, $err)`,
-          {
-            $eid: event.id,
-            $sid: sub.id,
-            $status: ok ? "succeeded" : "failed",
-            $http: httpStatus,
-            $err: errorText,
-          },
+           VALUES (?, ?, ?, ?, ?)`,
+          [event.id, sub.id, ok ? "succeeded" : "failed", httpStatus, errorText],
         );
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         db.run(
           `INSERT INTO event_deliveries (event_id, subscriber_id, status, http_status, error_text)
-           VALUES ($eid, $sid, $status, $http, $err)`,
-          {
-            $eid: event.id,
-            $sid: sub.id,
-            $status: "failed",
-            $http: null,
-            $err: msg,
-          },
+           VALUES (?, ?, ?, ?, ?)`,
+          [event.id, sub.id, "failed", null, msg],
         );
       }
     }),

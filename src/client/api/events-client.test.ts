@@ -1,10 +1,10 @@
-import { describe, expect, mock, test } from "bun:test";
-import { fetchEvents } from "./events-client.ts";
+import { describe, expect, test } from "bun:test";
+import { fetchEvents, type FetchLike } from "./events-client.ts";
 
 describe("fetchEvents", () => {
   test("GET /events?location_id= with encoded id", async () => {
     const captured: string[] = [];
-    const fetchImpl: typeof fetch = async (input) => {
+    const fetchImpl: FetchLike = async (input) => {
       captured.push(typeof input === "string" ? input : input.toString());
       return new Response(
         JSON.stringify([
@@ -28,12 +28,13 @@ describe("fetchEvents", () => {
   });
 
   test("rejects invalid location_id", async () => {
-    await expect(fetchEvents("http://x", { locationId: 1.5 }, mock())).rejects.toThrow();
-    await expect(fetchEvents("http://x", { locationId: Number.NaN }, mock())).rejects.toThrow();
+    const noopFetch: FetchLike = async () => new Response(JSON.stringify([]), { status: 200 });
+    await expect(fetchEvents("http://x", { locationId: 1.5 }, noopFetch)).rejects.toThrow();
+    await expect(fetchEvents("http://x", { locationId: Number.NaN }, noopFetch)).rejects.toThrow();
   });
 
   test("throws on non-array JSON", async () => {
-    const fetchImpl: typeof fetch = async () =>
+    const fetchImpl: FetchLike = async () =>
       new Response(JSON.stringify({}), { status: 200 });
     await expect(fetchEvents("http://127.0.0.1:3000", { locationId: 1 }, fetchImpl)).rejects.toThrow(
       "JSON array",
@@ -42,7 +43,7 @@ describe("fetchEvents", () => {
 
   test("GET /events for all accessible locations sends x-user-id", async () => {
     const captured: Array<{ url: string; userHeader: string | null }> = [];
-    const fetchImpl: typeof fetch = async (input, init) => {
+    const fetchImpl: FetchLike = async (input, init) => {
       captured.push({
         url: typeof input === "string" ? input : input.toString(),
         userHeader: new Headers(init?.headers).get("x-user-id"),

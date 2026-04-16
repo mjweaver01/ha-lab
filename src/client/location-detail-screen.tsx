@@ -40,15 +40,19 @@ export function LocationDetailScreen({
 
   return (
     <div className="events-page">
-      <div className="events-toolbar">
-        <button type="button" className="events-btn" onClick={onBackToLocations}>
-          Back to locations
-        </button>
+      <div className="events-page__header">
+        <div>
+          <h1 className="events-page__title">{pageTitle}</h1>
+          {mode === "edit" && locationId != null ? (
+            <p className="events-page__meta">Location ID: {locationId}</p>
+          ) : null}
+        </div>
+        <div className="events-page__header-actions">
+          <button type="button" className="events-btn" onClick={onBackToLocations}>
+            Back to locations
+          </button>
+        </div>
       </div>
-      <h1 className="events-page__title">{pageTitle}</h1>
-      {mode === "edit" && locationId != null ? (
-        <p className="events-page__meta">Location ID: {locationId}</p>
-      ) : null}
 
       {requestError != null ? (
         <div className="events-error" role="alert">

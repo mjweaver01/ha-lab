@@ -28,45 +28,33 @@ function seedFixture(): SeededContext {
   const { server, url, db } = createServer({ port: 0, sqlitePath: dbPath });
 
   const actorId = Number(
-    db.run("INSERT INTO users (display_name) VALUES ($name)", {
-      $name: "Owner",
-    }).lastInsertRowid,
+    db.run("INSERT INTO users (display_name) VALUES (?)", ["Owner"]).lastInsertRowid,
   );
   const otherActorId = Number(
-    db.run("INSERT INTO users (display_name) VALUES ($name)", {
-      $name: "Other",
-    }).lastInsertRowid,
+    db.run("INSERT INTO users (display_name) VALUES (?)", ["Other"]).lastInsertRowid,
   );
 
   const activeLocationId = Number(
     db.run(
-      "INSERT INTO locations (name, code, notes) VALUES ($name, $code, $notes)",
-      {
-        $name: "HQ",
-        $code: "hq",
-        $notes: "active",
-      },
+      "INSERT INTO locations (name, code, notes) VALUES (?, ?, ?)",
+      ["HQ", "hq", "active"],
     ).lastInsertRowid,
   );
   db.run(
-    "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-    { $locationId: activeLocationId, $userId: actorId },
+    "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+    [activeLocationId, actorId],
   );
 
   const archivedLocationId = Number(
     db.run(
       `INSERT INTO locations (name, code, notes, archived_at)
-       VALUES ($name, $code, $notes, datetime('now'))`,
-      {
-        $name: "Archive",
-        $code: "archive",
-        $notes: "archived",
-      },
+       VALUES (?, ?, ?, datetime('now'))`,
+      ["Archive", "archive", "archived"],
     ).lastInsertRowid,
   );
   db.run(
-    "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-    { $locationId: archivedLocationId, $userId: actorId },
+    "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+    [archivedLocationId, actorId],
   );
 
   return {

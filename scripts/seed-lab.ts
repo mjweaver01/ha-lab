@@ -24,20 +24,16 @@ function main(): void {
     return;
   }
 
-  const userInsert = db.run("INSERT INTO users (display_name) VALUES ($name)", { $name: "Lab user" });
+  const userInsert = db.run("INSERT INTO users (display_name) VALUES (?)", ["Lab user"]);
   const userId = Number(userInsert.lastInsertRowid);
   const locationInsert = db.run(
-    "INSERT INTO locations (name, code, notes) VALUES ($name, $code, $notes)",
-    {
-      $name: "Lab",
-      $code: "lab",
-      $notes: "seeded",
-    },
+    "INSERT INTO locations (name, code, notes) VALUES (?, ?, ?)",
+    ["Lab", "lab", "seeded"],
   );
   const locationId = Number(locationInsert.lastInsertRowid);
   db.run(
-    "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-    { $locationId: locationId, $userId: userId },
+    "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+    [locationId, userId],
   );
   console.log(
     `Seeded: locations.id=${locationId}, users.id=${userId}. Simulator default --location 1 works if locationId is 1.`,

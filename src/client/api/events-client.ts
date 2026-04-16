@@ -4,6 +4,8 @@
  */
 import type { PostEventBody } from "../../types/events-api.ts";
 
+export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
 export type EventListItem = {
   id: number;
   location_id: number;
@@ -79,7 +81,7 @@ export async function fetchEvents(
     locationId?: number;
     userId?: number;
   } = {},
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<EventListItem[]> {
   if (args.locationId != null) {
     assertValidLocationId(args.locationId);
@@ -129,7 +131,7 @@ export async function fetchEvents(
 export async function postEvent(
   baseUrl: string,
   payload: PostEventBody,
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<void> {
   assertValidLocationId(payload.location_id);
   const eventType = assertValidEventType(payload.event_type);

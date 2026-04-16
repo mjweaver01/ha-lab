@@ -23,8 +23,8 @@ function hasMigrationsTable(db: Database): boolean {
 function isVersionApplied(db: Database, version: string): boolean {
   if (!hasMigrationsTable(db)) return false;
   const row = db
-    .query("SELECT 1 AS ok FROM schema_migrations WHERE version = $version")
-    .get({ $version: version }) as { ok: number } | null;
+    .query("SELECT 1 AS ok FROM schema_migrations WHERE version = ?")
+    .get(version) as { ok: number } | null;
   return row != null;
 }
 
@@ -54,9 +54,7 @@ export function migrate(dbFilePath: string): void {
 
       const run = db.transaction(() => {
         db.run(sql);
-        db.run("INSERT INTO schema_migrations (version) VALUES ($version)", {
-          $version: version,
-        });
+        db.run("INSERT INTO schema_migrations (version) VALUES (?)", [version]);
       });
       run();
     }

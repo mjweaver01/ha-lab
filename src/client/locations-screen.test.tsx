@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import type {
   ArchiveLocationArgs,
+  FetchLike,
   FetchLocationsArgs,
   RestoreLocationArgs,
 } from "./api/locations-client.ts";
@@ -18,9 +19,10 @@ import { LocationsScreen } from "./locations-screen.tsx";
 beforeAll(() => {
   const happyWindow = new GlobalWindow({ url: "http://localhost/" });
   globalThis.window = happyWindow as unknown as Window & typeof globalThis;
-  globalThis.document = happyWindow.document;
-  globalThis.HTMLElement = happyWindow.HTMLElement;
-  globalThis.navigator = happyWindow.navigator;
+  globalThis.document = happyWindow.document as unknown as Document;
+  globalThis.HTMLElement =
+    happyWindow.HTMLElement as unknown as typeof globalThis.HTMLElement;
+  globalThis.navigator = happyWindow.navigator as unknown as Navigator;
   globalThis.sessionStorage = happyWindow.sessionStorage;
 });
 
@@ -33,9 +35,9 @@ afterEach(() => {
 });
 
 type StubApi = {
-  fetchLocations: (args: FetchLocationsArgs, fetchImpl?: typeof fetch) => Promise<LocationListItem[]>;
-  archiveLocation: (args: ArchiveLocationArgs, fetchImpl?: typeof fetch) => Promise<LocationListItem>;
-  restoreLocation: (args: RestoreLocationArgs, fetchImpl?: typeof fetch) => Promise<LocationListItem>;
+  fetchLocations: (args: FetchLocationsArgs, fetchImpl?: FetchLike) => Promise<LocationListItem[]>;
+  archiveLocation: (args: ArchiveLocationArgs, fetchImpl?: FetchLike) => Promise<LocationListItem>;
+  restoreLocation: (args: RestoreLocationArgs, fetchImpl?: FetchLike) => Promise<LocationListItem>;
 };
 
 function makeApi(overrides?: Partial<StubApi>): StubApi {

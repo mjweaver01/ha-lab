@@ -136,9 +136,6 @@ export function EventsScreen({
               Edit location
             </button>
           ) : null}
-          <button type="button" className="events-btn" onClick={onOpenMediaSettings}>
-            Media settings
-          </button>
         </div>
       </div>
 

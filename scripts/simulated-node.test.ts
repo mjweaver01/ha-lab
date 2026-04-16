@@ -26,6 +26,9 @@ test("allSampleEvents exposes motion, door, camera.stub in order", () => {
 
 test("first sample event preserves location_id and serializes PostEventBody keys", () => {
   const e = allSampleEvents(42)[0];
+  if (e == null) {
+    throw new Error("expected at least one sample event");
+  }
   expect(e.location_id).toBe(42);
   const json = JSON.stringify(e);
   expect(json).toContain('"location_id":42');

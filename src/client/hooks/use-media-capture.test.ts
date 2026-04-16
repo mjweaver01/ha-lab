@@ -10,10 +10,12 @@ let originalDateNow = Date.now;
 beforeAll(() => {
   happyWindow = new GlobalWindow({ url: "http://localhost/" });
   globalThis.window = happyWindow as unknown as Window & typeof globalThis;
-  globalThis.document = happyWindow.document;
-  globalThis.HTMLElement = happyWindow.HTMLElement;
-  globalThis.HTMLVideoElement = happyWindow.HTMLVideoElement;
-  globalThis.navigator = happyWindow.navigator;
+  globalThis.document = happyWindow.document as unknown as Document;
+  globalThis.HTMLElement =
+    happyWindow.HTMLElement as unknown as typeof globalThis.HTMLElement;
+  globalThis.HTMLVideoElement =
+    happyWindow.HTMLVideoElement as unknown as typeof globalThis.HTMLVideoElement;
+  globalThis.navigator = happyWindow.navigator as unknown as Navigator;
 });
 
 class MockAnalyser {
@@ -54,7 +56,7 @@ beforeEach(() => {
     }, 0) as unknown as number;
   };
   globalThis.cancelAnimationFrame = (id: number) => {
-    happyWindow.clearTimeout(id);
+    happyWindow.clearTimeout(id as unknown as ReturnType<typeof setTimeout>);
   };
   globalThis.fetch = mock(() =>
     Promise.resolve(new Response(null, { status: 202 })),
@@ -107,9 +109,10 @@ describe("useMediaCapture", () => {
       expect(fetchMock).toHaveBeenCalled();
     });
 
-    const payloads = fetchMock.mock.calls
-      .map(([, init]) => init)
-      .filter((init): init is RequestInit => Boolean(init && init.method === "POST"))
+    const calls = fetchMock.mock.calls as unknown as Array<[unknown, RequestInit | undefined]>;
+    const payloads = calls
+      .map((call) => call[1])
+      .filter((init): init is RequestInit => init?.method === "POST")
       .map((init) => JSON.parse(String(init.body)) as { event_type: string });
     expect(payloads.some((payload) => payload.event_type === "media.audio")).toBe(true);
   });

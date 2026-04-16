@@ -6,8 +6,9 @@ import { DEFAULT_MEDIA_DETECTION_SETTINGS } from "./lib/media-settings.ts";
 
 const happyWindow = new GlobalWindow({ url: "http://localhost/" });
 globalThis.window = happyWindow as unknown as Window & typeof globalThis;
-globalThis.document = happyWindow.document;
-globalThis.HTMLElement = happyWindow.HTMLElement;
+globalThis.document = happyWindow.document as unknown as Document;
+globalThis.HTMLElement =
+  happyWindow.HTMLElement as unknown as typeof globalThis.HTMLElement;
 
 beforeAll(() => {
   class MockAnalyser {
@@ -34,7 +35,7 @@ beforeAll(() => {
       cb(performance.now());
     }, 0) as unknown as number;
   globalThis.cancelAnimationFrame = (id: number) => {
-    happyWindow.clearTimeout(id);
+    happyWindow.clearTimeout(id as unknown as ReturnType<typeof setTimeout>);
   };
 });
 

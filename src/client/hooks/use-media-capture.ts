@@ -40,7 +40,7 @@ export type UseMediaCaptureOptions = {
   orchestratorBaseUrl?: string;
 };
 
-export function useMediaCapture(): {
+export type UseMediaCaptureResult = {
   micActive: boolean;
   cameraActive: boolean;
   micLevel: number;
@@ -54,22 +54,9 @@ export function useMediaCapture(): {
   stopCamera: () => void;
   captureVideoLearningSample: (label: string) => LearnedVideoSample | null;
   videoRef: RefObject<HTMLVideoElement | null>;
-}
-export function useMediaCapture(options: UseMediaCaptureOptions = {}): {
-  micActive: boolean;
-  cameraActive: boolean;
-  micLevel: number;
-  micError: string | null;
-  cameraError: string | null;
-  audioDetection: MediaCaptureDetection | null;
-  videoDetection: MediaCaptureDetection | null;
-  startMic: () => Promise<void>;
-  stopMic: () => void;
-  startCamera: () => Promise<void>;
-  stopCamera: () => void;
-  captureVideoLearningSample: (label: string) => LearnedVideoSample | null;
-  videoRef: RefObject<HTMLVideoElement | null>;
-} {
+};
+
+export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaCaptureResult {
   const {
     audioLevelBoost = 8,
     audioActivityThreshold = AUDIO_ACTIVITY_THRESHOLD,

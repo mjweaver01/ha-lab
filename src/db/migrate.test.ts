@@ -7,9 +7,7 @@ import { migrate } from "./migrate.ts";
 import { openDatabase } from "./database.ts";
 
 function createUser(dbPath: ReturnType<typeof openDatabase>, displayName: string | null): number {
-  const result = dbPath.run("INSERT INTO users (display_name) VALUES ($displayName)", {
-    $displayName: displayName,
-  });
+  const result = dbPath.run("INSERT INTO users (display_name) VALUES (?)", [displayName]);
   return Number(result.lastInsertRowid);
 }
 
@@ -25,10 +23,7 @@ describe("migrate + locations integration", () => {
     {
       const db = openDatabase(dbPath);
       locationId = Number(
-        db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
-          $name: "Lab",
-          $code: "lab",
-        }).lastInsertRowid,
+        db.run("INSERT INTO locations (name, code) VALUES (?, ?)", ["Lab", "lab"]).lastInsertRowid,
       );
       userId = createUser(db, "Dev");
       expect(typeof locationId).toBe("number");
@@ -36,8 +31,8 @@ describe("migrate + locations integration", () => {
       expect(typeof userId).toBe("number");
       expect(userId).toBeGreaterThan(0);
       db.run(
-        "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-        { $locationId: locationId, $userId: userId },
+        "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+        [locationId, userId],
       );
       db.close();
     }
@@ -82,20 +77,17 @@ describe("migrate + locations integration", () => {
     migrate(dbPath);
     const db = openDatabase(dbPath);
     const locationId = Number(
-      db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
-        $name: "H",
-        $code: "h",
-      }).lastInsertRowid,
+      db.run("INSERT INTO locations (name, code) VALUES (?, ?)", ["H", "h"]).lastInsertRowid,
     );
     const userId = createUser(db, null);
     db.run(
-      "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-      { $locationId: locationId, $userId: userId },
+      "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+      [locationId, userId],
     );
     expect(() =>
       db.run(
-        "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-        { $locationId: locationId, $userId: userId },
+        "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+        [locationId, userId],
       ),
     ).toThrow();
     db.close();
@@ -109,8 +101,8 @@ describe("migrate + locations integration", () => {
     const userId = createUser(db, "x");
     expect(() =>
       db.run(
-        "INSERT INTO location_members (location_id, user_id) VALUES ($locationId, $userId)",
-        { $locationId: 99_999, $userId: userId },
+        "INSERT INTO location_members (location_id, user_id) VALUES (?, ?)",
+        [99_999, userId],
       ),
     ).toThrow();
     db.close();
@@ -122,8 +114,8 @@ describe("migrate + locations integration", () => {
     migrate(dbPath);
     const db = openDatabase(dbPath);
     const row = db
-      .query("SELECT version FROM schema_migrations WHERE version = $v")
-      .get({ $v: "001_initial.sql" }) as { version: string } | null;
+      .query("SELECT version FROM schema_migrations WHERE version = ?")
+      .get("001_initial.sql") as { version: string } | null;
     expect(row?.version).toBe("001_initial.sql");
     db.close();
   });
@@ -134,8 +126,8 @@ describe("migrate + locations integration", () => {
     migrate(dbPath);
     const db = openDatabase(dbPath);
     const row = db
-      .query("SELECT version FROM schema_migrations WHERE version = $v")
-      .get({ $v: "002_events_subscribers.sql" }) as { version: string } | null;
+      .query("SELECT version FROM schema_migrations WHERE version = ?")
+      .get("002_events_subscribers.sql") as { version: string } | null;
     expect(row?.version).toBe("002_events_subscribers.sql");
     const tables = db
       .query(

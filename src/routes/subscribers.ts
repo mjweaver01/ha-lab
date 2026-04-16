@@ -31,15 +31,15 @@ export async function handlePostSubscriber(req: Request, db: Database): Promise<
   }
 
   const location = db
-    .query("SELECT 1 AS ok FROM locations WHERE id = $id")
-    .get({ $id: o.location_id }) as { ok: number } | null;
+    .query("SELECT 1 AS ok FROM locations WHERE id = ?")
+    .get(o.location_id) as { ok: number } | null;
   if (!location) {
     return json({ error: "location not found" }, 404);
   }
 
   const ins = db.run(
-    "INSERT INTO subscribers (location_id, callback_url) VALUES ($l, $u)",
-    { $l: o.location_id, $u: o.callback_url },
+    "INSERT INTO subscribers (location_id, callback_url) VALUES (?, ?)",
+    [o.location_id, o.callback_url],
   );
   return json({ id: Number(ins.lastInsertRowid) }, 201);
 }

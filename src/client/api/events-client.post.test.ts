@@ -1,13 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { PostEventBody } from "../../types/events-api.ts";
-import * as eventsClient from "./events-client.ts";
-
-const postEvent = (eventsClient as { postEvent?: typeof fetch }).postEvent as (
-  baseUrl: string,
-  payload: PostEventBody,
-  fetchImpl?: typeof fetch,
-) => Promise<void>;
+import { postEvent, type FetchLike } from "./events-client.ts";
 
 describe("postEvent", () => {
   test("POST /events with JSON body", async () => {
@@ -17,7 +11,7 @@ describe("postEvent", () => {
       body: { top_label: "Speech", top_score: 0.91 },
     };
     const calls: Array<{ url: string; init: RequestInit | undefined }> = [];
-    const fetchImpl: typeof fetch = async (input, init) => {
+    const fetchImpl: FetchLike = async (input, init) => {
       calls.push({ url: String(input), init });
       return new Response(null, { status: 202 });
     };
@@ -39,7 +33,7 @@ describe("postEvent", () => {
       event_type: "media.video",
       body: { top_label: "Person", top_score: 0.8 },
     };
-    const fetchImpl: typeof fetch = async () =>
+    const fetchImpl: FetchLike = async () =>
       new Response("bad event", { status: 400 });
 
     await expect(postEvent("http://127.0.0.1:3000", payload, fetchImpl)).rejects.toThrow(
@@ -52,7 +46,7 @@ describe("postEvent", () => {
       location_id: 7,
       event_type: "media.audio",
     };
-    const fetchImpl: typeof fetch = async () => {
+    const fetchImpl: FetchLike = async () => {
       throw new Error("socket hang up");
     };
 

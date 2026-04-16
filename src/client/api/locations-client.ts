@@ -4,6 +4,9 @@ import type {
   UpdateLocationBody,
 } from "../../types/locations-api.ts";
 
+export type { LocationListItem } from "../../types/locations-api.ts";
+export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
 type ClientContext = {
   baseUrl: string;
   userId: number;
@@ -126,7 +129,7 @@ function userHeaders(userId: number, includeJson = false): HeadersInit {
 
 export async function fetchLocations(
   args: FetchLocationsArgs,
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<LocationListItem[]> {
   assertValidUserId(args.userId);
   const url = locationsUrl(args.baseUrl);
@@ -163,7 +166,7 @@ export async function fetchLocations(
 
 export async function createLocation(
   args: CreateLocationArgs,
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<LocationListItem> {
   assertValidUserId(args.userId);
   const url = locationsUrl(args.baseUrl);
@@ -189,7 +192,7 @@ export async function createLocation(
 
 export async function updateLocation(
   args: UpdateLocationArgs,
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<LocationListItem> {
   assertValidUserId(args.userId);
   assertValidLocationId(args.locationId);
@@ -216,7 +219,7 @@ export async function updateLocation(
 
 export async function archiveLocation(
   args: ArchiveLocationArgs,
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<LocationListItem> {
   assertValidUserId(args.userId);
   assertValidLocationId(args.locationId);
@@ -245,7 +248,7 @@ export async function archiveLocation(
 
 export async function restoreLocation(
   args: RestoreLocationArgs,
-  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  fetchImpl: FetchLike = (input, init) => globalThis.fetch(input, init),
 ): Promise<LocationListItem> {
   assertValidUserId(args.userId);
   assertValidLocationId(args.locationId);

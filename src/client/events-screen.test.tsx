@@ -6,10 +6,12 @@ import { EventsScreen } from "./events-screen.tsx";
 beforeAll(() => {
   const happyWindow = new GlobalWindow({ url: "http://localhost/" });
   globalThis.window = happyWindow as unknown as Window & typeof globalThis;
-  globalThis.document = happyWindow.document;
-  globalThis.HTMLElement = happyWindow.HTMLElement;
-  globalThis.HTMLVideoElement = happyWindow.HTMLVideoElement;
-  globalThis.navigator = happyWindow.navigator;
+  globalThis.document = happyWindow.document as unknown as Document;
+  globalThis.HTMLElement =
+    happyWindow.HTMLElement as unknown as typeof globalThis.HTMLElement;
+  globalThis.HTMLVideoElement =
+    happyWindow.HTMLVideoElement as unknown as typeof globalThis.HTMLVideoElement;
+  globalThis.navigator = happyWindow.navigator as unknown as Navigator;
 });
 
 describe("EventsScreen media E2E trace", () => {

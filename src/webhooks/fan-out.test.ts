@@ -20,27 +20,20 @@ describe("deliverEventToSubscribers", () => {
     const db = openDatabase(dbPath);
 
     const locationId = Number(
-      db.run("INSERT INTO locations (name, code) VALUES ($name, $code)", {
-        $name: "H",
-        $code: "h",
-      }).lastInsertRowid,
+      db.run("INSERT INTO locations (name, code) VALUES (?, ?)", ["H", "h"]).lastInsertRowid,
     );
-    db.run("INSERT INTO subscribers (location_id, callback_url) VALUES ($l, $u)", {
-      $l: locationId,
-      $u: "http://127.0.0.1:9/a",
-    });
-    db.run("INSERT INTO subscribers (location_id, callback_url) VALUES ($l, $u)", {
-      $l: locationId,
-      $u: "http://127.0.0.1:9/b",
-    });
+    db.run("INSERT INTO subscribers (location_id, callback_url) VALUES (?, ?)", [
+      locationId,
+      "http://127.0.0.1:9/a",
+    ]);
+    db.run("INSERT INTO subscribers (location_id, callback_url) VALUES (?, ?)", [
+      locationId,
+      "http://127.0.0.1:9/b",
+    ]);
 
     const ins = db.run(
-      "INSERT INTO events (location_id, event_type, body) VALUES ($l, $t, $b)",
-      {
-        $l: locationId,
-        $t: "test.event",
-        $b: JSON.stringify({ n: 1 }),
-      },
+      "INSERT INTO events (location_id, event_type, body) VALUES (?, ?, ?)",
+      [locationId, "test.event", JSON.stringify({ n: 1 })],
     );
     const eventId = Number(ins.lastInsertRowid);
 
@@ -60,9 +53,9 @@ describe("deliverEventToSubscribers", () => {
     expect(fetchCount).toBe(2);
     const rows = db
       .query(
-        "SELECT COUNT(*) AS c FROM event_deliveries WHERE event_id = $eid",
+        "SELECT COUNT(*) AS c FROM event_deliveries WHERE event_id = ?",
       )
-      .get({ $eid: eventId }) as { c: number };
+      .get(eventId) as { c: number };
     expect(rows.c).toBe(2);
     db.close();
   });
