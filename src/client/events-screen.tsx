@@ -19,6 +19,7 @@ import type { UseMediaCaptureOptions } from "./hooks/use-media-capture.ts";
 import {
   computeVirtualWindow,
   computeTimeframe,
+  filterEventsBySearch,
   filterEventsByTimeframe,
   paginateEvents,
   type EventsFilterState,
@@ -65,6 +66,23 @@ const POLL_INTERVALS = [
   { label: "30s", ms: 30_000 },
   { label: "60s", ms: 60_000 },
 ];
+const CHART_GRID_COLOR = "#30363d";
+const CHART_AXIS_COLOR = "#8b949e";
+const CHART_TOOLTIP_CONTENT_STYLE = {
+  backgroundColor: "#1a2332",
+  border: "1px solid #30363d",
+  borderRadius: "8px",
+  color: "#e6edf3",
+};
+const CHART_TOOLTIP_LABEL_STYLE = {
+  color: "#e6edf3",
+};
+const CHART_TOOLTIP_ITEM_STYLE = {
+  color: "#e6edf3",
+};
+const CHART_LEGEND_STYLE = {
+  color: "#e6edf3",
+};
 const ROW_HEIGHT = 132;
 const LIST_VIEWPORT_HEIGHT = 540;
 const OVERSCAN_ROWS = 4;
@@ -74,6 +92,7 @@ const DEFAULT_FILTER: EventsFilterState = {
   preset: "1h",
   customStart: "",
   customEnd: "",
+  searchQuery: "",
 };
 
 type FriendlyLogRow = {
@@ -281,10 +300,10 @@ export function EventsScreen({
   const listViewportRef = useRef<HTMLDivElement | null>(null);
   const [virtual, setVirtual] = useState({ start: 0, end: 0 });
 
-  const filteredEvents = useMemo(
-    () => filterEventsByTimeframe(events, filter),
-    [events, filter],
-  );
+  const filteredEvents = useMemo(() => {
+    const timeframeEvents = filterEventsByTimeframe(events, filter);
+    return filterEventsBySearch(timeframeEvents, filter.searchQuery);
+  }, [events, filter]);
   const pagination = useMemo(
     () => paginateEvents(filteredEvents, page, pageSize),
     [filteredEvents, page, pageSize],
@@ -302,7 +321,7 @@ export function EventsScreen({
 
   useEffect(() => {
     setPage(1);
-  }, [filter.mode, filter.preset, filter.customStart, filter.customEnd, pageSize]);
+  }, [filter.mode, filter.preset, filter.customStart, filter.customEnd, filter.searchQuery, pageSize]);
 
   useEffect(() => {
     const viewport = listViewportRef.current;
@@ -312,7 +331,15 @@ export function EventsScreen({
     setVirtual(
       computeVirtualWindow(totalRows, 0, LIST_VIEWPORT_HEIGHT, ROW_HEIGHT, OVERSCAN_ROWS),
     );
-  }, [safePage, totalRows, filter.mode, filter.preset, filter.customStart, filter.customEnd]);
+  }, [
+    safePage,
+    totalRows,
+    filter.mode,
+    filter.preset,
+    filter.customStart,
+    filter.customEnd,
+    filter.searchQuery,
+  ]);
 
   useEffect(() => {
     if (filter.mode !== "tail" || safePage !== 1) {
@@ -452,6 +479,110 @@ export function EventsScreen({
         </div>
       </div>
 
+      <div className="ui-panel ui-analytics">
+        <div className="ui-analytics__header">
+          <h2 className="ui-page-title ui-analytics__title">Analytics</h2>
+          <p className="ui-filter-summary">Follows current mode/timeframe settings.</p>
+        </div>
+
+        {analytics == null && analyticsLoading ? (
+          <p className="ui-filter-summary">Loading analytics...</p>
+        ) : null}
+        {analyticsError != null ? (
+          <p className="ui-alert ui-alert--error">Could not load analytics: {analyticsError}</p>
+        ) : null}
+        {!analyticsEnabled ? (
+          <p className="ui-filter-summary">Analytics unavailable (missing API context).</p>
+        ) : null}
+
+        {analytics != null && analyticsError == null ? (
+          <>
+            <p className="ui-filter-summary ui-analytics__summary">
+              {analytics.totals.events} events · {analytics.totals.distinctEventTypes} event types ·{" "}
+              {analytics.totals.confidenceSamples} confidence samples
+            </p>
+            <div className="ui-analytics__grid">
+              <div className="ui-analytics__card">
+                <h3 className="ui-analytics__card-title">Volume trend</h3>
+                {volumeSeries.length === 0 ? (
+                  <p className="ui-filter-summary">No event volume data in selected range.</p>
+                ) : (
+                  <div className="ui-analytics__chart">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <ComposedChart data={volumeSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
+                        <XAxis dataKey="label" stroke={CHART_AXIS_COLOR} />
+                        <YAxis stroke={CHART_AXIS_COLOR} />
+                        <Tooltip
+                          contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
+                          labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                          itemStyle={CHART_TOOLTIP_ITEM_STYLE}
+                        />
+                        <Legend wrapperStyle={CHART_LEGEND_STYLE} />
+                        <Bar dataKey="eventCount" name="Events" fill="#3d8bfd" />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+              <div className="ui-analytics__card">
+                <h3 className="ui-analytics__card-title">Event type distribution</h3>
+                {distributionSeries.length === 0 ? (
+                  <p className="ui-filter-summary">No event-type distribution data.</p>
+                ) : (
+                  <div className="ui-analytics__chart">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={distributionSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
+                        <XAxis dataKey="eventType" stroke={CHART_AXIS_COLOR} />
+                        <YAxis stroke={CHART_AXIS_COLOR} />
+                        <Tooltip
+                          contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
+                          labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                          itemStyle={CHART_TOOLTIP_ITEM_STYLE}
+                        />
+                        <Legend wrapperStyle={CHART_LEGEND_STYLE} />
+                        <Bar dataKey="count" name="Count" fill="#4ecdc4" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+              <div className="ui-analytics__card">
+                <h3 className="ui-analytics__card-title">Confidence trend</h3>
+                {confidenceSeries.length === 0 ? (
+                  <p className="ui-filter-summary">No confidence samples in selected range.</p>
+                ) : (
+                  <div className="ui-analytics__chart">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <ComposedChart data={confidenceSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
+                        <XAxis dataKey="label" stroke={CHART_AXIS_COLOR} />
+                        <YAxis stroke={CHART_AXIS_COLOR} domain={[0, 100]} />
+                        <Tooltip
+                          contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
+                          labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                          itemStyle={CHART_TOOLTIP_ITEM_STYLE}
+                        />
+                        <Legend wrapperStyle={CHART_LEGEND_STYLE} />
+                        <Line
+                          type="monotone"
+                          dataKey="avgConfidence"
+                          name="Avg confidence %"
+                          stroke="#ffd166"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : null}
+      </div>
+
       {locationId != null ? <MediaCaptureSection settings={captureSettings} /> : null}
 
       <div className="ui-panel ui-filter">
@@ -468,6 +599,22 @@ export function EventsScreen({
               <option value="tail">Live tail</option>
               <option value="timeframe">Timeframe</option>
             </select>
+          </label>
+          <label className="ui-field">
+            <span>Search logs</span>
+            <input
+              type="search"
+              value={filter.searchQuery}
+              placeholder="event type, transcript, JSON..."
+              onChange={(event) => {
+                const nextQuery = event.currentTarget.value;
+                setFilter((prev) => ({ ...prev, searchQuery: nextQuery }));
+              }}
+              onInput={(event) => {
+                const nextQuery = event.currentTarget.value;
+                setFilter((prev) => ({ ...prev, searchQuery: nextQuery }));
+              }}
+            />
           </label>
           <label className="ui-field">
             <span>Rows per page</span>
@@ -601,98 +748,6 @@ export function EventsScreen({
         <p className="ui-filter-summary">
           {timeframeSummary}
         </p>
-      </div>
-
-      <div className="ui-panel ui-analytics">
-        <div className="ui-analytics__header">
-          <h2 className="ui-page-title ui-analytics__title">Analytics</h2>
-          <p className="ui-filter-summary">Follows current mode/timeframe settings.</p>
-        </div>
-
-        {analytics == null && analyticsLoading ? (
-          <p className="ui-filter-summary">Loading analytics...</p>
-        ) : null}
-        {analyticsError != null ? (
-          <p className="ui-alert ui-alert--error">Could not load analytics: {analyticsError}</p>
-        ) : null}
-        {!analyticsEnabled ? (
-          <p className="ui-filter-summary">Analytics unavailable (missing API context).</p>
-        ) : null}
-
-        {analytics != null && analyticsError == null ? (
-          <>
-            <p className="ui-filter-summary ui-analytics__summary">
-              {analytics.totals.events} events · {analytics.totals.distinctEventTypes} event types ·{" "}
-              {analytics.totals.confidenceSamples} confidence samples
-            </p>
-            <div className="ui-analytics__grid">
-              <div className="ui-analytics__card">
-                <h3 className="ui-analytics__card-title">Volume trend</h3>
-                {volumeSeries.length === 0 ? (
-                  <p className="ui-filter-summary">No event volume data in selected range.</p>
-                ) : (
-                  <div className="ui-analytics__chart">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <ComposedChart data={volumeSeries}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
-                        <XAxis dataKey="label" stroke="#8b949e" />
-                        <YAxis stroke="#8b949e" />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="eventCount" name="Events" fill="#3d8bfd" />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
-              <div className="ui-analytics__card">
-                <h3 className="ui-analytics__card-title">Event type distribution</h3>
-                {distributionSeries.length === 0 ? (
-                  <p className="ui-filter-summary">No event-type distribution data.</p>
-                ) : (
-                  <div className="ui-analytics__chart">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={distributionSeries}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
-                        <XAxis dataKey="eventType" stroke="#8b949e" />
-                        <YAxis stroke="#8b949e" />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" name="Count" fill="#4ecdc4" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
-              <div className="ui-analytics__card">
-                <h3 className="ui-analytics__card-title">Confidence trend</h3>
-                {confidenceSeries.length === 0 ? (
-                  <p className="ui-filter-summary">No confidence samples in selected range.</p>
-                ) : (
-                  <div className="ui-analytics__chart">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <ComposedChart data={confidenceSeries}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
-                        <XAxis dataKey="label" stroke="#8b949e" />
-                        <YAxis stroke="#8b949e" domain={[0, 100]} />
-                        <Tooltip />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="avgConfidence"
-                          name="Avg confidence %"
-                          stroke="#ffd166"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        ) : null}
       </div>
 
       {error != null && error !== "" ? (

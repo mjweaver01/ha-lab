@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { fireEvent, render, within } from "@testing-library/react";
+import { fireEvent, render, waitFor, within } from "@testing-library/react";
 import { GlobalWindow } from "happy-dom";
 import { EventsScreen } from "./events-screen.tsx";
 
@@ -192,5 +192,63 @@ describe("EventsScreen media E2E trace", () => {
     );
 
     expect(within(container).queryByText("Media capture")).toBeNull();
+  });
+
+  test("filters rendered logs by search query", async () => {
+    const events = [
+      {
+        id: 301,
+        location_id: 1,
+        event_type: "media.transcript",
+        created_at: "2026-04-16T12:00:00.000Z",
+        body: {
+          transcript: "person at front door",
+          confidence: 0.92,
+        },
+      },
+      {
+        id: 302,
+        location_id: 1,
+        event_type: "media.vision",
+        created_at: "2026-04-16T12:00:10.000Z",
+        body: {
+          top_label: "car",
+          top_score: 0.73,
+        },
+      },
+    ];
+
+    const { container } = render(
+      <EventsScreen
+        events={events}
+        error={null}
+        loading={false}
+        onRefresh={() => {}}
+        newIds={new Set()}
+        locationId={1}
+        pollMs={3000}
+        captureSettings={{
+          audioLevelBoost: 8,
+          audioActivityThreshold: 0.2,
+          videoActivityThreshold: 0.25,
+          videoSampleCadenceMs: 1000,
+          learningMatchThreshold: 0.65,
+        }}
+        onOpenMediaSettings={() => {}}
+      />,
+    );
+
+    const searchInput = within(container).getByRole("searchbox");
+    fireEvent.input(searchInput, { target: { value: "front door" } });
+    expect((searchInput as HTMLInputElement).value).toBe("front door");
+
+    const list = container.querySelector(".ui-list") as HTMLElement | null;
+    if (list == null) {
+      throw new Error("expected log list container");
+    }
+    await waitFor(() => {
+      expect(list.querySelectorAll(".ui-list-row").length).toBe(1);
+    });
+    expect(within(list).getByText("person at front door")).toBeDefined();
   });
 });

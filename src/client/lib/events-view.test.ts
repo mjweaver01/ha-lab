@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type { EventListItem } from "../api/events-client.ts";
 import {
   computeVirtualWindow,
+  filterEventsBySearch,
   filterEventsByTimeframe,
   paginateEvents,
   type EventsFilterState,
@@ -28,6 +29,7 @@ describe("events-view", () => {
       preset: "1h",
       customStart: "",
       customEnd: "",
+      searchQuery: "",
     };
     const result = filterEventsByTimeframe(events, filter, Date.parse("2026-01-01T00:15:00.000Z"));
     expect(result.map((event) => event.id)).toEqual([1, 2]);
@@ -45,6 +47,7 @@ describe("events-view", () => {
       preset: "15m",
       customStart: "",
       customEnd: "",
+      searchQuery: "",
     };
     const result = filterEventsByTimeframe(events, filter, now);
     expect(result.map((event) => event.id)).toEqual([3]);
@@ -56,6 +59,35 @@ describe("events-view", () => {
     expect(result.totalPages).toBe(3);
     expect(result.page).toBe(3);
     expect(result.pageEvents.map((event) => event.id)).toEqual([5]);
+  });
+
+  test("filterEventsBySearch matches event type and body fields", () => {
+    const events: EventListItem[] = [
+      {
+        id: 1,
+        location_id: 1,
+        event_type: "media.transcript",
+        created_at: "2026-01-01T00:00:00.000Z",
+        body: {
+          transcript: "hello from front door",
+          confidence: 0.88,
+        },
+      },
+      {
+        id: 2,
+        location_id: 2,
+        event_type: "media.vision",
+        created_at: "2026-01-01T00:01:00.000Z",
+        body: {
+          top_label: "person",
+          top_score: 0.77,
+        },
+      },
+    ];
+
+    expect(filterEventsBySearch(events, "front door").map((event) => event.id)).toEqual([1]);
+    expect(filterEventsBySearch(events, "media.vision").map((event) => event.id)).toEqual([2]);
+    expect(filterEventsBySearch(events, "").map((event) => event.id)).toEqual([1, 2]);
   });
 
   test("computeVirtualWindow computes overscanned bounds", () => {

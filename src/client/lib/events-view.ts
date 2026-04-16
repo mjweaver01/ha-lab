@@ -18,6 +18,7 @@ export type EventsFilterState = {
   preset: TimeRangePreset;
   customStart: string;
   customEnd: string;
+  searchQuery: string;
 };
 
 export type VirtualWindow = {
@@ -96,6 +97,41 @@ export function filterEventsByTimeframe(
       return false;
     }
     return true;
+  });
+}
+
+function stringifyBody(body: unknown): string {
+  if (body == null) {
+    return "";
+  }
+  if (typeof body === "string") {
+    return body;
+  }
+  try {
+    return JSON.stringify(body);
+  } catch {
+    return "";
+  }
+}
+
+export function filterEventsBySearch(
+  events: readonly EventListItem[],
+  query: string,
+): EventListItem[] {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") {
+    return [...events];
+  }
+  return events.filter((event) => {
+    const haystack = [
+      event.event_type,
+      event.created_at,
+      String(event.location_id),
+      stringifyBody(event.body),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(needle);
   });
 }
 

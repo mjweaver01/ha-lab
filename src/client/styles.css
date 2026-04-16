@@ -275,6 +275,7 @@ body {
 .ui-field select,
 .ui-field input {
   font-size: var(--font-body);
+  min-height: 40px;
   border: 1px solid #30363d;
   border-radius: var(--space-xs);
   background: var(--color-dominant);
@@ -282,7 +283,7 @@ body {
 }
 
 .ui-field select {
-  padding: var(--space-sm) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   padding-right: 2.25rem;
   appearance: none;
   -webkit-appearance: none;
@@ -298,7 +299,7 @@ body {
 }
 
 .ui-field input {
-  padding: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
 }
 
 .ui-field input[type="datetime-local"] {
