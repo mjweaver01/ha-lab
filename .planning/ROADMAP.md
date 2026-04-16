@@ -34,7 +34,11 @@ v1.2 introduces location-first operations across the app so users can manage loc
   2. User can create and edit a location with required metadata and see changes reflected in the hub.
   3. User can archive a location, and archived locations are removed from default active views while still available for audit history.
   4. User can navigate from the locations hub into a specific location detail page.
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 08-01-PLAN.md — Build location lifecycle schema, repository, routes, and access-scope tests.
+- [ ] 08-02-PLAN.md — Implement dense locations hub, shared create/edit form UX, and lifecycle UI tests.
+- [ ] 08-03-PLAN.md — Wire app-shell hub/detail navigation and add integration navigation regression tests.
 **UI hint**: yes
 
 ### Phase 9: Location detail visibility
@@ -92,7 +96,7 @@ v1.2 introduces location-first operations across the app so users can manage loc
 | 5. Local media capture | 2/2 | Complete | 2026-04-15 |
 | 6. Media signals -> events | 3/3 | Complete | 2026-04-15 |
 | 7. E2E media trace | 1/1 | Complete | 2026-04-15 |
-| 8. Locations hub and lifecycle | 0/TBD | Not started | - |
+| 8. Locations hub and lifecycle | 0/3 | Not started | - |
 | 9. Location detail visibility | 0/TBD | Not started | - |
 | 10. Location RBAC and delegated access | 0/TBD | Not started | - |
 | 11. Location subscription administration | 0/TBD | Not started | - |

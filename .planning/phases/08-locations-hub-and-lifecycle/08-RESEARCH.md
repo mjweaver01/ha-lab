@@ -299,22 +299,19 @@ return <input value={name} onChange={(e) => setName(e.currentTarget.value)} />;
 | A3 | Optional archive metadata fields (`archived_by`, `archive_reason`) should be introduced now rather than later. | Architecture Patterns | Could introduce unnecessary migration complexity if audit metadata is intentionally deferred. |
 | A4 | Full server-side policy shape for roles is intentionally deferred to phase 10 while still enforcing basic access scope now. | Summary / Security | If policy expectations are stricter in phase 8, plan underestimates scope. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What user identity source should phase 8 use for "locations user can access"?**
-   - What we know: `home_members` exists and no full RBAC policy layer is implemented yet [VERIFIED: `001_initial.sql`, roadmap].
-   - What's unclear: canonical actor resolution mechanism for request context (header, session, fixed dev user, etc.) [VERIFIED: no auth middleware found in `src/server.ts`].
-   - Recommendation: lock a temporary actor-context contract in planning (e.g., dev header/user ID injection) and mark for replacement in phase 10.
+   - **Decision:** use an explicit `x-actor-id` request header as the temporary actor contract in phase 8 route handlers, with test/dev helpers setting this value; return `401` when missing/invalid and `403` when actor is not allowed for the requested location.
+   - **Rationale:** there is no existing auth middleware in `src/server.ts`, and this approach keeps access checks server-enforced now while preserving a clean replacement seam for phase 10 RBAC/session integration.
 
 2. **Should `code/slug` be unique globally or unique only among active locations?**
-   - What we know: optional `code/slug` is included by decision D-10 [VERIFIED: context].
-   - What's unclear: uniqueness rule impacts DB constraints and archive/restore behavior.
-   - Recommendation: choose one explicit uniqueness policy before migration task breakdown.
+   - **Decision:** enforce uniqueness globally (including archived rows) for both `code` and `slug` when present.
+   - **Rationale:** global uniqueness keeps URLs and references stable, avoids restore-time collisions, and simplifies DB constraints/validation logic for create + edit.
 
 3. **How deep should phase 8 detail screen go beyond navigation entry?**
-   - What we know: VIEW-02/03 are in phase 9, so phase 8 detail is primarily entry scaffold [VERIFIED: roadmap + requirements].
-   - What's unclear: whether minimal metadata display is required now.
-   - Recommendation: implement lightweight detail shell with selected location summary only, defer scoped lists to phase 9.
+   - **Decision:** implement a lightweight detail shell with location summary metadata and lifecycle action affordances only; defer scoped member/visibility/event sections to phase 9.
+   - **Rationale:** satisfies `VIEW-01` navigation and lifecycle continuity in phase 8 without pulling in phase-9 detail scope.
 
 ## Environment Availability
 
