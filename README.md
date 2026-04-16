@@ -9,19 +9,6 @@ The system combines:
 - A simulated node event producer
 - A React events interface with live media signal support
 
-## Current Product Status
-
-As of 2026-04-15:
-
-- Milestone `v1.0` shipped as the baseline learning prototype (tag: `v1.0`)
-- Milestone `v1.1` delivered:
-  - Local media capture UX (Phase 5)
-  - Media signal to event pipeline with runtime verification (Phase 6)
-  - End-to-end media trace validation (Phase 7)
-- Next planned work is milestone `v1.2` scoping and planning
-
-Authoritative planning, requirements, and milestone notes are maintained in `.planning/PROJECT.md`.
-
 ## Key Capabilities
 
 - Media settings and capture flows in the client
