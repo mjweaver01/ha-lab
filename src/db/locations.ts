@@ -77,19 +77,15 @@ export function createLocation(
   const tx = db.transaction(() => {
     const ins = db.run(
       `INSERT INTO locations (name, code, notes, updated_at)
-       VALUES ($name, $code, $notes, datetime('now'))`,
-      {
-        $name: params.body.name,
-        $code: params.body.code ?? null,
-        $notes: params.body.notes ?? null,
-      },
+       VALUES (?, ?, ?, datetime('now'))`,
+      [params.body.name, params.body.code ?? null, params.body.notes ?? null],
     );
     const locationId = Number(ins.lastInsertRowid);
 
     db.run(
       `INSERT INTO location_members (location_id, user_id)
-       VALUES ($locationId, $userId)`,
-      { $locationId: locationId, $userId: params.userId },
+       VALUES (?, ?)`,
+      [locationId, params.userId],
     );
 
     return getLocationForUser(db, { userId: params.userId, locationId });
@@ -108,23 +104,23 @@ export function updateLocation(
 ): LocationListItem | null {
   const run = db.run(
     `UPDATE locations
-     SET name = $name,
-         code = $code,
-         notes = $notes,
+     SET name = ?,
+         code = ?,
+         notes = ?,
          updated_at = datetime('now')
-     WHERE id = $locationId
+     WHERE id = ?
        AND EXISTS (
          SELECT 1 FROM location_members lm
          WHERE lm.location_id = locations.id
-           AND lm.user_id = $userId
+           AND lm.user_id = ?
        )`,
-    {
-      $locationId: params.locationId,
-      $userId: params.userId,
-      $name: params.body.name,
-      $code: params.body.code ?? null,
-      $notes: params.body.notes ?? null,
-    },
+    [
+      params.body.name,
+      params.body.code ?? null,
+      params.body.notes ?? null,
+      params.locationId,
+      params.userId,
+    ],
   );
 
   if (run.changes === 0) {
@@ -144,21 +140,22 @@ export function archiveLocation(
   const run = db.run(
     `UPDATE locations
      SET archived_at = datetime('now'),
-         archived_by = $userId,
-         archive_reason = $archiveReason,
+         archived_by = ?,
+         archive_reason = ?,
          updated_at = datetime('now')
-     WHERE id = $locationId
+     WHERE id = ?
        AND archived_at IS NULL
        AND EXISTS (
          SELECT 1 FROM location_members lm
          WHERE lm.location_id = locations.id
-           AND lm.user_id = $userId
+           AND lm.user_id = ?
        )`,
-    {
-      $locationId: params.locationId,
-      $userId: params.userId,
-      $archiveReason: params.archiveReason ?? null,
-    },
+    [
+      params.userId,
+      params.archiveReason ?? null,
+      params.locationId,
+      params.userId,
+    ],
   );
 
   if (run.changes === 0) {
@@ -181,17 +178,14 @@ export function restoreLocation(
          archived_by = NULL,
          archive_reason = NULL,
          updated_at = datetime('now')
-     WHERE id = $locationId
+     WHERE id = ?
        AND archived_at IS NOT NULL
        AND EXISTS (
          SELECT 1 FROM location_members lm
          WHERE lm.location_id = locations.id
-           AND lm.user_id = $userId
+           AND lm.user_id = ?
        )`,
-    {
-      $locationId: params.locationId,
-      $userId: params.userId,
-    },
+    [params.locationId, params.userId],
   );
 
   if (run.changes === 0) {
