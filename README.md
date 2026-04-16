@@ -13,8 +13,7 @@ The system combines:
 
 As of 2026-04-15:
 
-- `v1.0` shipped as the baseline learning prototype (tag: `v1.0`)
-- Milestone `v1.1` (Local media events) is complete
+- Milestone `v1.0` shipped as the baseline learning prototype (tag: `v1.0`)
 - Milestone `v1.1` delivered:
   - Local media capture UX (Phase 5)
   - Media signal to event pipeline with runtime verification (Phase 6)
