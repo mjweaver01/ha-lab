@@ -9,6 +9,7 @@ import {
 
 export type LocationDetailScreenProps = {
   mode: "create" | "edit";
+  locationId?: number | null;
   initialForm?: Partial<LocationFormState>;
   submitLabel?: string;
   onBackToLocations: () => void;
@@ -24,6 +25,7 @@ function buildInitialForm(initialForm: Partial<LocationFormState> | undefined): 
 
 export function LocationDetailScreen({
   mode,
+  locationId,
   initialForm,
   submitLabel,
   onBackToLocations,
@@ -44,6 +46,9 @@ export function LocationDetailScreen({
         </button>
       </div>
       <h1 className="events-page__title">{pageTitle}</h1>
+      {mode === "edit" && locationId != null ? (
+        <p className="events-page__meta">Location ID: {locationId}</p>
+      ) : null}
 
       {requestError != null ? (
         <div className="events-error" role="alert">

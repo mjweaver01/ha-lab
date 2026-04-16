@@ -10,6 +10,7 @@ export type LocationsScreenProps = {
   baseUrl: string;
   userId: number;
   onOpenLocation: (locationId: number) => void;
+  onCreateLocation?: () => void;
   api?: {
     fetchLocations: typeof fetchLocations;
     archiveLocation: typeof archiveLocation;
@@ -43,6 +44,7 @@ export function LocationsScreen({
   baseUrl,
   userId,
   onOpenLocation,
+  onCreateLocation,
   api = {
     fetchLocations,
     archiveLocation,
@@ -127,7 +129,13 @@ export function LocationsScreen({
           <p className="events-page__meta">Manage lifecycle state and open location detail surfaces.</p>
         </div>
         <div className="events-page__header-actions">
-          <button type="button" className="events-btn locations-create-btn">
+          <button
+            type="button"
+            className="events-btn locations-create-btn"
+            onClick={() => {
+              onCreateLocation?.();
+            }}
+          >
             Create location
           </button>
         </div>
