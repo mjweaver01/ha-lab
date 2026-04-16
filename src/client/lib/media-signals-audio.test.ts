@@ -61,4 +61,30 @@ describe("createMediaSignalPipeline audio", () => {
 
     expect(emitted).toHaveLength(1);
   });
+
+  test("includes transcript metadata when provided", async () => {
+    const emitted: Array<{ event_type: string; body: Record<string, unknown> }> = [];
+    const pipeline = createMediaSignalPipeline({
+      locationId: 1,
+      audioThreshold: 0.5,
+      emit: (event) => {
+        emitted.push(event as { event_type: string; body: Record<string, unknown> });
+      },
+    });
+
+    await pipeline.handleAudioClassification({
+      candidates: [{ label: "speech", score: 0.9 }],
+      transcript: "bonjour tout le monde",
+      recognitionLanguage: "fr-FR",
+      transcriptConfidence: 0.88,
+    });
+
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0]?.body).toMatchObject({
+      source: "audio",
+      transcript: "bonjour tout le monde",
+      recognition_language: "fr-FR",
+      transcript_confidence: 0.88,
+    });
+  });
 });

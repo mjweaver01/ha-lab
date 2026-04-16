@@ -64,16 +64,14 @@ describe("EventsScreen media E2E trace", () => {
       {
         id: 201,
         location_id: 1,
-        event_type: "media.detected",
+        event_type: "media.transcript",
         created_at: "2026-04-16T12:00:00.000Z",
         body: {
-          rule_name: "Person alert",
+          source: "audio",
+          transcript: "person at front door",
+          recognition_language: "en-US",
           confidence: 0.92,
-          match_score: 0.92,
-          candidates: [
-            { label: "person", score: 0.92 },
-            { label: "motion", score: 0.7 },
-          ],
+          is_final: true,
         },
       },
     ];
@@ -98,13 +96,13 @@ describe("EventsScreen media E2E trace", () => {
       />,
     );
 
-    expect(within(container).getByText("rule name")).toBeDefined();
-    expect(within(container).getByText("Person alert")).toBeDefined();
+    expect(within(container).getByText("recognition language")).toBeDefined();
+    expect(within(container).getByText("person at front door")).toBeDefined();
     expect(within(container).getByText("confidence")).toBeDefined();
-    expect(within(container).getByText("person (92%), motion (70%)")).toBeDefined();
+    expect(within(container).getByText("92%")).toBeDefined();
     fireEvent.click(within(container).getByText("Nice"));
-    expect(within(container).getByText(/"rule_name": "Person alert"/)).toBeDefined();
-    expect(queryByText("rule name")).toBeNull();
+    expect(within(container).getByText(/"transcript": "person at front door"/)).toBeDefined();
+    expect(queryByText("recognition language")).toBeNull();
   });
 
   test("toggles live tail button label on click", () => {

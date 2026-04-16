@@ -1,6 +1,7 @@
 export const MEDIA_AUDIO_EVENT_TYPE = "media.audio";
 export const MEDIA_VIDEO_EVENT_TYPE = "media.video";
-export const MEDIA_DETECTED_EVENT_TYPE = "media.detected";
+export const MEDIA_TRANSCRIPT_EVENT_TYPE = "media.transcript";
+export const MEDIA_VISION_EVENT_TYPE = "media.vision";
 
 export type MediaCandidate = {
   label: string;
@@ -12,19 +13,23 @@ export type MediaEventBody = {
   top_score: number;
   candidates?: MediaCandidate[];
   source: "audio" | "video";
+  transcript?: string;
+  recognition_language?: string;
+  transcript_confidence?: number;
 };
 
-export type MediaDetectedEventBody = {
-  source: "audio" | "video";
-  rule_id: string;
-  rule_name: string;
-  rule_kind: "keyword" | "action";
-  rule_scope: "global" | "location";
-  rule_location_id: number | null;
-  match_value: string;
+export type MediaTranscriptEventBody = {
+  source: "audio";
+  transcript: string;
   confidence: number;
-  match_score: number;
-  notify: boolean;
+  recognition_language?: string;
+  is_final: boolean;
+};
+
+export type MediaVisionEventBody = {
+  source: "video";
+  top_label: string;
+  top_score: number;
   candidates?: MediaCandidate[];
 };
 
@@ -66,6 +71,9 @@ function buildMediaEventBody(
   topLabel: string,
   topScore: number,
   candidates?: readonly MediaCandidate[],
+  transcript?: string,
+  recognitionLanguage?: string,
+  transcriptConfidence?: number,
 ): MediaEventBody {
   const normalizedCandidates = normalizeCandidates(candidates);
   const body: MediaEventBody = {
@@ -77,6 +85,15 @@ function buildMediaEventBody(
   if (normalizedCandidates) {
     body.candidates = normalizedCandidates;
   }
+  if (transcript != null && transcript.trim() !== "") {
+    body.transcript = transcript.trim();
+  }
+  if (recognitionLanguage != null && recognitionLanguage.trim() !== "") {
+    body.recognition_language = recognitionLanguage.trim();
+  }
+  if (typeof transcriptConfidence === "number" && Number.isFinite(transcriptConfidence)) {
+    body.transcript_confidence = clampScore(transcriptConfidence);
+  }
 
   return body;
 }
@@ -85,8 +102,19 @@ export function buildAudioEventBody(
   topLabel: string,
   topScore: number,
   candidates?: readonly MediaCandidate[],
+  transcript?: string,
+  recognitionLanguage?: string,
+  transcriptConfidence?: number,
 ): MediaEventBody {
-  return buildMediaEventBody("audio", topLabel, topScore, candidates);
+  return buildMediaEventBody(
+    "audio",
+    topLabel,
+    topScore,
+    candidates,
+    transcript,
+    recognitionLanguage,
+    transcriptConfidence,
+  );
 }
 
 export function buildVideoEventBody(
@@ -97,31 +125,35 @@ export function buildVideoEventBody(
   return buildMediaEventBody("video", topLabel, topScore, candidates);
 }
 
-export function buildDetectedEventBody(args: {
-  source: "audio" | "video";
-  ruleId: string;
-  ruleName: string;
-  ruleKind: "keyword" | "action";
-  ruleScope: "global" | "location";
-  ruleLocationId: number | null;
-  matchValue: string;
-  matchScore: number;
-  notify: boolean;
-  candidates?: readonly MediaCandidate[];
-}): MediaDetectedEventBody {
-  const body: MediaDetectedEventBody = {
-    source: args.source,
-    rule_id: args.ruleId.trim(),
-    rule_name: trimLabel(args.ruleName),
-    rule_kind: args.ruleKind,
-    rule_scope: args.ruleScope,
-    rule_location_id: args.ruleLocationId,
-    match_value: trimLabel(args.matchValue),
-    confidence: clampScore(args.matchScore),
-    match_score: clampScore(args.matchScore),
-    notify: args.notify,
+export function buildTranscriptEventBody(args: {
+  transcript: string;
+  confidence: number;
+  recognitionLanguage?: string;
+  isFinal: boolean;
+}): MediaTranscriptEventBody {
+  const body: MediaTranscriptEventBody = {
+    source: "audio",
+    transcript: args.transcript.trim(),
+    confidence: clampScore(args.confidence),
+    is_final: args.isFinal,
   };
-  const normalizedCandidates = normalizeCandidates(args.candidates);
+  if (args.recognitionLanguage != null && args.recognitionLanguage.trim() !== "") {
+    body.recognition_language = args.recognitionLanguage.trim();
+  }
+  return body;
+}
+
+export function buildVisionEventBody(
+  topLabel: string,
+  topScore: number,
+  candidates?: readonly MediaCandidate[],
+): MediaVisionEventBody {
+  const body: MediaVisionEventBody = {
+    source: "video",
+    top_label: trimLabel(topLabel),
+    top_score: clampScore(topScore),
+  };
+  const normalizedCandidates = normalizeCandidates(candidates);
   if (normalizedCandidates != null) {
     body.candidates = normalizedCandidates;
   }

@@ -86,6 +86,7 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
     newIds,
     enabled: mediaSettings.notifications.enabled,
     userId,
+    detectionRules: mediaSettings.detectionRules,
   });
 
   return (
@@ -113,7 +114,6 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                   videoActivityThreshold: mediaSettings.videoThreshold,
                   videoSampleCadenceMs: mediaSettings.videoCadenceMs,
                   learningMatchThreshold: mediaSettings.learningThreshold,
-                  detectionRules: mediaSettings.detectionRules,
                 }}
                 onOpenMediaSettings={() => {
                   navigate("/settings/media");
@@ -286,7 +286,6 @@ function LocationEventsRoute({
           videoActivityThreshold: mediaSettings.videoThreshold,
           videoSampleCadenceMs: mediaSettings.videoCadenceMs,
           learningMatchThreshold: mediaSettings.learningThreshold,
-          detectionRules: mediaSettings.detectionRules,
           locationId: parsedLocationId,
           orchestratorBaseUrl: baseUrl,
         }}

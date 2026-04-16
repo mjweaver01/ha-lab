@@ -29,9 +29,12 @@ describe("media detection rules", () => {
       transcript: "Can you help me please",
       confidence: 0.7,
       locationId: 12,
+      recognitionLanguage: "fr-FR",
     });
     expect(matches).toHaveLength(1);
     expect(matches[0]?.rule.id).toBe("rule-1");
+    expect(matches[0]?.transcript).toBe("Can you help me please");
+    expect(matches[0]?.recognitionLanguage).toBe("fr-FR");
   });
 
   test("location-scoped rule only matches same location", () => {

@@ -57,7 +57,7 @@ See PROJECT.md Key Decisions. Recent roadmap decisions:
 - [Phase 08]: Route app-shell navigation through explicit screen and selectedLocationId state for deterministic hub-detail transitions.
 - [Phase 08]: Guard browser bootstrap in main.tsx with a document check so integration tests can import App safely.
 - [Post-Phase 08]: Route media detection notifications through app-level polling so alerts fire on any page.
-- [Post-Phase 08]: Persist explicit media.detected confidence and display it in both friendly logs and browser notifications.
+- [Post-Phase 08]: Persist explicit media transcript/vision confidence and display it in friendly logs and browser notifications.
 - [Phase 09 planning]: Prioritize Recharts event analytics and Capacitor shell setup before deferred location-detail visibility expansion.
 
 ### Pending Todos

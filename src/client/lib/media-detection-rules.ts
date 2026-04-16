@@ -7,6 +7,8 @@ export type MediaRuleMatch = {
   score: number;
   source: "audio" | "video";
   candidates: MediaCandidate[];
+  transcript?: string;
+  recognitionLanguage?: string;
 };
 
 function normalizeText(value: string): string {
@@ -55,6 +57,7 @@ export function evaluateKeywordRules(args: {
   transcript: string;
   confidence: number;
   locationId: number;
+  recognitionLanguage?: string;
 }): MediaRuleMatch[] {
   const out: MediaRuleMatch[] = [];
   const safeConfidence = Number.isFinite(args.confidence)
@@ -76,6 +79,8 @@ export function evaluateKeywordRules(args: {
       score: safeConfidence,
       source: "audio",
       candidates: [{ label: args.transcript.trim(), score: safeConfidence }],
+      transcript: args.transcript.trim(),
+      recognitionLanguage: args.recognitionLanguage?.trim() || undefined,
     });
   }
   return out;

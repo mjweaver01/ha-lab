@@ -134,12 +134,35 @@ function formatFriendlyBody(body: unknown): FriendlyLogRow[] {
 
   const payload = body as Record<string, unknown>;
   const entries = Object.entries(payload);
+  const preferredOrder = [
+    "source",
+    "rule_id",
+    "rule_name",
+    "rule_kind",
+    "rule_scope",
+    "rule_location_id",
+    "match_value",
+    "confidence",
+    "match_score",
+    "recognition_language",
+    "transcript",
+    "notify",
+    "candidates",
+  ];
+  const sortedEntries = [...entries].sort((a, b) => {
+    const ia = preferredOrder.indexOf(a[0]);
+    const ib = preferredOrder.indexOf(b[0]);
+    if (ia === -1 && ib === -1) return a[0].localeCompare(b[0]);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
   const hasExplicitConfidence =
     typeof payload.confidence === "number" && Number.isFinite(payload.confidence);
-  if (entries.length === 0) {
+  if (sortedEntries.length === 0) {
     return [{ key: "payload", value: "No payload fields" }];
   }
-  return entries
+  return sortedEntries
     .slice(0, 6)
     .map(([key, value]) => {
       if (key === "top_score" && typeof value === "number" && Number.isFinite(value)) {

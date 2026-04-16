@@ -36,7 +36,7 @@ describe("events analytics panel", () => {
             event_type: null,
           },
           volumeTrend: [{ bucket_start: "2026-01-01T00:00:00.000Z", event_count: 3 }],
-          eventTypeDistribution: [{ event_type: "media.detected", event_count: 3, percent: 100 }],
+          eventTypeDistribution: [{ event_type: "media.transcript", event_count: 3, percent: 100 }],
           confidenceTrend: [
             { bucket_start: "2026-01-01T00:00:00.000Z", average_confidence: 0.83, sample_count: 3 },
           ],
@@ -113,8 +113,8 @@ describe("events analytics panel", () => {
           },
           volumeTrend: [{ bucket_start: "2026-01-01T00:00:00.000Z", event_count: 4 }],
           eventTypeDistribution: [
-            { event_type: "media.detected", event_count: 3, percent: 75 },
-            { event_type: "media.audio", event_count: 1, percent: 25 },
+            { event_type: "media.vision", event_count: 3, percent: 75 },
+            { event_type: "media.transcript", event_count: 1, percent: 25 },
           ],
           confidenceTrend: [
             { bucket_start: "2026-01-01T00:00:00.000Z", average_confidence: 0.81, sample_count: 2 },

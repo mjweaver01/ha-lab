@@ -16,6 +16,9 @@ export type EmitMediaSignalEvent = (event: MediaSignalEvent) => Promise<void> | 
 
 export type MediaClassifierResult = {
   candidates?: readonly MediaCandidate[];
+  transcript?: string;
+  recognitionLanguage?: string;
+  transcriptConfidence?: number;
 };
 
 export type MediaSignalPipeline = {
@@ -84,7 +87,14 @@ export function createMediaSignalPipeline({
       // Audio accepted cadence is 3s (3000ms) between emits (D-03).
       await emit({
         event_type: MEDIA_AUDIO_EVENT_TYPE,
-        body: buildAudioEventBody(top.label, top.score, result.candidates),
+        body: buildAudioEventBody(
+          top.label,
+          top.score,
+          result.candidates,
+          result.transcript,
+          result.recognitionLanguage,
+          result.transcriptConfidence,
+        ),
       });
       throttle.markAudioEmitted(now);
       return true;

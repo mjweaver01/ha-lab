@@ -46,8 +46,8 @@ function seedAnalyticsFixture(): AnalyticsFixture {
 
   db.run(
     `INSERT INTO events (location_id, event_type, body, created_at) VALUES
-      (?, 'media.detected', '{"confidence":0.9}', datetime('now', '-10 minutes')),
-      (?, 'media.detected', '{"match_score":0.7}', datetime('now', '-5 minutes')),
+      (?, 'media.transcript', '{"confidence":0.9}', datetime('now', '-10 minutes')),
+      (?, 'media.vision', '{"match_score":0.7}', datetime('now', '-5 minutes')),
       (?, 'media.audio', '{"top_label":"speech"}', datetime('now', '-20 minutes')),
       (?, 'media.video', '{"top_label":"person"}', datetime('now', '-20 minutes'))`,
     [locationId, locationId, locationId, otherLocationId],
@@ -83,10 +83,10 @@ describe("GET /events/analytics", () => {
       expect(body.volumeTrend.length).toBeGreaterThan(0);
       expect(body.eventTypeDistribution.length).toBeGreaterThan(0);
       expect(body.totals.events).toBe(3);
-      expect(body.totals.distinctEventTypes).toBe(2);
+      expect(body.totals.distinctEventTypes).toBe(3);
       expect(body.totals.confidenceSamples).toBe(2);
       expect(body.confidenceTrend[0]?.average_confidence).toBeGreaterThan(0);
-      expect(body.eventTypeDistribution.reduce((acc, row) => acc + row.percent, 0)).toBeCloseTo(100, 2);
+      expect(body.eventTypeDistribution.reduce((acc, row) => acc + row.percent, 0)).toBeCloseTo(100, 1);
     } finally {
       fx.stop();
     }

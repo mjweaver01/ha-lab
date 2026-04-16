@@ -51,6 +51,7 @@ export function MediaSettingsPage({
   const [ruleNotify, setRuleNotify] = useState(true);
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [ruleStatus, setRuleStatus] = useState<string | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<string>(() => {
     if (typeof Notification === "undefined") {
       return "unsupported";
@@ -66,7 +67,6 @@ export function MediaSettingsPage({
       videoSampleCadenceMs: settings.videoCadenceMs,
       learningMatchThreshold: settings.learningThreshold,
       learnedVideoSamples: learnedSamples,
-      detectionRules: settings.detectionRules,
     });
 
   const upsertLearningSample = (sample: LearnedVideoSample) => {
@@ -128,10 +128,35 @@ export function MediaSettingsPage({
   const requestNotificationPermission = async () => {
     if (typeof Notification === "undefined") {
       setPermissionStatus("unsupported");
+      setNotificationStatus("Notifications are not supported in this browser.");
       return;
     }
     const permission = await Notification.requestPermission();
     setPermissionStatus(permission);
+    if (permission !== "granted") {
+      setNotificationStatus("Browser permission is required before test notifications can be sent.");
+    }
+  };
+
+  const sendTestNotification = () => {
+    if (typeof Notification === "undefined") {
+      setNotificationStatus("Notifications are not supported in this browser.");
+      return;
+    }
+    if (Notification.permission !== "granted") {
+      setNotificationStatus("Permission is not granted. Click 'Request browser permission' first.");
+      return;
+    }
+    try {
+      void new Notification("Home Assistant Lab test", {
+        body: `Notifications are working on this browser (user ${userId}).`,
+        tag: `ha-test-${userId}-${Date.now()}`,
+      });
+      setNotificationStatus("Test notification sent.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setNotificationStatus(`Test notification failed: ${message}`);
+    }
   };
 
   const sortedRules = useMemo(
@@ -241,8 +266,8 @@ export function MediaSettingsPage({
       <div className="ui-panel media-capture__block">
         <h2 className="media-capture__subheading">Detection rules</h2>
         <p className="media-capture__learning-status">
-          Add keyword or action rules with global or location scope. Matches emit{" "}
-          <code>media.detected</code> events.
+          Add keyword or action rules with global or location scope. Rules are evaluated against
+          incoming transcript and vision events for notifications.
         </p>
         <div className="media-capture__settings-grid">
           <label className="media-capture__field ui-field">
@@ -473,7 +498,7 @@ export function MediaSettingsPage({
           </ul>
         ) : (
           <p className="media-capture__learning-status">
-            No detection rules yet. Add keyword/action rules to emit specific events.
+            No detection rules yet. Add keyword/action rules to drive notifications.
           </p>
         )}
       </div>
@@ -502,8 +527,14 @@ export function MediaSettingsPage({
           <button type="button" className="ui-btn" onClick={() => void requestNotificationPermission()}>
             Request browser permission
           </button>
+          <button type="button" className="ui-btn" onClick={sendTestNotification}>
+            Send test notification
+          </button>
           <span className="media-capture__learning-status">Permission: {permissionStatus}</span>
         </div>
+        {notificationStatus != null ? (
+          <p className="media-capture__learning-status">{notificationStatus}</p>
+        ) : null}
       </div>
 
       <div className="ui-panel media-capture__block">

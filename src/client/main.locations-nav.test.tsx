@@ -8,7 +8,7 @@ import {
   DEFAULT_MEDIA_DETECTION_SETTINGS,
   saveMediaDetectionSettings,
 } from "./lib/media-settings.ts";
-import { MEDIA_DETECTED_EVENT_TYPE } from "./lib/media-event-types.ts";
+import { MEDIA_VISION_EVENT_TYPE } from "./lib/media-event-types.ts";
 
 beforeAll(() => {
   const happyWindow = new GlobalWindow({ url: "http://localhost/" });
@@ -154,7 +154,7 @@ describe("locations navigation", () => {
     expect(openCalls).toEqual([42, 42]);
   });
 
-  test("shows detected notifications even away from events page", () => {
+  test("shows rule-based notifications away from events page", () => {
     const calls: Array<{ title: string; body: string | undefined; tag: string | undefined }> = [];
     class NotificationMock {
       static permission: NotificationPermission = "granted";
@@ -173,6 +173,20 @@ describe("locations navigation", () => {
       {
         ...DEFAULT_MEDIA_DETECTION_SETTINGS,
         notifications: { enabled: true },
+        detectionRules: [
+          {
+            id: "rule-person",
+            name: "Person alert",
+            kind: "action",
+            pattern: "person",
+            minScore: 0.8,
+            cooldownMs: 30_000,
+            scope: "global",
+            locationId: null,
+            notify: true,
+            enabled: true,
+          },
+        ],
       },
       1,
     );
@@ -210,14 +224,13 @@ describe("locations navigation", () => {
                     {
                       id: 8,
                       location_id: 42,
-                      event_type: MEDIA_DETECTED_EVENT_TYPE,
+                      event_type: MEDIA_VISION_EVENT_TYPE,
                       created_at: "2026-04-16T12:00:00.000Z",
                       body: {
                         source: "video",
-                        rule_name: "Person alert",
-                        match_value: "person",
-                        confidence: 0.92,
-                        notify: true,
+                        top_label: "person",
+                        top_score: 0.92,
+                        candidates: [{ label: "person", score: 0.92 }],
                       },
                     },
                   ]
@@ -248,7 +261,7 @@ describe("locations navigation", () => {
     expect(calls[0]).toEqual({
       title: "Action detected",
       body: "Person alert • person (92%) • location 42",
-      tag: "ha-detected-1-8",
+      tag: "ha-rule-1-42-rule-person-8",
     });
   });
 });
