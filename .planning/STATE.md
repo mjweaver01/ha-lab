@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: Location management + location-scoped access/events
 status: verifying
 stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-04-16T04:12:27.786Z"
+last_updated: "2026-04-16T15:00:30.471Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 5
@@ -25,8 +25,8 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 
 ## Current Position
 
-Phase: 08 (locations-hub-and-lifecycle) — EXECUTING
-Plan: 3 of 3
+Phase: 9
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-16
 
