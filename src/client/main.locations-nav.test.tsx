@@ -20,6 +20,7 @@ beforeEach(() => {
 describe("locations navigation", () => {
   test("open location detail keeps hub state and supports back navigation", async () => {
     const includeArchivedState = { value: false };
+    const openCalls: number[] = [];
 
     const EventsStub: ComponentType<{
       onOpenMediaSettings: () => void;
@@ -42,10 +43,20 @@ describe("locations navigation", () => {
         <button
           type="button"
           onClick={() => {
+            openCalls.push(42);
             onOpenLocation(42);
           }}
         >
           Open row 42
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            openCalls.push(42);
+            onOpenLocation(42);
+          }}
+        >
+          Open action 42
         </button>
       </div>
     );
@@ -100,5 +111,35 @@ describe("locations navigation", () => {
     fireEvent.click(view.getByText("Back to locations"));
     expect(view.getByText("locations hub")).toBeDefined();
     expect(view.getByText("include archived: on")).toBeDefined();
+    expect(openCalls).toEqual([42]);
+
+    view.rerender(
+      <App
+        deps={{
+          useEventsPollHook: () => ({
+            events: [],
+            error: null,
+            loading: false,
+            onRefresh: () => {},
+            newIds: new Set<number>(),
+            homeId: 1,
+            pollMs: 3000,
+          }),
+          EventsScreenComponent: EventsStub as never,
+          LocationsScreenComponent: LocationsStub as never,
+          LocationDetailScreenComponent: DetailStub as never,
+          createLocationFn: async () => {
+            throw new Error("not used in this navigation test");
+          },
+          updateLocationFn: async () => {
+            throw new Error("not used in this navigation test");
+          },
+        }}
+      />,
+    );
+
+    fireEvent.click(view.getByText("Open action 42"));
+    expect(view.getByText("location detail id: 42")).toBeDefined();
+    expect(openCalls).toEqual([42, 42]);
   });
 });
