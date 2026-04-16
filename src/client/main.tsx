@@ -72,12 +72,12 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
       includeAllLocations: true,
     });
   const [mediaSettings, setMediaSettings] = useState<MediaDetectionSettings>(() =>
-    loadMediaDetectionSettings(),
+    loadMediaDetectionSettings(userId),
   );
 
   const applySettings = (next: MediaDetectionSettings) => {
     setMediaSettings(next);
-    saveMediaDetectionSettings(next);
+    saveMediaDetectionSettings(next, userId);
   };
 
   return (
@@ -103,6 +103,9 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
                   videoActivityThreshold: mediaSettings.videoThreshold,
                   videoSampleCadenceMs: mediaSettings.videoCadenceMs,
                   learningMatchThreshold: mediaSettings.learningThreshold,
+                  detectionRules: mediaSettings.detectionRules,
+                  notificationsEnabled: mediaSettings.notifications.enabled,
+                  userId,
                 }}
                 onOpenMediaSettings={() => {
                   navigate("/settings/media");
@@ -171,6 +174,7 @@ function AppRoutes({ deps }: { deps: AppDependencies }) {
               <MediaSettingsPage
                 settings={mediaSettings}
                 onChangeSettings={applySettings}
+                userId={userId}
                 onBackToEvents={() => {
                   navigate("/events");
                 }}
@@ -258,6 +262,9 @@ function LocationEventsRoute({
           videoActivityThreshold: mediaSettings.videoThreshold,
           videoSampleCadenceMs: mediaSettings.videoCadenceMs,
           learningMatchThreshold: mediaSettings.learningThreshold,
+          detectionRules: mediaSettings.detectionRules,
+          notificationsEnabled: mediaSettings.notifications.enabled,
+          userId,
           locationId: parsedLocationId,
           orchestratorBaseUrl: baseUrl,
         }}

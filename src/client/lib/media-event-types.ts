@@ -1,5 +1,6 @@
 export const MEDIA_AUDIO_EVENT_TYPE = "media.audio";
 export const MEDIA_VIDEO_EVENT_TYPE = "media.video";
+export const MEDIA_DETECTED_EVENT_TYPE = "media.detected";
 
 export type MediaCandidate = {
   label: string;
@@ -11,6 +12,19 @@ export type MediaEventBody = {
   top_score: number;
   candidates?: MediaCandidate[];
   source: "audio" | "video";
+};
+
+export type MediaDetectedEventBody = {
+  source: "audio" | "video";
+  rule_id: string;
+  rule_name: string;
+  rule_kind: "keyword" | "action";
+  rule_scope: "global" | "location";
+  rule_location_id: number | null;
+  match_value: string;
+  match_score: number;
+  notify: boolean;
+  candidates?: MediaCandidate[];
 };
 
 function clampScore(score: number): number {
@@ -80,4 +94,34 @@ export function buildVideoEventBody(
   candidates?: readonly MediaCandidate[],
 ): MediaEventBody {
   return buildMediaEventBody("video", topLabel, topScore, candidates);
+}
+
+export function buildDetectedEventBody(args: {
+  source: "audio" | "video";
+  ruleId: string;
+  ruleName: string;
+  ruleKind: "keyword" | "action";
+  ruleScope: "global" | "location";
+  ruleLocationId: number | null;
+  matchValue: string;
+  matchScore: number;
+  notify: boolean;
+  candidates?: readonly MediaCandidate[];
+}): MediaDetectedEventBody {
+  const body: MediaDetectedEventBody = {
+    source: args.source,
+    rule_id: args.ruleId.trim(),
+    rule_name: trimLabel(args.ruleName),
+    rule_kind: args.ruleKind,
+    rule_scope: args.ruleScope,
+    rule_location_id: args.ruleLocationId,
+    match_value: trimLabel(args.matchValue),
+    match_score: clampScore(args.matchScore),
+    notify: args.notify,
+  };
+  const normalizedCandidates = normalizeCandidates(args.candidates);
+  if (normalizedCandidates != null) {
+    body.candidates = normalizedCandidates;
+  }
+  return body;
 }

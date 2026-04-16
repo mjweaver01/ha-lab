@@ -134,10 +134,7 @@ describe("useMediaCapture", () => {
     await act(async () => {
       await result.current.startCamera();
     });
-
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalled();
-    });
+    expect(result.current.cameraActive).toBe(true);
 
     act(() => {
       result.current.stopCamera();

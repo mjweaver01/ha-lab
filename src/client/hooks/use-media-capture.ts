@@ -2,12 +2,23 @@ import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { postEvent } from "../api/events-client.ts";
 import {
+  evaluateActionRules,
+  evaluateKeywordRules,
+  type MediaRuleMatch,
+} from "../lib/media-detection-rules.ts";
+import {
+  buildDetectedEventBody,
+  MEDIA_DETECTED_EVENT_TYPE,
+  type MediaCandidate,
+} from "../lib/media-event-types.ts";
+import {
   createLearnedVideoSample,
   createVideoFrameFeature,
   matchLearnedVideoLabel,
   type LearnedVideoSample,
 } from "../lib/media-learning.ts";
 import { formatMediaError, formatTrackEndedMessage } from "../lib/media-errors.ts";
+import type { DetectionRule } from "../lib/media-settings.ts";
 import { createMediaSignalPipeline as createPipeline } from "../lib/media-signals.ts";
 import { readPublicLocationId, readPublicOrchestratorUrl } from "../lib/public-env.ts";
 
@@ -20,6 +31,25 @@ const AUDIO_ACTIVE_LABEL = "speech";
 const AUDIO_IDLE_LABEL = "ambient";
 const VIDEO_ACTIVE_LABEL = "motion";
 const VIDEO_IDLE_LABEL = "still";
+const DEFAULT_RULE_COOLDOWN_MS = 30_000;
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+};
+
+type SpeechRecognitionEventLike = {
+  resultIndex: number;
+  results: ArrayLike<{
+    isFinal?: boolean;
+    0?: { transcript?: string; confidence?: number };
+  }>;
+};
 
 export type MediaCaptureDetection = {
   label: string;
@@ -38,6 +68,9 @@ export type UseMediaCaptureOptions = {
   learningMatchThreshold?: number;
   locationId?: number;
   orchestratorBaseUrl?: string;
+  detectionRules?: readonly DetectionRule[];
+  notificationsEnabled?: boolean;
+  userId?: number;
 };
 
 export type UseMediaCaptureResult = {
@@ -66,6 +99,9 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     learningMatchThreshold = 0.65,
     locationId: locationIdOverride,
     orchestratorBaseUrl: orchestratorBaseUrlOverride,
+    detectionRules = [],
+    notificationsEnabled = false,
+    userId = 1,
   } = options;
   const [micActive, setMicActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
@@ -87,6 +123,8 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
   const frameCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const signalPipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
   const pipelineErrorRef = useRef({ mic: false, camera: false });
+  const speechRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const ruleCooldownsRef = useRef(new Map<string, number>());
 
   const publicLocationId = readPublicLocationId();
   const publicOrchestratorBaseUrl = readPublicOrchestratorUrl();
@@ -112,6 +150,68 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     return signalPipelineRef.current;
   }, [targetLocationId, targetOrchestratorBaseUrl]);
 
+  const maybeNotify = useCallback(
+    (match: MediaRuleMatch) => {
+      if (!notificationsEnabled || !match.rule.notify) {
+        return;
+      }
+      if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+        return;
+      }
+      const title =
+        match.source === "audio"
+          ? `Keyword detected: ${match.rule.name}`
+          : `Action detected: ${match.rule.name}`;
+      const locationTag =
+        match.rule.scope === "location" && match.rule.locationId != null
+          ? `Location ${match.rule.locationId}`
+          : "Global";
+      void new Notification(title, {
+        body: `${locationTag} • ${match.matchedValue} (${Math.round(match.score * 100)}%)`,
+        tag: `ha-detected-${userId}-${match.rule.id}`,
+      });
+    },
+    [notificationsEnabled, userId],
+  );
+
+  const shouldEmitRuleMatch = useCallback((match: MediaRuleMatch, nowMs: number): boolean => {
+    const cooldownMs = Math.max(0, match.rule.cooldownMs || DEFAULT_RULE_COOLDOWN_MS);
+    const key = `${match.rule.id}:${match.matchedValue.toLowerCase()}`;
+    const last = ruleCooldownsRef.current.get(key) ?? 0;
+    if (nowMs - last < cooldownMs) {
+      return false;
+    }
+    ruleCooldownsRef.current.set(key, nowMs);
+    return true;
+  }, []);
+
+  const emitRuleMatch = useCallback(
+    async (match: MediaRuleMatch) => {
+      const nowMs = Date.now();
+      if (!shouldEmitRuleMatch(match, nowMs)) {
+        return;
+      }
+      await postEvent(targetOrchestratorBaseUrl, {
+        location_id: targetLocationId,
+        event_type: MEDIA_DETECTED_EVENT_TYPE,
+        body: buildDetectedEventBody({
+          source: match.source,
+          ruleId: match.rule.id,
+          ruleName: match.rule.name,
+          ruleKind: match.rule.kind,
+          ruleScope: match.rule.scope,
+          ruleLocationId: match.rule.locationId,
+          matchValue: match.matchedValue,
+          matchScore: match.score,
+          notify: match.rule.notify,
+          candidates: match.candidates,
+        }),
+      });
+      maybeNotify(match);
+    },
+    [maybeNotify, shouldEmitRuleMatch, targetLocationId, targetOrchestratorBaseUrl],
+  );
+
   const clearMicAnalysis = useCallback(() => {
     if (micRafRef.current != null) {
       cancelAnimationFrame(micRafRef.current);
@@ -126,6 +226,10 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     setMicLevel(0);
     smoothedMicLevelRef.current = 0;
     setAudioDetection(null);
+    if (speechRecognitionRef.current != null) {
+      speechRecognitionRef.current.stop();
+      speechRecognitionRef.current = null;
+    }
   }, []);
 
   const clearCameraSampling = useCallback(() => {
@@ -158,6 +262,60 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     }
     setCameraError(detail);
   }, []);
+
+  const startKeywordRecognition = useCallback(() => {
+    const hasKeywordRules = detectionRules.some((rule) => rule.enabled && rule.kind === "keyword");
+    if (!hasKeywordRules) {
+      return;
+    }
+    const speechCtor = (
+      window as Window & {
+        SpeechRecognition?: new () => SpeechRecognitionLike;
+        webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+      }
+    ).SpeechRecognition ??
+      (
+        window as Window & {
+          webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+        }
+      ).webkitSpeechRecognition;
+    if (speechCtor == null) {
+      return;
+    }
+    const recognition = new speechCtor();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+    recognition.onerror = () => {
+      // Swallow engine-level speech errors; mic meter still runs and regular media events still post.
+    };
+    recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result?.isFinal === false) {
+          continue;
+        }
+        const transcript = result?.[0]?.transcript?.trim() ?? "";
+        if (transcript === "") {
+          continue;
+        }
+        const confidence = result?.[0]?.confidence ?? 0;
+        const matches = evaluateKeywordRules({
+          rules: detectionRules,
+          transcript,
+          confidence,
+          locationId: targetLocationId,
+        });
+        for (const match of matches) {
+          void emitRuleMatch(match).catch(() => {
+            reportPipelineError("mic");
+          });
+        }
+      }
+    };
+    speechRecognitionRef.current = recognition;
+    recognition.start();
+  }, [detectionRules, emitRuleMatch, reportPipelineError, targetLocationId]);
 
   const stopMicTracks = useCallback(() => {
     const s = micStreamRef.current;
@@ -271,6 +429,7 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
         micRafRef.current = requestAnimationFrame(tick);
       };
       micRafRef.current = requestAnimationFrame(tick);
+      startKeywordRecognition();
       setMicActive(true);
     } catch (e) {
       setMicError(formatMediaError("mic", e));
@@ -284,6 +443,7 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     reportPipelineError,
     audioLevelBoost,
     audioActivityThreshold,
+    startKeywordRecognition,
   ]);
 
   const stopMic = useCallback(() => {
@@ -348,6 +508,20 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
               }
             }
           }
+          const actionCandidates: MediaCandidate[] = candidates.map((candidate) => ({
+            label: candidate.label,
+            score: candidate.score,
+          }));
+          const actionMatches = evaluateActionRules({
+            rules: detectionRules,
+            candidates: actionCandidates,
+            locationId: targetLocationId,
+          });
+          for (const match of actionMatches) {
+            void emitRuleMatch(match).catch(() => {
+              reportPipelineError("camera");
+            });
+          }
           setVideoDetection({
             label,
             score,
@@ -376,6 +550,9 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
     stopCameraTracks,
     getSignalPipeline,
     reportPipelineError,
+    detectionRules,
+    emitRuleMatch,
+    targetLocationId,
     videoSampleCadenceMs,
     learnedVideoSamples,
     learningMatchThreshold,
@@ -443,6 +620,11 @@ export function useMediaCapture(options: UseMediaCaptureOptions = {}): UseMediaC
       }
       const v = videoRef.current;
       if (v != null) v.srcObject = null;
+      if (speechRecognitionRef.current != null) {
+        speechRecognitionRef.current.stop();
+        speechRecognitionRef.current = null;
+      }
+      ruleCooldownsRef.current.clear();
     };
   }, []);
 

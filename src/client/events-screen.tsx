@@ -291,8 +291,7 @@ export function EventsScreen({
         ) : null}
 
         <p className="ui-filter-summary">
-          {timeframeSummary} Showing {filteredEvents.length} matched event
-          {filteredEvents.length === 1 ? "" : "s"}.
+          {timeframeSummary}
         </p>
       </div>
 
@@ -325,6 +324,11 @@ export function EventsScreen({
 
       {filteredEvents.length > 0 ? (
         <div className="ui-panel">
+          <p className="ui-filter-summary ui-filter-summary__events">
+            Showing {filteredEvents.length} matched event
+            {filteredEvents.length === 1 ? "" : "s"}.
+          </p>
+
           <div
             ref={listViewportRef}
             className="ui-list-viewport"
