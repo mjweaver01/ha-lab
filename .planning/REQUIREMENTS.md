@@ -10,11 +10,11 @@ Requirements for this milestone. Each maps to roadmap phases (starting at phase 
 
 ### Locations
 
-- [ ] **LOC-01**: User can view a unified list of all locations they can access.
-- [ ] **LOC-02**: User can create a new location with required metadata.
-- [ ] **LOC-03**: User can edit location details for locations they administer.
-- [ ] **LOC-04**: User can archive a location instead of hard-deleting it.
-- [ ] **LOC-05**: Archived locations are excluded from default active views while remaining auditable.
+- [x] **LOC-01**: User can view a unified list of all locations they can access.
+- [x] **LOC-02**: User can create a new location with required metadata.
+- [x] **LOC-03**: User can edit location details for locations they administer.
+- [x] **LOC-04**: User can archive a location instead of hard-deleting it.
+- [x] **LOC-05**: Archived locations are excluded from default active views while remaining auditable.
 
 ### Location views (devices + users)
 
@@ -80,11 +80,11 @@ Not in v1.2 roadmap; tracked for later versions.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOC-01 | 8 | Pending |
-| LOC-02 | 8 | Pending |
-| LOC-03 | 8 | Pending |
-| LOC-04 | 8 | Pending |
-| LOC-05 | 8 | Pending |
+| LOC-01 | 8 | Complete |
+| LOC-02 | 8 | Complete |
+| LOC-03 | 8 | Complete |
+| LOC-04 | 8 | Complete |
+| LOC-05 | 8 | Complete |
 | VIEW-01 | 8 | Pending |
 | VIEW-02 | 9 | Pending |
 | VIEW-03 | 9 | Pending |
