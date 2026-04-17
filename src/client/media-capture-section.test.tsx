@@ -135,7 +135,7 @@ describe("MediaCaptureSection", () => {
     });
     window.localStorage.setItem("home-assist.media-capture.auto-mic.v1", "1");
 
-    render(
+    const { container } = render(
       <MediaCaptureSection
         settings={{
           audioLevelBoost: DEFAULT_MEDIA_DETECTION_SETTINGS.audioLevelBoost,
@@ -149,6 +149,10 @@ describe("MediaCaptureSection", () => {
 
     await waitFor(() => {
       expect(getUserMedia).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      const panel = container.querySelector(".media-capture") as HTMLDetailsElement | null;
+      expect(panel?.open).toBe(true);
     });
   });
 });

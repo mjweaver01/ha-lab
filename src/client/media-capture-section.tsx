@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Camera, ChevronDown, Mic, Square } from "lucide-react";
 import {
   type UseMediaCaptureOptions,
@@ -46,18 +46,33 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
     ...settings,
     learnedVideoSamples,
   });
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
+  const captureActive = micActive || cameraActive;
 
   useEffect(() => {
-    if (readAutoToggle(AUTO_MIC_KEY)) {
+    const autoMic = readAutoToggle(AUTO_MIC_KEY);
+    const autoCamera = readAutoToggle(AUTO_CAMERA_KEY);
+    if (autoMic || autoCamera) {
+      if (detailsRef.current != null) {
+        detailsRef.current.open = true;
+      }
+    }
+    if (autoMic) {
       void startMic();
     }
-    if (readAutoToggle(AUTO_CAMERA_KEY)) {
+    if (autoCamera) {
       void startCamera();
     }
   }, []);
 
+  useEffect(() => {
+    if (captureActive && detailsRef.current != null) {
+      detailsRef.current.open = true;
+    }
+  }, [captureActive]);
+
   return (
-    <details className="media-capture ui-panel">
+    <details ref={detailsRef} className="media-capture ui-panel">
       <summary className="media-capture__summary">
         <span className="media-capture__summary-content">
           <span className="media-capture__summary-main">
@@ -85,6 +100,9 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
                   return;
                 }
                 writeAutoToggle(AUTO_MIC_KEY, true);
+                if (detailsRef.current != null) {
+                  detailsRef.current.open = true;
+                }
                 void startMic();
               }}
             >
@@ -128,6 +146,9 @@ export function MediaCaptureSection({ settings }: MediaCaptureSectionProps) {
                 return;
               }
               writeAutoToggle(AUTO_CAMERA_KEY, true);
+              if (detailsRef.current != null) {
+                detailsRef.current.open = true;
+              }
               void startCamera();
             }}
           >
