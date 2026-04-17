@@ -13,6 +13,7 @@ export type UseEventsPollOptions = {
   pollMs?: number;
   userId?: number;
   includeAllLocations?: boolean;
+  pausePolling?: boolean;
 };
 
 export type UseEventsPollResult = {
@@ -71,11 +72,17 @@ export function useEventsPoll(options: UseEventsPollOptions = {}): UseEventsPoll
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (options.pausePolling === true) {
+      return;
+    }
     const id = setInterval(() => {
       void refresh();
     }, pollMs);
     return () => clearInterval(id);
-  }, [refresh, pollMs]);
+  }, [refresh, pollMs, options.pausePolling]);
 
   return {
     events,

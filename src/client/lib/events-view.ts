@@ -29,12 +29,25 @@ export type VirtualWindow = {
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
+const SQLITE_UTC_DATETIME_RE = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?)$/;
+
+function normalizeDateInput(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed === "") {
+    return trimmed;
+  }
+  const sqliteMatch = SQLITE_UTC_DATETIME_RE.exec(trimmed);
+  if (sqliteMatch != null) {
+    return `${sqliteMatch[1]}T${sqliteMatch[2]}Z`;
+  }
+  return trimmed;
+}
 
 function parseDateMs(value: string): number | null {
   if (!value.trim()) {
     return null;
   }
-  const ms = Date.parse(value);
+  const ms = Date.parse(normalizeDateInput(value));
   return Number.isFinite(ms) ? ms : null;
 }
 
@@ -86,8 +99,8 @@ export function filterEventsByTimeframe(
   }
 
   return events.filter((event) => {
-    const eventMs = Date.parse(event.created_at);
-    if (!Number.isFinite(eventMs)) {
+    const eventMs = parseDateMs(event.created_at);
+    if (eventMs == null) {
       return false;
     }
     if (startMs != null && eventMs < startMs) {

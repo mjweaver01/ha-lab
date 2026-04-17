@@ -53,6 +53,24 @@ describe("events-view", () => {
     expect(result.map((event) => event.id)).toEqual([3]);
   });
 
+  test("filterEventsByTimeframe treats SQLite timestamps as UTC", () => {
+    const now = Date.parse("2026-01-01T01:00:00.000Z");
+    const events = [
+      makeEvent(1, "2026-01-01 00:20:00"),
+      makeEvent(2, "2026-01-01 00:50:00"),
+      makeEvent(3, "2026-01-01 00:59:59"),
+    ];
+    const filter: EventsFilterState = {
+      mode: "timeframe",
+      preset: "15m",
+      customStart: "",
+      customEnd: "",
+      searchQuery: "",
+    };
+    const result = filterEventsByTimeframe(events, filter, now);
+    expect(result.map((event) => event.id)).toEqual([2, 3]);
+  });
+
   test("paginateEvents returns clamped page with slice", () => {
     const events = [1, 2, 3, 4, 5].map((id) => makeEvent(id, "2026-01-01T00:00:00.000Z"));
     const result = paginateEvents(events, 99, 2);

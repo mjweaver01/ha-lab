@@ -46,6 +46,7 @@ export type EventsScreenProps = {
   locationName?: string | null;
   pollMs: number;
   onPollMsChange?: (nextMs: number) => void;
+  onPausePollingChange?: (pausePolling: boolean) => void;
   captureSettings: UseMediaCaptureOptions;
   onOpenMediaSettings: () => void;
   onEditLocation?: () => void;
@@ -286,6 +287,7 @@ export function EventsScreen({
   locationName,
   pollMs,
   onPollMsChange,
+  onPausePollingChange,
   captureSettings,
   onOpenMediaSettings,
   onEditLocation,
@@ -377,6 +379,10 @@ export function EventsScreen({
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<EventsAnalyticsResponse | null>(null);
+
+  useEffect(() => {
+    onPausePollingChange?.(filter.mode === "timeframe");
+  }, [filter.mode, onPausePollingChange]);
 
   const analyticsEnabled = baseUrl != null && Number.isInteger(userId);
   const analyticsUserId = analyticsEnabled ? (userId as number) : null;
